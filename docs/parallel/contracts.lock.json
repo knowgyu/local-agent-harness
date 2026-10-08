@@ -1,0 +1,6 @@
+{
+  "revision": "a00-r1",
+  "owners": {
+    "persistence_schema_and_migration_semantics": "B01"
+  }
+}

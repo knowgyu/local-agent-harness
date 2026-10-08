@@ -1,0 +1,1021 @@
+{{define "readiness.html"}}
+<!doctype html>
+<html lang="{{.Language}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{{if eq .Language "ko"}}연결 준비 상태 · Local Agent Harness{{else}}Readiness · Local Agent Harness{{end}}</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font: 16px/1.5 system-ui, "Segoe UI", sans-serif;
+      color: #17212b;
+      background: #f1f4f7;
+      --muted: #465568;
+      --border: #c7d0d9;
+      --navy: #1e293b;
+      --focus: #125da8;
+      --danger: #9f2424;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .topbar {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 4px 24px;
+      color: #fff;
+      background: var(--navy);
+      font-size: .9rem;
+    }
+    .brand { font-weight: 700; letter-spacing: .055em; }
+    .topbar-links, .language-control { display: flex; align-items: center; gap: 12px; }
+    .topbar a { min-height: 44px; display: inline-flex; align-items: center; color: #fff; }
+    .language-control { white-space: nowrap; }
+    .language-control label { margin: 0; }
+    .language-control select { min-height: 44px; width: auto; padding: 4px 8px; font: inherit; }
+    main { width: min(1180px, 100%); margin: 24px auto; padding: 0 20px 36px; }
+    h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 1.9rem); line-height: 1.2; }
+    h2 { margin: 0 0 10px; font-size: 1.15rem; line-height: 1.3; }
+    h3 { margin: 0; font-size: 1rem; }
+    p { margin: 6px 0; }
+    .muted { color: var(--muted); }
+    .intro { max-width: 78ch; margin: 8px 0 14px; color: var(--muted); }
+    .actions, .readiness-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .readiness-nav { margin: 14px 0; }
+    .readiness-nav a, .next-link {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 11px;
+      border: 1px solid #586779;
+      border-radius: 5px;
+      color: #17212b;
+      background: #fff;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+    button {
+      min-height: 44px;
+      padding: 8px 13px;
+      border: 1px solid var(--navy);
+      border-radius: 5px;
+      color: #fff;
+      background: var(--navy);
+      font: 650 .94rem/1.2 system-ui, "Segoe UI", sans-serif;
+      cursor: pointer;
+    }
+    button.secondary { color: #17212b; background: #fff; border-color: #586779; }
+    button:disabled { color: #536171; background: #e4e8ed; border-color: #aeb8c2; cursor: not-allowed; }
+    .panel {
+      min-width: 0;
+      margin: 14px 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .summary { border-left: 5px solid #586779; }
+    .summary[data-state="configured"] { border-left-color: #28704a; }
+    .summary[data-state="needs_setup"] { border-left-color: #9a6400; }
+    .summary[data-state="unavailable"] { border-left-color: var(--danger); }
+    .status-line { margin: 4px 0; }
+    .readiness-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .readiness-item {
+      display: grid;
+      grid-template-columns: minmax(180px, .8fr) minmax(0, 1.4fr);
+      gap: 6px 18px;
+      padding: 13px;
+      border: 1px solid #d9e0e6;
+      border-radius: 7px;
+      background: #fff;
+    }
+    .item-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+    .item-state { color: #334155; font-weight: 650; }
+    .item-state[data-tone="attention"] { color: #805500; }
+    .item-state[data-tone="error"] { color: #8e1d1d; }
+    .item-copy { min-width: 0; }
+    .item-copy p { margin: 3px 0; overflow-wrap: anywhere; }
+    .evidence { color: var(--muted); font-size: .88rem; }
+    .next-step { margin-top: 6px !important; }
+    .item-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .manual { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 9px; margin-top: 4px; }
+    .manual input { flex: 0 0 auto; width: 20px; height: 20px; margin: 2px 0 0; accent-color: #1f5b8e; }
+    .manual span { min-width: 0; overflow-wrap: anywhere; }
+    .manual-time { color: var(--muted); font-size: .85rem; }
+    .tool-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 7px 0; padding: 0; list-style: none; }
+    .tool-list li { display: flex; align-items: center; gap: 5px; max-width: 100%; padding: 3px 6px; border: 1px solid #d3dae1; border-radius: 4px; background: #f7f9fb; }
+    code { overflow-wrap: anywhere; font: .86em ui-monospace, Consolas, monospace; }
+    .tool-copy { min-height: 32px; padding: 4px 7px; color: #17212b; background: #fff; font-size: .82rem; }
+    .example { margin-top: 8px; padding: 9px 11px; border-left: 3px solid #4b657e; background: #f7f9fb; }
+    .notice { margin: 12px 0; padding: 10px 12px; border: 1px solid var(--border); border-left: 4px solid #9a6400; border-radius: 6px; background: #fff; }
+    .error { border-left-color: var(--danger); }
+    .status-message { min-height: 1.5em; color: var(--muted); }
+    .feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .feature-card { min-width: 0; padding: 13px; border: 1px solid #d9e0e6; border-radius: 7px; }
+    .feature-card p { color: var(--muted); }
+    .optional { border-left: 4px solid #718096; }
+    .skip { position: absolute; top: -100px; left: 12px; z-index: 2; padding: 8px 12px; color: #fff; background: var(--navy); }
+    .skip:focus { top: 8px; }
+    @media (max-width: 760px) {
+      .topbar { flex-wrap: wrap; padding: 7px 14px; }
+      .topbar-links { flex: 1 1 100%; justify-content: space-between; flex-wrap: wrap; }
+      main { margin-top: 18px; padding-right: 12px; padding-left: 12px; }
+      .readiness-item { grid-template-columns: 1fr; }
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#readiness-main" data-copy-en="Skip to main content" data-copy-ko="본문으로 건너뛰기">본문으로 건너뛰기</a>
+  <header class="topbar">
+    <span class="brand">LOCAL AGENT HARNESS</span>
+    <nav class="topbar-links" aria-label="{{if eq .Language "ko"}}로컬 페이지{{else}}Local pages{{end}}">
+      <a href="/" data-copy-en="Settings and operations" data-copy-ko="설정과 운영">설정과 운영</a>
+      <a href="/#lah-pane-ssh" data-copy-en="SSH tasks" data-copy-ko="SSH 작업">SSH 작업</a>
+      <div class="language-control">
+        <label for="readiness-language" data-copy-en="Language" data-copy-ko="언어">언어</label>
+        <select id="readiness-language" aria-label="{{if eq .Language "ko"}}언어{{else}}Language{{end}}">
+          <option value="en" {{if eq .Language "en"}}selected{{end}}>English</option>
+          <option value="ko" {{if eq .Language "ko"}}selected{{end}}>한국어</option>
+        </select>
+      </div>
+    </nav>
+  </header>
+  <main id="readiness-main" tabindex="-1">
+    <h1 data-copy-en="Connection readiness" data-copy-ko="연결 준비 상태">연결 준비 상태</h1>
+    <p class="intro" data-copy-en="See what is saved, what was actually checked, and what to prepare next. This page never runs a service test or an AI, SSH, or Python operation by itself." data-copy-ko="저장된 설정, 실제로 확인한 항목, 다음 준비 단계를 한곳에서 확인하세요. 이 페이지가 서비스 테스트나 AI·SSH·Python 작업을 자동 실행하지 않습니다.">저장된 설정, 실제로 확인한 항목, 다음 준비 단계를 한곳에서 확인하세요. 이 페이지가 서비스 테스트나 AI·SSH·Python 작업을 자동 실행하지 않습니다.</p>
+    <div class="actions">
+      <button id="readiness-refresh" class="secondary" type="button" data-copy-en="Refresh configuration status" data-copy-ko="설정 상태 새로 고침">설정 상태 새로 고침</button>
+      <button id="readiness-inspect-clients" type="button" data-copy-en="Check CLI registration status" data-copy-ko="클라이언트 등록 상태 확인">클라이언트 등록 상태 확인</button>
+      <button id="readiness-clear-checks" class="secondary" type="button" data-copy-en="Clear my checkmarks" data-copy-ko="내 확인 표시 지우기">내 확인 표시 지우기</button>
+    </div>
+    <nav class="readiness-nav" aria-label="{{if eq .Language "ko"}}이 페이지 항목{{else}}On this page{{end}}">
+      <a href="#readiness-connections" data-copy-en="Connections" data-copy-ko="연결 대상">연결 대상</a>
+      <a href="#readiness-clients" data-copy-en="AI app check" data-copy-ko="AI 앱 확인">AI 앱 확인</a>
+      <a href="#readiness-operations" data-copy-en="SSH and Python" data-copy-ko="SSH 및 Python">SSH 및 Python</a>
+      <a href="#readiness-features" data-copy-en="Available MCP features" data-copy-ko="사용 가능한 MCP 기능">사용 가능한 MCP 기능</a>
+    </nav>
+    <section id="readiness-summary" class="panel summary" data-state="loading" aria-labelledby="readiness-summary-heading">
+      <h2 id="readiness-summary-heading" data-copy-en="Current snapshot" data-copy-ko="현재 상태 확인">현재 상태 확인</h2>
+      <p id="readiness-state" class="status-line" role="status" aria-live="polite" data-copy-en="Loading local readiness information…" data-copy-ko="로컬 준비 상태를 불러오는 중…">로컬 준비 상태를 불러오는 중…</p>
+      <p id="readiness-observed-at" class="evidence"></p>
+    </section>
+    <p id="readiness-message" class="status-message" role="status" aria-live="polite"></p>
+    <noscript>
+      <style>
+        .actions, #readiness-summary, #readiness-message { display: none !important; }
+      </style>
+      <p class="notice" role="status">{{if eq .Language "ko"}}현재 읽기 전용 상태를 불러오려면 JavaScript가 필요합니다. 설정 안내와 이동 링크는 계속 사용할 수 있습니다.{{else}}JavaScript is required to load the current read-only status. Setup guidance and navigation links remain available.{{end}}</p>
+    </noscript>
+    <section id="readiness-connections" class="panel" aria-labelledby="readiness-connections-heading">
+      <h2 id="readiness-connections-heading" data-copy-en="Connection setup and test history" data-copy-ko="연결 설정 및 테스트 이력">연결 설정 및 테스트 이력</h2>
+      <p class="muted" data-copy-en="A saved credential reference is configuration metadata; this page does not open Credential Manager or reveal secret values. A successful saved test is historical, not proof the service is reachable now." data-copy-ko="저장된 자격 증명 참조는 설정 정보입니다. 이 페이지는 Credential Manager를 열지 않고 비밀값도 표시하지 않습니다. 성공한 테스트는 과거 이력이며 지금 서비스에 연결된다는 증거가 아닙니다.">저장된 자격 증명 참조는 설정 정보입니다. 이 페이지는 Credential Manager를 열지 않고 비밀값도 표시하지 않습니다. 성공한 테스트는 과거 이력이며 지금 서비스에 연결된다는 증거가 아닙니다.</p>
+      <ul id="readiness-target-list" class="readiness-list" aria-live="polite"></ul>
+      <ul id="readiness-secret-list" class="readiness-list" aria-live="polite"></ul>
+      <ul id="readiness-bundle-list" class="readiness-list" aria-live="polite"></ul>
+      <ul id="readiness-dashboard-list" class="readiness-list" aria-live="polite"></ul>
+    </section>
+    <section id="readiness-clients" class="panel" aria-labelledby="readiness-clients-heading">
+      <h2 id="readiness-clients-heading" data-copy-en="AI app and CLI checks" data-copy-ko="AI 앱 및 CLI 확인">AI 앱 및 CLI 확인</h2>
+      <p class="muted" data-copy-en="The page does not inspect client files on load. With JavaScript enabled, you can explicitly check supported CLI installation and saved registration metadata. A registration is not an active app connection or a tool call." data-copy-ko="페이지를 열 때 클라이언트 파일을 읽지 않습니다. JavaScript를 켜면 지원 CLI의 설치 및 저장된 등록 정보를 명시적으로 확인할 수 있습니다. 등록 상태는 앱 연결이나 도구 호출을 뜻하지 않습니다.">페이지를 열 때 클라이언트 파일을 읽지 않습니다. JavaScript를 켜면 지원 CLI의 설치 및 저장된 등록 정보를 명시적으로 확인할 수 있습니다. 등록 상태는 앱 연결이나 도구 호출을 뜻하지 않습니다.</p>
+      <p id="readiness-client-inspection" class="evidence" role="status" aria-live="polite" data-copy-en="Client installation and registration have not been checked." data-copy-ko="클라이언트 설치 및 등록 상태를 확인하지 않았습니다.">클라이언트 설치 및 등록 상태를 확인하지 않았습니다.</p>
+      <ul id="readiness-client-list" class="readiness-list" aria-live="polite"></ul>
+    </section>
+    <section id="readiness-operations" class="panel" aria-labelledby="readiness-operations-heading">
+      <h2 id="readiness-operations-heading" data-copy-en="Optional local operations" data-copy-ko="선택 기능: 로컬 작업">선택 기능: 로컬 작업</h2>
+      <p class="muted" data-copy-en="These are optional. The overview does not read user-environment variable names or values, launch a command, or run a task." data-copy-ko="필요할 때 준비하는 선택 기능입니다. 이 페이지는 사용자 환경 변수 이름이나 값을 읽지 않고 명령 또는 작업을 실행하지 않습니다.">필요할 때 준비하는 선택 기능입니다. 이 페이지는 사용자 환경 변수 이름이나 값을 읽지 않고 명령 또는 작업을 실행하지 않습니다.</p>
+      <ul id="readiness-optional-list" class="readiness-list" aria-live="polite"></ul>
+    </section>
+    <section id="readiness-features" class="panel" aria-labelledby="readiness-features-heading">
+      <h2 id="readiness-features-heading" data-copy-en="MCP features in this build" data-copy-ko="현재 빌드의 MCP 기능">현재 빌드의 MCP 기능</h2>
+      <p class="muted" data-copy-en="The list below is derived from tools registered by this build. Availability in the build does not mean a target or client is configured. Copying an example never calls a tool." data-copy-ko="아래 목록은 현재 빌드에 등록된 도구를 기준으로 합니다. 빌드에 기능이 있다는 뜻이지 대상이나 클라이언트 설정이 완료됐다는 뜻은 아닙니다. 예시를 복사해도 도구를 호출하지 않습니다.">아래 목록은 현재 빌드에 등록된 도구를 기준으로 합니다. 빌드에 기능이 있다는 뜻이지 대상이나 클라이언트 설정이 완료됐다는 뜻은 아닙니다. 예시를 복사해도 도구를 호출하지 않습니다.</p>
+      <div id="readiness-feature-list" class="feature-grid" aria-live="polite"></div>
+    </section>
+    <section class="panel optional" aria-labelledby="readiness-import-heading">
+      <h2 id="readiness-import-heading" data-copy-en="Optional startup and import previews" data-copy-ko="선택 기능: 자동 시작 및 가져오기 미리 보기">선택 기능: 자동 시작 및 가져오기 미리 보기</h2>
+      <p data-copy-en="Windows sign-in startup is a separate setting; it does not start the service immediately. Import tools in Advanced settings preview selected files and counts; they do not import or save settings." data-copy-ko="Windows 로그인 자동 시작은 별도 설정이며 서비스를 즉시 실행하지 않습니다. 고급 설정의 가져오기 도구는 선택한 파일과 개수를 미리 볼 뿐 설정을 가져오거나 저장하지 않습니다.">Windows 로그인 자동 시작은 별도 설정이며 서비스를 즉시 실행하지 않습니다. 고급 설정의 가져오기 도구는 선택한 파일과 개수를 미리 볼 뿐 설정을 가져오거나 저장하지 않습니다.</p>
+      <a class="next-link" href="/#lah-pane-advanced" data-copy-en="Open Advanced settings" data-copy-ko="고급 설정 열기">고급 설정 열기</a>
+    </section>
+    <p id="readiness-copy-status" class="status-message" role="status" aria-live="polite"></p>
+    <p class="evidence" data-copy-en="“I checked” marks are your own report, stored only in this browser for this local app address. They are not sent to the app and never change observed status. The local address can change after an app restart. Marks reset when saved configuration changes." data-copy-ko="‘내가 확인함’ 표시는 사용자가 직접 남기는 기록이며 이 브라우저의 현재 로컬 앱 주소에만 저장됩니다. 앱으로 전송되지 않고 관측 상태를 바꾸지 않습니다. 앱을 다시 시작하면 로컬 주소가 달라질 수 있으며 저장 설정이 바뀌면 표시가 초기화됩니다.">‘내가 확인함’ 표시는 사용자가 직접 남기는 기록이며 이 브라우저의 현재 로컬 앱 주소에만 저장됩니다. 앱으로 전송되지 않고 관측 상태를 바꾸지 않습니다. 앱을 다시 시작하면 로컬 주소가 달라질 수 있으며 저장 설정이 바뀌면 표시가 초기화됩니다.</p>
+  </main>
+  <script nonce="{{.CSPNonce}}">
+  (() => {
+    'use strict';
+    const manualStorageKey = 'lah-readiness-user-checks-v1';
+    const localeSelect = document.getElementById('readiness-language');
+    const statusButton = document.getElementById('readiness-refresh');
+    const clientsButton = document.getElementById('readiness-inspect-clients');
+    const clearButton = document.getElementById('readiness-clear-checks');
+    const message = document.getElementById('readiness-message');
+    const stateNode = document.getElementById('readiness-state');
+    const snapshotNode = document.getElementById('readiness-observed-at');
+    const summary = document.getElementById('readiness-summary');
+    const copyStatus = document.getElementById('readiness-copy-status');
+    const lists = {
+      targets: document.getElementById('readiness-target-list'),
+      secrets: document.getElementById('readiness-secret-list'),
+      bundles: document.getElementById('readiness-bundle-list'),
+      dashboard: document.getElementById('readiness-dashboard-list'),
+      clients: document.getElementById('readiness-client-list'),
+      optional: document.getElementById('readiness-optional-list'),
+      features: document.getElementById('readiness-feature-list')
+    };
+    const words = {
+      en: {
+        loading: 'Loading the read-only configuration snapshot…',
+        loadError: 'Readiness status could not be loaded. No settings were changed. Refresh or open Settings and operations.',
+        refreshErrorStale: 'Refresh failed. The details below are the last successful snapshot from {time}.',
+        needsSetup: 'Setup is incomplete. This page has not tested a service or client connection.',
+        configured: 'Saved configuration was read. This does not prove a service or AI app is connected.',
+        unavailable: 'Local settings could not be safely checked. No settings were changed.',
+        observed: 'Snapshot observed at {time}.',
+        noTargets: 'No saved service targets. Add and save a target before testing a service.',
+        addTargetNext: 'Add and save a named target before running its connection test.',
+        retrySettings: 'Retry the status check or review the saved configuration in the settings page.',
+        targetsUnavailable: 'Saved targets could not be checked in this response. Retry before making changes.',
+        targetsTitle: 'Connection targets',
+        enabled: 'Enabled in saved settings',
+        disabled: 'Disabled in saved settings',
+        credentialRef: 'A credential reference is saved in configuration; this page does not resolve it.',
+        noCredentialRef: 'No credential reference is saved for this target.',
+        connectionSuccess: 'Last saved connection test: succeeded (historical)',
+        connectionFailure: 'Last saved connection test: failed (historical)',
+        connectionNotTested: 'No saved connection test result',
+        connectionUnknown: 'Connection test history is unavailable',
+        historicalAt: 'Saved test completed at {time}. A historical result is not a live check.',
+        testNext: 'Choose this target in Settings, then run Test connection explicitly.',
+        noReferenceNext: 'If this service requires a credential, add/select a named credential, then save and test it.',
+        disabledNext: 'Enable the target before using it.',
+        actionTools: 'Allowed MCP tool names from saved policy:',
+        noActions: 'No callable MCP actions were reported for this target.',
+        secretCount: 'Named secret reference metadata: {count} configured reference(s). Values were not read.',
+        notChecked: 'Not checked',
+        noBundles: 'No saved connection groups (service bundles). They are optional unless you need grouped tools or Dashboard mapping.',
+        bundlesUnavailable: 'Connection groups could not be checked in this response.',
+        bundle: 'Connection group (service bundle)',
+        environment: 'Environment',
+        repoCount: 'Repository links saved: {count}',
+        linked: 'Mapped in saved settings',
+        notLinked: 'Not mapped in saved settings',
+        diagnosisEligible: 'Eligible for the saved-scope Dashboard diagnosis',
+        diagnosisNotEligible: 'Not eligible for Dashboard diagnosis yet; complete the mapping in this connection group.',
+        dashboardNext: 'Add/enable a Dashboard target and finish the namespace and Deployment mapping.',
+        noDashboardMaps: 'No eligible Dashboard mapping was reported.',
+        clientNotChecked: 'Client installation and registration have not been checked.',
+        clientObservedAt: 'The explicit CLI inspection completed at {time}. Per-client results are listed below.',
+        clientInspectionFailed: 'Client status could not be safely inspected. Check the CLI manually using its setup guide.',
+        clientUnsupported: 'Not supported by this build',
+        clientSupported: 'Supported CLI',
+        installed: 'CLI detected',
+        installedNotObserved: 'Installed CLI was not observed in this check; verify installation manually.',
+        installUnknown: 'CLI installation not checked',
+        registrationRegistered: 'Registration found in saved client settings',
+        registrationMissing: 'Registration not found in saved client settings',
+        registrationConflict: 'Registration name is occupied by another entry',
+        registrationNotObserved: 'Registration not checked',
+        registrationUnknown: 'Registration state unknown',
+        evidenceConfigObserved: 'Client settings were read for this inspection',
+        evidenceNotObserved: 'Client settings were not observed',
+        evidenceNotChecked: 'Client settings were not checked',
+        evidenceUnknown: 'Client settings evidence is unknown',
+        backupNotChecked: 'Backup status was not checked',
+        backupNotCreated: 'No backup created',
+        backupCreated: 'Backup created',
+        backupApplied: 'Registration applied',
+        backupRestored: 'Backup restored',
+        backupStale: 'Backup is stale',
+        connectionUnverified: 'Active app connection: not verified by this app',
+        toolCallUnverified: 'Actual tool call: not verified by this app',
+        manualListed: 'I saw this server in the saved CLI list',
+        manualTools: 'I saw its tools in an active CLI session',
+        manualCall: 'I called a tool in that active session',
+        manualNotice: 'These checkmarks are your report only.',
+        installNext: 'Verify this CLI installation manually before following its setup guide.',
+        registrationNext: 'Register the server in the CLI or use AI app connection settings.',
+        verifyNext: 'In the CLI, check its saved server list, then inspect tools in an active session.',
+        environmentNotChecked: 'User environment variables were not checked by this page.',
+        environmentOptional: 'Optional: add only variables required by a saved task. Values are not shown here.',
+        envCount: 'Configured entries: {count}. Names and values were not read.',
+        sshCount: 'Saved SSH targets: {targets}; fixed operations: {operations}.',
+        pythonCount: 'Registered Python tasks: {enabled} enabled of {total}.',
+        ifUsing: 'If you use this feature',
+        sshNext: 'Save a named SSH target and a fixed reviewed operation; each run follows its approval policy.',
+        pythonNext: 'Register a task and its local approval policy; a page check does not launch it.',
+        startupNext: 'Optional: review sign-in startup and import previews in Advanced settings.',
+        noFeatures: 'No MCP tools were reported for this build snapshot.',
+        featureCapability: 'Available in this build; setup and permission checks still apply.',
+        copyTool: 'Copy tool name',
+        copied: 'Copied.',
+        copyFailed: 'Clipboard is unavailable. Select and copy the tool name.',
+        clientAction: 'Checking…',
+        refreshAction: 'Refreshing…',
+        checksCleared: 'Your checkmarks were cleared.',
+        checksReset: 'Saved configuration changed; old checkmarks were cleared.',
+        storageLocal: 'Checkmarks are saved only in this browser at this local app address.',
+        storageSession: 'Browser storage is unavailable; checkmarks last only for this tab.',
+        storageMemory: 'Browser storage is unavailable; checkmarks last only until this page is closed.',
+        userMarkTime: 'You marked this at {time}.',
+        manualStorageNoRevision: 'Configuration revision is unavailable; manual marks will not persist after this page closes.'
+      },
+      ko: {
+        loading: '읽기 전용 설정 정보를 불러오는 중…',
+        loadError: '준비 상태를 불러오지 못했습니다. 설정은 바뀌지 않았습니다. 새로 고치거나 설정과 운영 페이지를 여세요.',
+        refreshErrorStale: '새로 고치지 못했습니다. 아래 정보는 {time}에 마지막으로 성공한 응답입니다.',
+        needsSetup: '설정이 아직 완료되지 않았습니다. 이 페이지는 서비스나 클라이언트 연결을 테스트하지 않았습니다.',
+        configured: '저장된 설정을 읽었습니다. 서비스나 AI 앱 연결을 증명하지는 않습니다.',
+        unavailable: '로컬 설정을 안전하게 확인하지 못했습니다. 설정은 바뀌지 않았습니다.',
+        observed: '확인 시각: {time}.',
+        noTargets: '저장된 서비스 대상이 없습니다. 서비스를 테스트하기 전에 대상을 추가하고 저장하세요.',
+        addTargetNext: '연결 테스트를 하기 전에 이름 있는 대상을 추가하고 저장하세요.',
+        retrySettings: '상태 확인을 다시 시도하거나 설정 페이지에서 저장된 설정을 검토하세요.',
+        targetsUnavailable: '이 응답에서 저장 대상을 확인하지 못했습니다. 변경하기 전에 다시 시도하세요.',
+        targetsTitle: '연결 대상',
+        enabled: '저장 설정에서 사용',
+        disabled: '저장 설정에서 사용 중지',
+        credentialRef: '설정에 자격 증명 참조가 저장되어 있습니다. 이 페이지는 참조를 실제 비밀값과 대조하지 않습니다.',
+        noCredentialRef: '이 대상에 저장된 자격 증명 참조가 없습니다.',
+        connectionSuccess: '마지막 저장 연결 테스트: 성공(과거 이력)',
+        connectionFailure: '마지막 저장 연결 테스트: 실패(과거 이력)',
+        connectionNotTested: '저장된 연결 테스트 결과 없음',
+        connectionUnknown: '연결 테스트 이력을 확인할 수 없음',
+        historicalAt: '테스트 저장 시각: {time}. 과거 결과는 현재 상태 확인이 아닙니다.',
+        testNext: '설정 페이지에서 이 대상을 선택한 뒤 연결 테스트를 직접 실행하세요.',
+        noReferenceNext: '서비스에서 자격 증명이 필요하면 이름 있는 자격 증명을 추가하거나 선택한 뒤 저장하고 테스트하세요.',
+        disabledNext: '대상을 사용하기 전에 활성화하세요.',
+        actionTools: '저장된 권한에 따라 허용된 MCP 도구 이름:',
+        noActions: '이 대상에 허용된 MCP 작업이 보고되지 않았습니다.',
+        secretCount: '이름 있는 비밀값 참조 메타데이터: 설정에 {count}개가 있습니다. 값은 읽지 않았습니다.',
+        notChecked: '확인하지 않음',
+        noBundles: '저장된 연결 그룹(서비스 묶음)이 없습니다. 묶음 도구나 Dashboard 매핑을 쓸 때만 필요합니다.',
+        bundlesUnavailable: '이 응답에서 연결 그룹을 확인하지 못했습니다.',
+        bundle: '연결 그룹(서비스 묶음)',
+        environment: '환경',
+        repoCount: '저장된 저장소 연결: {count}개',
+        linked: '저장 설정에 매핑됨',
+        notLinked: '저장 설정에 매핑되지 않음',
+        diagnosisEligible: '저장된 범위의 Dashboard 진단을 사용할 수 있음',
+        diagnosisNotEligible: '아직 Dashboard 진단 조건을 충족하지 않았습니다. 이 연결 그룹에서 매핑을 완성하세요.',
+        dashboardNext: 'Dashboard 대상을 추가하거나 활성화하고 namespace 및 Deployment 매핑을 완료하세요.',
+        noDashboardMaps: '사용 가능한 Dashboard 매핑이 보고되지 않았습니다.',
+        clientNotChecked: '클라이언트 설치 및 등록 상태를 확인하지 않았습니다.',
+        clientObservedAt: '명시적으로 요청한 CLI 확인 시각: {time}. 클라이언트별 결과는 아래와 같습니다.',
+        clientInspectionFailed: '클라이언트 상태를 안전하게 확인하지 못했습니다. CLI 안내에 따라 직접 확인하세요.',
+        clientUnsupported: '현재 빌드에서 지원하지 않음',
+        clientSupported: '지원 CLI',
+        installed: 'CLI 발견됨',
+        installedNotObserved: '설치된 CLI를 이 확인에서 확인하지 못했습니다. 설치 여부를 직접 확인하세요.',
+        installUnknown: 'CLI 설치 상태를 확인하지 않음',
+        registrationRegistered: '클라이언트 설정에서 등록 확인',
+        registrationMissing: '클라이언트 설정에서 등록을 찾지 못함',
+        registrationConflict: '다른 항목이 등록 이름을 사용 중',
+        registrationNotObserved: '등록 상태를 확인하지 않음',
+        registrationUnknown: '등록 상태를 알 수 없음',
+        evidenceConfigObserved: '이번 확인에서 클라이언트 설정을 읽음',
+        evidenceNotObserved: '클라이언트 설정을 확인하지 않음',
+        evidenceNotChecked: '클라이언트 설정을 확인하지 않음',
+        evidenceUnknown: '클라이언트 설정 근거를 알 수 없음',
+        backupNotChecked: '백업 상태를 확인하지 않음',
+        backupNotCreated: '백업을 만들지 않음',
+        backupCreated: '백업 생성됨',
+        backupApplied: '등록 적용됨',
+        backupRestored: '백업 복원됨',
+        backupStale: '백업이 오래됨',
+        connectionUnverified: '활성 앱 연결: 앱에서 검증하지 않음',
+        toolCallUnverified: '실제 도구 호출: 앱에서 검증하지 않음',
+        manualListed: '저장된 CLI 목록에서 이 서버를 봄',
+        manualTools: '실행 중인 CLI 세션에서 이 도구를 봄',
+        manualCall: '해당 세션에서 도구를 직접 호출함',
+        manualNotice: '이 확인 표시는 사용자가 보고한 내용입니다.',
+        installNext: '이 CLI 설치 상태를 직접 확인한 뒤 사용하려면 설정 안내를 따르세요.',
+        registrationNext: 'CLI에 서버를 등록하거나 AI 앱 연결 설정을 확인하세요.',
+        verifyNext: 'CLI에서 저장된 서버 목록을 확인한 뒤 실행 중인 세션의 도구를 확인하세요.',
+        environmentNotChecked: '이 페이지는 사용자 환경 변수를 확인하지 않았습니다.',
+        environmentOptional: '선택 사항: 저장된 작업에 필요한 변수만 추가하세요. 값은 여기에 표시되지 않습니다.',
+        envCount: '설정 항목: {count}개. 이름과 값은 읽지 않았습니다.',
+        sshCount: '저장된 SSH 대상: {targets}개, 고정 작업: {operations}개.',
+        pythonCount: '등록된 Python 작업: {total}개 중 {enabled}개 활성.',
+        ifUsing: '이 기능을 사용하는 경우',
+        sshNext: '이름 있는 SSH 대상과 검토된 고정 작업을 저장하세요. 실행마다 승인 정책이 적용됩니다.',
+        pythonNext: '작업과 로컬 승인 정책을 등록하세요. 이 페이지는 작업을 실행하지 않습니다.',
+        startupNext: '선택 사항: 고급 설정에서 로그인 자동 시작과 가져오기 미리 보기를 확인하세요.',
+        noFeatures: '이 빌드 상태에서 MCP 도구를 보고하지 않았습니다.',
+        featureCapability: '현재 빌드에서 제공하는 기능입니다. 설정과 권한 확인이 필요합니다.',
+        copyTool: '도구 이름 복사',
+        copied: '복사했습니다.',
+        copyFailed: '클립보드를 사용할 수 없습니다. 도구 이름을 선택해 복사하세요.',
+        clientAction: '확인 중…',
+        refreshAction: '새로 고치는 중…',
+        checksCleared: '사용자 확인 표시를 지웠습니다.',
+        checksReset: '저장 설정이 바뀌어 이전 확인 표시를 지웠습니다.',
+        storageLocal: '확인 표시는 이 브라우저의 현재 로컬 앱 주소에만 저장됩니다.',
+        storageSession: '브라우저 저장소를 사용할 수 없어 확인 표시는 이 탭에서만 유지됩니다.',
+        storageMemory: '브라우저 저장소를 사용할 수 없어 확인 표시는 페이지를 닫을 때 사라집니다.',
+        userMarkTime: '사용자 확인 시각: {time}.',
+        manualStorageNoRevision: '설정 버전을 확인할 수 없어 페이지를 닫으면 사용자 확인 표시가 사라집니다.'
+      }
+    };
+    let language = document.documentElement.lang === 'en' ? 'en' : 'ko';
+    let currentData = null;
+    let lastClientInspection = null;
+    let lastClientInspectionRevision = '';
+    let latestStatusRequest = 0;
+    let manualRevision = '';
+    let manualMarks = {};
+    let manualStore = 'memory';
+    let resetMessagePending = false;
+    const externalTargetLinks = {
+      github: '/#github-heading',
+      jenkins: '/#jenkins-heading',
+      harbor: '/#harbor-heading',
+      dashboard: '/#dashboard-heading'
+    };
+    const clientNames = {codex: 'Codex CLI', claude: 'Claude Code CLI', gemini: 'Gemini CLI'};
+      const featureGroups = [
+      {key: 'catalog', tools: ['registered_targets', 'registered_service_bundles', 'registered_target_connection_test'], title: {en: 'Inventory and saved connection tests', ko: '등록 정보 및 연결 테스트'}, summary: {en: 'Catalogs read saved registrations only. The connection-test tool contacts the exact saved service and records a historical result.', ko: '목록 도구는 저장된 등록 정보만 읽습니다. 연결 테스트 도구는 저장된 서비스에 요청을 보내고 과거 결과를 기록합니다.'}, example: {en: 'List my enabled saved targets and groups. Do not contact services.', ko: '활성화된 저장 대상과 연결 그룹을 보여 줘. 서비스에는 접속하지 마.'}},
+      {key: 'github', tools: ['github_repository', 'github_pull_request'], title: {en: 'GitHub Enterprise reads', ko: 'GitHub Enterprise 읽기'}, summary: {en: 'Read the repository or a pull request on a saved GitHub target.', ko: '저장된 GitHub 대상의 저장소나 pull request를 읽습니다.'}, example: {en: 'Read the repository information for the registered GitHub target named “{target}”.', ko: '“{target}” GitHub 대상에 등록된 저장소 정보를 읽어 줘.'}},
+      {key: 'jenkins', tools: ['jenkins_registered_job', 'jenkins_registered_queue_item', 'jenkins_registered_build_log', 'jenkins_run_registered_job'], title: {en: 'Jenkins status and run', ko: 'Jenkins 상태 및 실행'}, summary: {en: 'Read saved job, queue, and bounded log data. Running a job is a separate state-changing action with saved approval rules.', ko: '저장된 작업·대기열·제한된 로그를 읽습니다. 작업 실행은 저장된 승인 규칙이 적용되는 별도 변경 작업입니다.'}, example: {en: 'Show the saved Jenkins job status for target “{target}”. Do not trigger a build.', ko: '“{target}” 대상의 저장된 Jenkins 작업 상태를 보여 줘. 빌드를 실행하지 마.'}},
+      {key: 'harbor', tools: ['harbor_repository_artifacts', 'harbor_project_quota'], title: {en: 'Harbor reads', ko: 'Harbor 읽기'}, summary: {en: 'Read artifacts and quota for repositories and projects fixed in saved target settings.', ko: '저장 대상 설정에 고정된 저장소와 프로젝트의 아티팩트 및 할당량을 읽습니다.'}, example: {en: 'List a bounded artifact page for the saved Harbor target “{target}”.', ko: '저장된 Harbor 대상 “{target}”의 아티팩트를 제한된 범위에서 보여 줘.'}},
+      {key: 'dashboard', tools: ['dashboard_namespaces', 'dashboard_deployment_status', 'dashboard_deployment_diagnosis', 'dashboard_deployment_events', 'dashboard_deployment_pods', 'dashboard_deployment_pod_logs'], title: {en: 'Kubernetes Dashboard reads', ko: 'Kubernetes Dashboard 읽기'}, summary: {en: 'Read resources mapped to a saved service group and environment. Pod logs can contain sensitive application data; review before sharing.', ko: '저장된 연결 그룹과 환경에 매핑된 리소스를 읽습니다. Pod 로그에는 민감한 애플리케이션 정보가 있을 수 있으니 공유 전에 확인하세요.'}, example: {en: 'For service group “{group}” and environment “{environment}”, summarize the mapped Deployment status and related events. Do not fetch logs.', ko: '“{group}” 연결 그룹의 “{environment}” 환경에 매핑된 Deployment 상태와 관련 이벤트를 요약해 줘. 로그는 가져오지 마.'}},
+      {key: 'ssh', tools: ['registered_ssh_targets', 'ssh_run_operation'], title: {en: 'Saved SSH operations', ko: '저장된 SSH 작업'}, summary: {en: 'List saved targets and fixed operations. Running one uses only its saved host/command definition and approval policy.', ko: '저장된 대상과 고정 작업을 목록으로 봅니다. 실행할 때는 저장된 호스트·명령 정의와 승인 정책만 사용합니다.'}, example: {en: 'List my saved SSH targets and operations. Do not run an operation.', ko: '저장된 SSH 대상과 작업을 목록으로 보여 줘. 작업은 실행하지 마.'}},
+      {key: 'python', tools: ['registered_python_tasks', 'python_run_registered_task'], title: {en: 'Registered Python tasks', ko: '등록된 Python 작업'}, summary: {en: 'List configured tasks. A run executes only a saved task and requires its local approval policy.', ko: '등록된 작업을 목록으로 봅니다. 실행은 저장된 작업만 사용하며 로컬 승인 정책이 적용됩니다.'}, example: {en: 'List enabled registered Python tasks. Do not run one.', ko: '활성화된 등록 Python 작업을 목록으로 보여 줘. 실행하지 마.'}},
+      {key: 'draft', tools: ['submit_setup_draft'], title: {en: 'Setup draft review', ko: '설정 초안 검토'}, summary: {en: 'Submit a short-lived proposal for local review. Submission does not save settings or contact services; a person must review and approve it in the UI.', ko: '로컬 검토용 단기 제안을 제출합니다. 제출은 설정을 저장하거나 서비스에 접속하지 않으며, 사람이 UI에서 검토하고 승인해야 합니다.'}, example: {en: 'Prepare a setup draft for the connection group I described. Do not include credentials, arbitrary commands, or hosts.', ko: '설명한 연결 그룹의 설정 초안을 준비해 줘. 자격 증명, 임의 명령, 임의 호스트는 포함하지 마.'}}
+    ];
+    const toolLabels = {
+      registered_targets: {en: 'List saved targets', ko: '저장 대상 목록'},
+      registered_service_bundles: {en: 'List saved connection groups', ko: '저장 연결 그룹 목록'},
+      registered_target_connection_test: {en: 'Test a saved target connection', ko: '저장 대상 연결 테스트'},
+      github_repository: {en: 'Read saved GitHub repository', ko: '저장된 GitHub 저장소 읽기'},
+      github_pull_request: {en: 'Read a pull request', ko: 'pull request 읽기'},
+      jenkins_registered_job: {en: 'Read registered Jenkins job', ko: '등록된 Jenkins 작업 읽기'},
+      jenkins_registered_queue_item: {en: 'Read Jenkins queue status', ko: 'Jenkins 대기열 상태 읽기'},
+      jenkins_registered_build_log: {en: 'Read bounded Jenkins build log', ko: '제한된 Jenkins 빌드 로그 읽기'},
+      jenkins_run_registered_job: {en: 'Run registered Jenkins job', ko: '등록된 Jenkins 작업 실행'},
+      harbor_repository_artifacts: {en: 'Read Harbor artifacts', ko: 'Harbor 아티팩트 읽기'},
+      harbor_project_quota: {en: 'Read Harbor project quota', ko: 'Harbor 프로젝트 할당량 읽기'},
+      dashboard_namespaces: {en: 'List Dashboard namespaces', ko: 'Dashboard namespace 목록'},
+      dashboard_deployment_status: {en: 'Read Deployment status', ko: 'Deployment 상태 읽기'},
+      dashboard_deployment_diagnosis: {en: 'Diagnose mapped Deployment', ko: '매핑된 Deployment 진단'},
+      dashboard_deployment_events: {en: 'Read Deployment events', ko: 'Deployment 이벤트 읽기'},
+      dashboard_deployment_pods: {en: 'Read Deployment Pods', ko: 'Deployment Pod 목록'},
+      dashboard_deployment_pod_logs: {en: 'Read selected Pod logs', ko: '선택한 Pod 로그 읽기'},
+      registered_ssh_targets: {en: 'List saved SSH operations', ko: '저장 SSH 작업 목록'},
+      ssh_run_operation: {en: 'Run a saved SSH operation', ko: '저장 SSH 작업 실행'},
+      registered_python_tasks: {en: 'List registered Python tasks', ko: '등록 Python 작업 목록'},
+      python_run_registered_task: {en: 'Run a registered Python task', ko: '등록 Python 작업 실행'},
+      submit_setup_draft: {en: 'Submit a setup draft for review', ko: '검토용 설정 초안 제출'}
+    };
+    function text(key, vars) {
+      let value = words[language][key] || words.en[key] || key;
+      for (const [name, replacement] of Object.entries(vars || {})) value = value.replace('{' + name + '}', String(replacement));
+      return value;
+    }
+    function staticCopy() {
+      document.documentElement.lang = language;
+      document.title = language === 'ko' ? '연결 준비 상태 · Local Agent Harness' : 'Connection readiness · Local Agent Harness';
+      if (localeSelect) localeSelect.value = language;
+      for (const node of document.querySelectorAll('[data-copy-en][data-copy-ko]')) {
+        node.textContent = language === 'ko' ? node.dataset.copyKo : node.dataset.copyEn;
+      }
+      if (currentData) render(currentData);
+      if (lastClientInspection && currentData) renderClients(currentData, lastClientInspection);
+    }
+    function timeLabel(value) {
+      const date = typeof value === 'string' ? new Date(value) : null;
+      if (!date || Number.isNaN(date.getTime())) return '';
+      try { return new Intl.DateTimeFormat(language, {dateStyle: 'medium', timeStyle: 'short'}).format(date); }
+      catch { return date.toISOString(); }
+    }
+    function safeArray(value) { return Array.isArray(value) ? value : []; }
+    function clearList(node) { if (node) node.replaceChildren(); }
+    function element(tag, className, value) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (value !== undefined) node.textContent = String(value);
+      return node;
+    }
+    function makeLink(href, label) {
+      const link = element('a', 'next-link', label);
+      link.href = href;
+      return link;
+    }
+    function manualTimeNode(id, mark) {
+      const time = element('small', 'manual-time');
+      time.dataset.manualTime = id;
+      time.textContent = mark && mark.checkedAt ? text('userMarkTime', {time: timeLabel(mark.checkedAt)}) : '';
+      return time;
+    }
+    function saveManualMarks() {
+      const record = JSON.stringify({revision: manualRevision, marks: manualMarks});
+      if (manualStore === 'local') {
+        try { localStorage.setItem(manualStorageKey, record); return; } catch { manualStore = 'session'; }
+      }
+      if (manualStore === 'session') {
+        try { sessionStorage.setItem(manualStorageKey, record); return; } catch { manualStore = 'memory'; }
+      }
+      copyStatus.textContent = text('storageMemory');
+    }
+    function manualCheckbox(id, label) {
+      const wrap = element('label', 'manual');
+      const input = element('input');
+      input.type = 'checkbox';
+      input.checked = Boolean(manualMarks[id] && manualMarks[id].checkedAt);
+      input.dataset.manual = id;
+      const span = element('span');
+      span.append(element('span', '', label), document.createTextNode(' '));
+      const time = manualTimeNode(id, manualMarks[id]);
+      span.append(time);
+      input.addEventListener('change', () => {
+        if (input.checked) manualMarks[id] = {checkedAt: new Date().toISOString()};
+        else delete manualMarks[id];
+        saveManualMarks();
+        time.textContent = input.checked ? text('userMarkTime', {time: timeLabel(manualMarks[id].checkedAt)}) : '';
+        if (!copyStatus.textContent) copyStatus.textContent = manualStore === 'local' ? text('storageLocal') : text('storageSession');
+      });
+      wrap.append(input, span);
+      return wrap;
+    }
+    function addRow(list, options) {
+      const li = element('li', 'readiness-item');
+      const heading = element('div', 'item-heading');
+      heading.append(element('h3', '', options.title));
+      const state = element('span', 'item-state', options.state);
+      if (options.tone) state.dataset.tone = options.tone;
+      heading.append(state);
+      const copy = element('div', 'item-copy');
+      copy.append(element('p', '', options.observation || ''));
+      if (options.evidence) copy.append(element('p', 'evidence', options.evidence));
+      if (options.next) copy.append(element('p', 'next-step', options.next));
+      if (options.tools && options.tools.length) {
+        copy.append(element('p', 'evidence', text('actionTools')));
+        const names = element('ul', 'tool-list');
+        for (const name of options.tools) {
+          const label = toolLabels[name] && toolLabels[name][language] ? toolLabels[name][language] : name;
+          const liTool = element('li');
+          const code = element('code', '', name);
+          code.title = label;
+          const copyButton = element('button', 'tool-copy', text('copyTool'));
+          copyButton.type = 'button';
+          copyButton.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(name);
+              copyStatus.textContent = text('copied');
+            } catch {
+              copyStatus.textContent = text('copyFailed');
+            }
+          });
+          liTool.append(code, copyButton);
+          names.append(liTool);
+        }
+        copy.append(names);
+      }
+      const actions = element('div', 'item-actions');
+      if (options.href && options.linkLabel) actions.append(makeLink(options.href, options.linkLabel));
+      li.append(heading, copy, actions);
+      if (options.manual) li.append(manualCheckbox(options.manual.id, options.manual.label));
+      list.append(li);
+    }
+    function targetLabel(type) {
+      return ({github: 'GitHub Enterprise', jenkins: 'Jenkins', harbor: 'Harbor', dashboard: 'Kubernetes Dashboard'})[type] || 'Registered service target';
+    }
+    function connectionText(test) {
+      const state = test && test.state;
+      if (state === 'success') return text('connectionSuccess');
+      if (state === 'failure') return text('connectionFailure');
+      if (state === 'not_tested') return text('connectionNotTested');
+      return text('connectionUnknown');
+    }
+    function renderTargets(data) {
+      clearList(lists.targets);
+      const targets = safeArray(data.targets);
+      if (!targets.length) {
+        if (data.state === 'unavailable') {
+          addRow(lists.targets, {title: text('targetsTitle'), state: text('unavailable'), tone: 'error', observation: text('targetsUnavailable'), next: text('retrySettings'), href: '/#lah-pane-connections', linkLabel: language === 'ko' ? '설정과 운영 열기' : 'Open settings and operations'});
+          return;
+        }
+        addRow(lists.targets, {title: text('targetsTitle'), state: text('noTargets'), tone: 'attention', observation: language === 'ko' ? '먼저 연결 대상을 저장해야 연결 테스트를 실행할 수 있습니다.' : 'Save a connection target before a connection test can run.', next: text('addTargetNext'), href: '/#lah-pane-connections', linkLabel: language === 'ko' ? '연결 대상 추가' : 'Add a connection target'});
+        return;
+      }
+      targets.forEach((target, index) => {
+        const kind = typeof target.type === 'string' ? target.type : '';
+        const disabled = target.enabled !== true;
+        const referenceSaved = target.credential_state === 'reference_saved';
+        const test = target.connection_test || {};
+        const historyTime = test.source === 'saved_history' ? timeLabel(test.completed_at) : '';
+        const href = externalTargetLinks[kind] || '/#lah-pane-connections';
+        const next = disabled ? text('disabledNext') : !referenceSaved ? text('noReferenceNext') : text('testNext');
+        const evidence = historyTime ? text('historicalAt', {time: historyTime}) : '';
+        const tools = safeArray(target.actions).filter(name => typeof name === 'string');
+        const title = targetLabel(kind) + (target.name ? ' · ' + String(target.name) : '');
+        const connectionState = connectionText(test);
+        addRow(lists.targets, {
+          title,
+          state: disabled ? text('disabled') : text('enabled'),
+          tone: disabled ? 'attention' : '',
+          observation: (referenceSaved ? text('credentialRef') : text('noCredentialRef')) + ' ' + connectionState,
+          evidence,
+          next,
+          href,
+          linkLabel: language === 'ko' ? '대상 설정 열기' : 'Open target settings',
+          tools: tools.length ? tools : null,
+          manual: {id: 'target-' + index, label: language === 'ko' ? '이 대상 설정을 직접 확인함' : 'I checked this target setup'}
+        });
+      });
+    }
+    function renderSecrets(data) {
+      clearList(lists.secrets);
+      const secretCount = data.named_secrets && Number.isSafeInteger(data.named_secrets.reference_count) ? data.named_secrets.reference_count : null;
+      const observation = secretCount === null ? (language === 'ko' ? '비밀값 참조 개수는 이 응답에서 확인하지 않았습니다.' : 'Secret reference count was not checked in this response.') : text('secretCount', {count: secretCount});
+      addRow(lists.secrets, {
+        title: language === 'ko' ? '이름 있는 비밀값' : 'Named secrets',
+        state: secretCount === null ? text('notChecked') : (secretCount > 0 ? (language === 'ko' ? '설정 참조 확인' : 'Configuration references found') : (language === 'ko' ? '설정 참조 없음' : 'No configuration references')),
+        observation,
+        next: language === 'ko' ? '대상별 자격 증명 참조를 설정에서 확인하세요. 실제 값은 이 페이지에서 읽거나 표시하지 않습니다.' : 'Review the saved credential references in target settings. This page does not read or display secret values.',
+        href: '/#lah-pane-secrets',
+        linkLabel: language === 'ko' ? '비밀값 설정 열기' : 'Open secret settings'
+      });
+    }
+    function boolState(value) { return value === true ? text('linked') : text('notLinked'); }
+    function renderBundles(data) {
+      clearList(lists.bundles);
+      clearList(lists.dashboard);
+      const bundles = safeArray(data.service_bundles);
+      if (!bundles.length) {
+        const unavailable = data.state === 'unavailable';
+        addRow(lists.bundles, {title: language === 'ko' ? '연결 그룹' : 'Connection groups', state: unavailable ? text('unavailable') : (language === 'ko' ? '아직 저장되지 않음' : 'Not saved yet'), tone: unavailable ? 'error' : 'attention', observation: unavailable ? text('bundlesUnavailable') : text('noBundles'), next: language === 'ko' ? 'Dashboard 진단을 사용할 경우 그룹과 환경 매핑을 완성하세요.' : 'Complete a group and environment mapping if you need Dashboard diagnosis.', href: '/#lah-pane-groups', linkLabel: language === 'ko' ? '연결 그룹 열기' : 'Open connection groups'});
+        addRow(lists.dashboard, {title: language === 'ko' ? 'Dashboard 진단' : 'Dashboard diagnosis', state: unavailable ? text('unavailable') : (language === 'ko' ? '사용 가능한 매핑 없음' : 'No eligible mapping'), tone: unavailable ? 'error' : 'attention', observation: unavailable ? text('bundlesUnavailable') : text('noDashboardMaps'), next: text('dashboardNext'), href: '/#lah-pane-groups', linkLabel: language === 'ko' ? '진단 조건 확인' : 'Review diagnosis setup'});
+        return;
+      }
+      let eligibleCount = 0;
+      bundles.forEach((bundle, bundleIndex) => {
+        const environments = safeArray(bundle.environments);
+        if (!environments.length) {
+          addRow(lists.bundles, {title: text('bundle') + (bundle.name ? ' · ' + String(bundle.name) : ''), state: language === 'ko' ? '환경 없음' : 'No environments', tone: 'attention', observation: text('repoCount', {count: Number.isSafeInteger(bundle.repository_count) ? bundle.repository_count : 0}), next: text('dashboardNext'), href: '/#lah-pane-groups', linkLabel: language === 'ko' ? '연결 그룹 편집' : 'Edit connection group', manual: {id: 'bundle-' + bundleIndex, label: language === 'ko' ? '연결 그룹 설정을 직접 확인함' : 'I checked this group setup'}});
+        }
+        environments.forEach((environment, envIndex) => {
+          const eligible = environment.dashboard_diagnosis_eligible === true;
+          if (eligible) eligibleCount++;
+          const mapping = ['jenkins_linked', 'harbor_linked', 'dashboard_linked'].map(key => {
+            const label = key.replace('_linked', '');
+            return (label === 'github' ? 'GitHub' : label.charAt(0).toUpperCase() + label.slice(1)) + ': ' + boolState(environment[key]);
+          }).join(' · ');
+          addRow(lists.bundles, {
+            title: text('bundle') + (bundle.name ? ' · ' + String(bundle.name) : '') + ' / ' + text('environment') + (environment.name ? ' · ' + String(environment.name) : ''),
+            state: eligible ? text('diagnosisEligible') : text('diagnosisNotEligible'),
+            tone: eligible ? '' : 'attention',
+            observation: mapping + ' · ' + text('repoCount', {count: Number.isSafeInteger(bundle.repository_count) ? bundle.repository_count : 0}),
+            next: eligible ? (language === 'ko' ? '설정된 범위에서만 Dashboard 진단을 실행할 수 있습니다.' : 'Dashboard diagnosis is available only for this saved scope.') : text('dashboardNext'),
+            href: eligible ? '/#lah-pane-diagnosis' : '/#lah-pane-groups',
+            linkLabel: eligible ? (language === 'ko' ? 'Dashboard 진단 열기' : 'Open Dashboard diagnosis') : (language === 'ko' ? '연결 그룹 편집' : 'Edit connection group'),
+            tools: [...safeArray(environment.jenkins_actions), ...safeArray(environment.harbor_actions), ...safeArray(environment.dashboard_actions)].filter(name => typeof name === 'string'),
+            manual: {id: 'bundle-' + bundleIndex + '-environment-' + envIndex, label: language === 'ko' ? '이 환경 매핑을 직접 확인함' : 'I checked this environment mapping'}
+          });
+        });
+      });
+      addRow(lists.dashboard, {
+        title: language === 'ko' ? 'Dashboard 진단' : 'Dashboard diagnosis',
+        state: eligibleCount ? (language === 'ko' ? '저장 범위 확인' : 'Saved scope available') : (language === 'ko' ? '사용 가능한 매핑 없음' : 'No eligible mapping'),
+        tone: eligibleCount ? '' : 'attention',
+        observation: eligibleCount ? (language === 'ko' ? '진단은 직접 선택하고 실행해야 합니다. 연결 상태를 자동 확인하지 않습니다.' : 'You must explicitly choose and run a diagnosis. No connection is tested automatically.') : text('noDashboardMaps'),
+        next: eligibleCount ? (language === 'ko' ? '진단 실행 전 선택한 대상과 범위를 확인하세요.' : 'Review the selected target and scope before running a diagnosis.') : text('dashboardNext'),
+        href: eligibleCount ? '/#lah-pane-diagnosis' : '/#lah-pane-groups',
+        linkLabel: eligibleCount ? (language === 'ko' ? 'Dashboard 진단 열기' : 'Open Dashboard diagnosis') : (language === 'ko' ? '연결 그룹 매핑 열기' : 'Open connection group mapping')
+      });
+    }
+    function clientState(client) {
+      const inspection = client && client.inspection;
+      if (!inspection || inspection === 'not_checked') return text('clientNotChecked');
+      if (inspection === 'unavailable') return text('clientInspectionFailed');
+      if (client.supported === false) return text('clientUnsupported');
+      const installed = client.installed === 'installed' ? text('installed') : client.installed === 'installed_cli_not_observed' ? text('installedNotObserved') : client.installed === 'not_checked' ? text('installUnknown') : text('installUnknown');
+      let registration = text('registrationUnknown');
+      if (client.registration === 'registered') registration = text('registrationRegistered');
+      else if (client.registration === 'not_registered') registration = text('registrationMissing');
+      else if (client.registration === 'conflict') registration = text('registrationConflict');
+      else if (client.registration === 'not_observed') registration = text('registrationNotObserved');
+      else if (client.registration === 'not_checked') registration = text('registrationNotObserved');
+      const version = typeof client.version === 'string' && client.version ? ' · ' + String(client.version) : '';
+      return installed + ' · ' + registration + version;
+    }
+    function renderClients(data, clientData) {
+      clearList(lists.clients);
+      const clients = safeArray(clientData && clientData.clients);
+      const inspectedAt = timeLabel(clientData && clientData.observed_at);
+      const inspectionCopy = lastClientInspection ? text('clientObservedAt', {time: inspectedAt || (language === 'ko' ? '시각 정보 없음' : 'time unavailable')}) : text('clientNotChecked');
+      document.getElementById('readiness-client-inspection').textContent = inspectionCopy;
+      for (const clientID of ['codex', 'claude', 'gemini']) {
+        const client = clients.find(value => value && value.client_id === clientID) || {client_id: clientID, inspection: 'not_checked', connection: 'unverified', tool_call: 'unverified'};
+        const name = clientNames[clientID];
+        const state = clientState(client);
+        const inspection = client.inspection;
+        const manual = [
+          {id: 'client-' + clientID + '-listed', label: text('manualListed')},
+          {id: 'client-' + clientID + '-tools', label: text('manualTools')},
+          {id: 'client-' + clientID + '-call', label: text('manualCall')}
+        ];
+        const li = element('li', 'readiness-item');
+        const heading = element('div', 'item-heading');
+        heading.append(element('h3', '', name), element('span', 'item-state', state));
+        const copy = element('div', 'item-copy');
+        copy.append(element('p', '', text('connectionUnverified')), element('p', '', text('toolCallUnverified')));
+        const evidence = client.evidence_source === 'config_observed' ? text('evidenceConfigObserved') : client.evidence_source === 'not_observed' ? text('evidenceNotObserved') : client.evidence_source === 'not_checked' ? text('evidenceNotChecked') : text('evidenceUnknown');
+        copy.append(element('p', 'evidence', evidence));
+        const backupLabels = {not_created: 'backupNotCreated', created: 'backupCreated', applied: 'backupApplied', restored: 'backupRestored', stale: 'backupStale'};
+        if (backupLabels[client.backup]) copy.append(element('p', 'evidence', text(backupLabels[client.backup])));
+        else if (client.backup === 'not_checked') copy.append(element('p', 'evidence', text('backupNotChecked')));
+        if (inspection === 'not_checked') copy.append(element('p', 'next-step', text('verifyNext')));
+        else if (client.installed === 'installed_cli_not_observed' || client.installed === 'not_checked') copy.append(element('p', 'next-step', text('installNext')));
+        else if (client.supported === false) copy.append(element('p', 'next-step', text('clientUnsupported')));
+        else if (client.registration !== 'registered') copy.append(element('p', 'next-step', text('registrationNext')));
+        else copy.append(element('p', 'next-step', text('verifyNext')));
+        const link = makeLink('/#lah-pane-clients', language === 'ko' ? 'CLI 안내 열기' : 'Open CLI guide');
+        const actions = element('div', 'item-actions');
+        actions.append(link);
+        li.append(heading, copy, actions);
+        for (const item of manual) li.append(manualCheckbox(item.id, item.label));
+        lists.clients.append(li);
+      }
+    }
+    function renderRuntime(data) {
+      clearList(lists.optional);
+      const resident = data.resident_endpoint || {state: 'not_checked'};
+      const endpointState = resident.state;
+      let state;
+      let observation;
+      let tone = '';
+      if (endpointState === 'responding') {
+        state = language === 'ko' ? '고정 로컬 endpoint 응답 확인' : 'Fixed local endpoint responded';
+        observation = language === 'ko' ? '이 응답은 인증, AI 앱 연결 또는 도구 호출 성공을 증명하지 않습니다.' : 'This proves neither authentication, an AI app connection, nor a tool call.';
+      } else if (endpointState === 'not_reachable') {
+        state = language === 'ko' ? '응답을 받지 못함' : 'No response received';
+        observation = language === 'ko' ? '응답이 없다는 사실만으로 서비스가 중지됐다고 판단할 수 없습니다.' : 'No response does not prove the service is stopped.';
+        tone = 'attention';
+      } else if (endpointState === 'unknown') {
+        state = language === 'ko' ? '상태를 알 수 없음' : 'State unknown';
+        observation = language === 'ko' ? '고정 로컬 endpoint의 상태를 확인할 수 없습니다.' : 'The fixed local endpoint state could not be determined.';
+        tone = 'attention';
+      } else if (endpointState === 'unavailable') {
+        state = language === 'ko' ? '관측을 사용할 수 없음' : 'Observation unavailable';
+        observation = language === 'ko' ? '관측기는 endpoint를 안전하게 확인하지 못했습니다.' : 'The observer could not safely check the endpoint.';
+        tone = 'attention';
+      } else {
+        state = language === 'ko' ? '아직 확인하지 않음' : 'Not checked';
+        observation = language === 'ko' ? 'CLI stdio 사용은 상주 HTTP endpoint와 별개입니다.' : 'CLI stdio use is separate from the resident HTTP endpoint.';
+        tone = 'attention';
+      }
+      const observedAt = timeLabel(resident.observed_at);
+      addRow(lists.optional, {
+        title: language === 'ko' ? '상주 MCP endpoint 관측' : 'Resident MCP endpoint observation',
+        state,
+        tone,
+        observation,
+        evidence: observedAt ? text('observed', {time: observedAt}) : text('clientNotChecked'),
+        next: language === 'ko' ? 'AI 앱 연결과 실제 도구 호출은 각 CLI 세션에서 따로 확인하세요.' : 'Check AI app connection and actual tool calls separately in each CLI session.',
+        href: '/#lah-pane-clients',
+        linkLabel: language === 'ko' ? 'AI 앱 확인 안내' : 'AI app check guide'
+      });
+      const env = data.user_environment || {};
+      let envCopy = text('environmentNotChecked');
+      if (Number.isSafeInteger(env.count)) envCopy += ' ' + text('envCount', {count: env.count});
+      addRow(lists.optional, {
+        title: language === 'ko' ? '사용자 환경 변수' : 'User environment variables',
+        state: language === 'ko' ? '이 페이지에서 확인하지 않음' : 'Not checked here',
+        tone: 'attention',
+        observation: envCopy,
+        next: text('environmentOptional'),
+        href: '/#lah-pane-environment',
+        linkLabel: language === 'ko' ? '환경 변수 설정 열기' : 'Open environment settings'
+      });
+      const ssh = data.ssh || {};
+      const sshTargets = Number.isSafeInteger(ssh.target_count) ? ssh.target_count : null;
+      const sshOps = Number.isSafeInteger(ssh.operation_count) ? ssh.operation_count : null;
+      addRow(lists.optional, {
+        title: language === 'ko' ? 'SSH 고정 작업' : 'Saved SSH operations',
+        state: text('ifUsing'),
+        observation: sshTargets === null ? (language === 'ko' ? 'SSH 설정 개수는 이 응답에서 확인하지 않았습니다.' : 'SSH setup counts were not checked in this response.') : text('sshCount', {targets: sshTargets, operations: sshOps === null ? 0 : sshOps}),
+        next: text('sshNext'),
+        href: '/#lah-pane-ssh',
+        linkLabel: language === 'ko' ? 'SSH 작업 열기' : 'Open SSH tasks'
+      });
+      const python = data.python_tasks || {};
+      const pythonTotal = Number.isSafeInteger(python.total) ? python.total : null;
+      const pythonEnabled = Number.isSafeInteger(python.enabled) ? python.enabled : null;
+      addRow(lists.optional, {
+        title: language === 'ko' ? '등록 Python 작업' : 'Registered Python tasks',
+        state: text('ifUsing'),
+        observation: pythonTotal === null ? (language === 'ko' ? 'Python 작업 개수는 이 응답에서 확인하지 않았습니다.' : 'Python task counts were not checked in this response.') : text('pythonCount', {total: pythonTotal, enabled: pythonEnabled === null ? 0 : pythonEnabled}),
+        next: text('pythonNext'),
+        href: '/#lah-pane-tasks',
+        linkLabel: language === 'ko' ? 'Python 작업 열기' : 'Open Python tasks'
+      });
+      addRow(lists.optional, {
+        title: language === 'ko' ? '자동 시작 및 가져오기 미리 보기' : 'Startup and import previews',
+        state: text('ifUsing'),
+        observation: text('startupNext'),
+        next: language === 'ko' ? '자동 시작은 Windows 로그인 시 동작을 설정하고 현재 endpoint를 실행하지 않습니다. 가져오기는 미리 보기만 합니다.' : 'Startup controls sign-in behavior; it does not start the endpoint now. Import tools only preview.',
+        href: '/#lah-pane-advanced',
+        linkLabel: language === 'ko' ? '고급 설정 열기' : 'Open Advanced settings'
+      });
+    }
+    function renderFeatures(data) {
+      clearList(lists.features);
+      const groups = safeArray(data.mcp_features);
+      const available = new Set();
+      for (const group of groups) for (const name of safeArray(group && group.tools)) if (typeof name === 'string') available.add(name);
+      let rendered = 0;
+      for (const feature of featureGroups) {
+        const names = feature.tools.filter(name => available.has(name));
+        if (!names.length) continue;
+        rendered++;
+        const card = element('article', 'feature-card');
+        const title = feature.title[language] || feature.title.en;
+        card.append(element('h3', '', title), element('p', '', text('featureCapability')));
+        card.append(element('p', '', feature.summary[language] || feature.summary.en));
+        const tools = element('ul', 'tool-list');
+        for (const name of names) {
+          const item = element('li');
+          const code = element('code', '', name);
+          const copy = element('button', 'tool-copy', text('copyTool'));
+          copy.type = 'button';
+          copy.addEventListener('click', async () => {
+            try { await navigator.clipboard.writeText(name); copyStatus.textContent = text('copied'); }
+            catch { copyStatus.textContent = text('copyFailed'); }
+          });
+          item.append(code, copy);
+          tools.append(item);
+        }
+        card.append(tools);
+        const example = (feature.example[language] || feature.example.en)
+          .replaceAll('{target}', language === 'ko' ? '[저장 대상 이름]' : '[saved target name]')
+          .replaceAll('{group}', language === 'ko' ? '[연결 그룹 이름]' : '[connection group name]')
+          .replaceAll('{environment}', language === 'ko' ? '[환경 이름]' : '[environment name]');
+        card.append(element('p', 'example', '“' + example + '”'));
+        const featureLinks = {
+          catalog: [{href: '/#lah-pane-connections', en: 'Open connection setup', ko: '연결 설정 열기'}],
+          github: [{href: '/#lah-pane-connections', en: 'Open connection setup', ko: '연결 설정 열기'}],
+          jenkins: [{href: '/#lah-pane-groups', en: 'Open connection groups', ko: '연결 그룹 열기'}],
+          harbor: [{href: '/#lah-pane-connections', en: 'Open connection setup', ko: '연결 설정 열기'}],
+          dashboard: [
+            {href: '/#lah-pane-diagnosis', en: 'Open Dashboard diagnosis', ko: 'Dashboard 진단 열기'},
+            {href: '/#lah-pane-groups', en: 'Review connection group mapping', ko: '연결 그룹 매핑 검토'}
+          ],
+          ssh: [{href: '/#lah-pane-ssh', en: 'Open SSH tasks', ko: 'SSH 작업 열기'}],
+          python: [{href: '/#lah-pane-tasks', en: 'Open registered Python tasks', ko: '등록 Python 작업 열기'}],
+          draft: [{href: '/#lah-pane-draft', en: 'Open AI setup draft review', ko: 'AI 설정 초안 검토 열기'}]
+        }[feature.key] || [];
+        for (const route of featureLinks) card.append(makeLink(route.href, language === 'ko' ? route.ko : route.en));
+        lists.features.append(card);
+      }
+      for (const group of groups) {
+        for (const name of safeArray(group && group.tools)) {
+          if (typeof name === 'string' && !featureGroups.some(feature => feature.tools.includes(name))) {
+            rendered++;
+            const card = element('article', 'feature-card');
+            card.append(element('h3', '', language === 'ko' ? '추가 등록 도구' : 'Additional registered tool'));
+            const code = element('code', '', name);
+            card.append(element('p', '', text('featureCapability')), code);
+            lists.features.append(card);
+          }
+        }
+      }
+      if (!rendered) lists.features.append(element('p', 'notice', text('noFeatures')));
+    }
+    function render(data) {
+      currentData = data;
+      const responseState = data.state;
+      summary.dataset.state = ['configured', 'needs_setup', 'unavailable'].includes(responseState) ? responseState : 'unavailable';
+      stateNode.textContent = responseState === 'configured' ? text('configured') : responseState === 'needs_setup' ? text('needsSetup') : text('unavailable');
+      const snapshotTime = timeLabel(data.observed_at);
+      snapshotNode.textContent = snapshotTime ? text('observed', {time: snapshotTime}) : '';
+      message.textContent = '';
+      renderTargets(data);
+      renderSecrets(data);
+      renderBundles(data);
+      renderRuntime(data);
+      renderFeatures(data);
+      if (lastClientInspection) renderClients(data, lastClientInspection);
+      else renderClients(data, data);
+      if (resetMessagePending) {
+        copyStatus.textContent = text('checksReset');
+        resetMessagePending = false;
+      } else if (!manualRevision) {
+        copyStatus.textContent = text('manualStorageNoRevision');
+      } else if (!copyStatus.textContent) {
+        copyStatus.textContent = manualStore === 'local' ? text('storageLocal') : manualStore === 'session' ? text('storageSession') : text('storageMemory');
+      }
+    }
+    function initializeManualStorage(revision) {
+      manualRevision = typeof revision === 'string' ? revision : '';
+      manualMarks = {};
+      if (!manualRevision) {
+        manualStore = 'memory';
+        return;
+      }
+      for (const mode of ['local', 'session']) {
+        try {
+          const storage = mode === 'local' ? localStorage : sessionStorage;
+          const raw = storage.getItem(manualStorageKey);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.revision === manualRevision && parsed.marks && typeof parsed.marks === 'object') {
+              manualMarks = parsed.marks;
+            } else {
+              storage.removeItem(manualStorageKey);
+              if (mode === 'local') resetMessagePending = true;
+            }
+          }
+          manualStore = mode;
+          return;
+        } catch {
+          manualStore = mode === 'local' ? 'session' : 'memory';
+        }
+      }
+    }
+    async function loadStatus(inspectClients) {
+      const requestID = ++latestStatusRequest;
+      const button = inspectClients ? clientsButton : statusButton;
+      if (button) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.textContent = text(inspectClients ? 'clientAction' : 'refreshAction');
+      }
+      stateNode.textContent = text('loading');
+      summary.dataset.state = 'loading';
+      const path = inspectClients ? '/readiness-status?inspect_clients=1' : '/readiness-status';
+      try {
+        const response = await fetch(path, {method: 'GET', credentials: 'same-origin', cache: 'no-store', headers: {Accept: 'application/json'}});
+        if (requestID !== latestStatusRequest) return;
+        if (!response.ok) throw new Error('status_unavailable');
+        const data = await response.json();
+        if (requestID !== latestStatusRequest) return;
+        if (!data || !['needs_setup', 'configured', 'unavailable'].includes(data.state)) throw new Error('status_invalid');
+        const revision = typeof data.configuration_revision === 'string' ? data.configuration_revision : '';
+        if (!inspectClients && lastClientInspection && lastClientInspectionRevision && revision && lastClientInspectionRevision !== revision) {
+          lastClientInspection = null;
+          lastClientInspectionRevision = '';
+        }
+        if (inspectClients) {
+          lastClientInspection = data;
+          lastClientInspectionRevision = revision;
+        }
+        if (manualRevision && revision && manualRevision !== revision) {
+          initializeManualStorage(revision);
+          resetMessagePending = true;
+        } else if (!manualRevision) {
+          initializeManualStorage(revision);
+        }
+        currentData = data;
+        render(data);
+      } catch {
+        if (requestID !== latestStatusRequest) return;
+        summary.dataset.state = 'unavailable';
+        stateNode.textContent = text('unavailable');
+        const oldSnapshotTime = timeLabel(currentData && currentData.observed_at);
+        message.textContent = currentData && oldSnapshotTime ? text('refreshErrorStale', {time: oldSnapshotTime}) : text('loadError');
+        if (!lastClientInspection) document.getElementById('readiness-client-inspection').textContent = text('clientNotChecked');
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = button.dataset.originalText || (inspectClients ? text('clientAction') : text('refreshAction'));
+        }
+      }
+    }
+    function applyLanguage(next) {
+      language = next === 'en' ? 'en' : 'ko';
+      staticCopy();
+      try { document.cookie = 'lah_lang=' + language + '; Path=/; SameSite=Strict'; } catch {}
+      try { localStorage.setItem('lah-lang', language); } catch {}
+    }
+    if (localeSelect) localeSelect.addEventListener('change', () => applyLanguage(localeSelect.value));
+    if (statusButton) statusButton.addEventListener('click', () => loadStatus(false));
+    if (clientsButton) clientsButton.addEventListener('click', () => loadStatus(true));
+    if (clearButton) clearButton.addEventListener('click', () => {
+      manualMarks = {};
+      try { localStorage.removeItem(manualStorageKey); } catch {}
+      try { sessionStorage.removeItem(manualStorageKey); } catch {}
+      for (const input of document.querySelectorAll('[data-manual]')) input.checked = false;
+      for (const time of document.querySelectorAll('[data-manual-time]')) time.textContent = '';
+      copyStatus.textContent = text('checksCleared');
+    });
+    for (const node of document.querySelectorAll('[data-copy-en][data-copy-ko]')) {
+      if (node.children.length === 0) node.textContent = language === 'ko' ? node.dataset.copyKo : node.dataset.copyEn;
+    }
+    if (localeSelect) localeSelect.value = language;
+    loadStatus(false);
+    window.LAHReadinessUI = {loadStatus, render, applyLanguage};
+  })();
+  </script>
+</body>
+</html>
+{{end}}

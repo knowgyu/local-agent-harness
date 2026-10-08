@@ -1,0 +1,10 @@
+# This synthetic Codex profile is a preservation fixture.
+model = "gpt-6.1"
+
+[mcp_servers.other-server]
+command = "other-local-tool"
+args = ["--read-only"]
+enabled = true
+
+[projects."C:\\work\\sample"]
+trust_level = "trusted"

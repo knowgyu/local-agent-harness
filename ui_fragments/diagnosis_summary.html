@@ -1,0 +1,203 @@
+{{define "lah-ui-fragment-diagnosis-summary"}}
+<section id="dashboard-diagnosis-safe-summary" class="panel" hidden aria-labelledby="dashboard-diagnosis-safe-summary-heading">
+  <h3 id="dashboard-diagnosis-safe-summary-heading"></h3>
+  <p id="dashboard-diagnosis-safe-summary-status" role="status" aria-live="polite"></p>
+  <pre id="dashboard-diagnosis-safe-summary-text" tabindex="0"></pre>
+  <button id="dashboard-diagnosis-safe-summary-copy" type="button"></button>
+  <label id="dashboard-diagnosis-safe-summary-fallback-label" for="dashboard-diagnosis-safe-summary-fallback" hidden></label>
+  <textarea id="dashboard-diagnosis-safe-summary-fallback" rows="10" readonly hidden></textarea>
+</section>
+<script nonce="{{.CSPNonce}}">
+(() => {
+  const root = document.getElementById('dashboard-diagnosis-safe-summary');
+  const heading = document.getElementById('dashboard-diagnosis-safe-summary-heading');
+  const status = document.getElementById('dashboard-diagnosis-safe-summary-status');
+  const output = document.getElementById('dashboard-diagnosis-safe-summary-text');
+  const copy = document.getElementById('dashboard-diagnosis-safe-summary-copy');
+  const fallbackLabel = document.getElementById('dashboard-diagnosis-safe-summary-fallback-label');
+  const fallback = document.getElementById('dashboard-diagnosis-safe-summary-fallback');
+  if (!root || !heading || !status || !output || !copy || !fallbackLabel || !fallback) return;
+
+  const translations = {
+    en: {
+      heading: 'Safe diagnosis summary', copied: 'Safe summary copied.', copyFailed: 'Copy is unavailable. The safe summary is selected below; copy it manually.',
+      copy: 'Copy safe summary', fallback: 'Safe summary for manual copying', captured: 'Captured (UTC)', scope: 'Scope', namespace: 'Namespace', deployment: 'Deployment',
+      checks: 'Read checks', findings: 'Findings', next: 'Next action', notQueried: 'Not queried by this diagnosis',
+      successCaveat: 'Successful reads do not establish that the Deployment is healthy.', detailsShortened: 'Some result details were shortened by output limits.',
+      noFindings: 'No listed warning signal was found in the returned Deployment-scoped data.', noFindingsPartial: 'No warning signal was identified in returned data; one or more reads were unavailable or shortened.',
+      step: {binding: 'Saved mapping', status: 'Deployment status', events: 'Deployment events', pods: 'Deployment Pods', output: 'Response size', unknown: 'Unknown step'},
+      state: {succeeded: 'succeeded', failed: 'failed', truncated: 'shortened', unknown: 'unknown'},
+      error: {
+        request_failed: 'Review the saved Dashboard mapping and read permissions, then retry.', timeout: 'Check Dashboard responsiveness and the saved proxy path, then retry.',
+        upstream_error: 'Check Dashboard availability and retry the read-only diagnosis later.', invalid_input: 'Choose a registered service bundle and environment.',
+        environment_not_found: 'Choose an environment saved under the selected service bundle.', service_bundle_not_found: 'Choose a service bundle saved in local settings.',
+        settings_unavailable: 'Review the saved service bundle and Dashboard target.', mapping_invalid: 'Review the saved namespace and Deployment mapping.',
+        credential_unavailable: 'Review the saved Dashboard credential in local settings.', target_disabled: 'Enable the mapped Dashboard target if this read is authorized.',
+        target_unavailable: 'Review the mapped Dashboard target in local settings.', redirected: 'Review the saved Dashboard address and proxy path.',
+        authentication_failed: 'Review the Dashboard login credential for the mapped target.', access_denied: 'Check read permission for the mapped Deployment, events, and Pods.',
+        resource_or_path_not_found: 'Review the saved namespace, Deployment, proxy prefix, and Dashboard path.', rate_limited: 'Wait for the Dashboard rate limit to clear, then retry.',
+        connection_failed: 'Check Dashboard availability, the saved proxy path, and network access.', response_limited: 'Review the Dashboard response and server-side limits before retrying.',
+        invalid_response: 'Confirm the saved Dashboard path returns a complete response for its version.', output_limit: 'Review the returned details and retry with the same bounded diagnosis.'
+      },
+      finding: {
+        deployment_not_fully_available: 'Deployment replicas are not all available.', deployment_progress_stalled: 'The Deployment reports stalled progress.',
+        scheduling_constraint: 'A Deployment event reports a scheduling failure.', image_pull_issue: 'A Deployment event reports an image pull problem.',
+        volume_setup_issue: 'A Deployment event reports a volume setup problem.', container_backoff: 'A Deployment event reports a container backoff.',
+        pod_not_running: 'A listed Deployment Pod is not Running.', container_waiting: 'A listed Deployment container is waiting.'
+      },
+      action: {
+        review_saved_mapping: 'Review the saved service bundle, environment, namespace, and Deployment.',
+        review_read_access: 'Review the mapped Dashboard credential and its read permissions.',
+        retry_dashboard: 'Check Dashboard availability, then retry the bounded read.',
+        review_dashboard_path: 'Review the saved Dashboard proxy path and response compatibility.',
+        review_evidence: 'Review the returned Deployment-scoped evidence; successful reads do not prove health.'
+      },
+      omitted: {
+        other_deployment_pods: 'Pods outside the mapped Deployment / namespace-wide Pod inventory',
+        resource_requests_limits: 'Container resource requests and limits', live_resource_usage: 'Live resource usage',
+        container_logs: 'Container logs'
+      }
+    },
+    ko: {
+      heading: '안전한 진단 요약', copied: '안전 요약을 복사했습니다.', copyFailed: '복사할 수 없습니다. 아래 안전 요약을 선택했으니 직접 복사하세요.',
+      copy: '안전 요약 복사', fallback: '직접 복사할 안전 요약', captured: '수집 시각(UTC)', scope: '범위', namespace: 'namespace', deployment: 'Deployment',
+      checks: '조회 단계', findings: '확인된 신호', next: '다음 작업', notQueried: '이 진단에서 조회하지 않은 범위',
+      successCaveat: '조회 성공만으로 Deployment가 정상이라고 판단할 수 없습니다.', detailsShortened: '응답 제한으로 진단 세부 내용을 일부 생략했습니다.',
+      noFindings: '반환된 Deployment 범위 자료에서 표시할 경고 신호를 찾지 못했습니다.', noFindingsPartial: '반환 자료에서 경고 신호를 확인하지 못했습니다. 조회 실패 또는 생략된 범위가 있을 수 있습니다.',
+      step: {binding: '저장된 매핑', status: 'Deployment 상태', events: 'Deployment 이벤트', pods: 'Deployment Pod', output: '응답 크기', unknown: '알 수 없는 단계'},
+      state: {succeeded: '성공', failed: '실패', truncated: '일부 생략', unknown: '알 수 없음'},
+      error: {
+        request_failed: '저장된 Dashboard 매핑과 읽기 권한을 확인한 뒤 다시 시도하세요.', timeout: 'Dashboard 응답과 저장된 프록시 경로를 확인한 뒤 다시 시도하세요.',
+        upstream_error: 'Dashboard 가용성을 확인하고 나중에 읽기 전용 진단을 다시 실행하세요.', invalid_input: '등록된 서비스 묶음과 환경을 선택하세요.',
+        environment_not_found: '선택한 서비스 묶음에 저장된 환경을 선택하세요.', service_bundle_not_found: '로컬 설정에 저장된 서비스 묶음을 선택하세요.',
+        settings_unavailable: '저장된 서비스 묶음과 Dashboard 대상을 확인하세요.', mapping_invalid: '저장된 namespace와 Deployment 매핑을 확인하세요.',
+        credential_unavailable: '로컬 설정의 저장된 Dashboard 자격 증명을 확인하세요.', target_disabled: '조회 권한이 있을 때 매핑된 Dashboard 대상을 활성화하세요.',
+        target_unavailable: '로컬 설정의 매핑된 Dashboard 대상을 확인하세요.', redirected: '저장된 Dashboard 주소와 프록시 경로를 확인하세요.',
+        authentication_failed: '매핑된 대상의 Dashboard 로그인 자격 증명을 확인하세요.', access_denied: '매핑된 Deployment, 이벤트, Pod 읽기 권한을 확인하세요.',
+        resource_or_path_not_found: '저장된 namespace, Deployment, 프록시 접두 경로, Dashboard 경로를 확인하세요.', rate_limited: 'Dashboard 요청 제한이 풀린 뒤 다시 시도하세요.',
+        connection_failed: 'Dashboard 가용성, 저장된 프록시 경로, 네트워크 접근을 확인하세요.', response_limited: '재시도 전에 Dashboard 응답과 서버 측 제한을 확인하세요.',
+        invalid_response: '저장된 Dashboard 경로가 해당 버전에서 완전한 응답을 반환하는지 확인하세요.', output_limit: '반환된 세부 내용을 확인하고 같은 제한 진단을 다시 실행하세요.'
+      },
+      finding: {
+        deployment_not_fully_available: 'Deployment 복제본이 모두 사용 가능하지 않습니다.', deployment_progress_stalled: 'Deployment 진행이 멈춘 것으로 보고됐습니다.',
+        scheduling_constraint: 'Deployment 이벤트에 스케줄링 실패가 있습니다.', image_pull_issue: 'Deployment 이벤트에 이미지 가져오기 문제가 있습니다.',
+        volume_setup_issue: 'Deployment 이벤트에 볼륨 설정 문제가 있습니다.', container_backoff: 'Deployment 이벤트에 컨테이너 backoff가 있습니다.',
+        pod_not_running: '목록에 나온 Deployment Pod가 Running 상태가 아닙니다.', container_waiting: '목록에 나온 Deployment 컨테이너가 대기 중입니다.'
+      },
+      action: {
+        review_saved_mapping: '저장된 서비스 묶음, 환경, namespace, Deployment 매핑을 확인하세요.',
+        review_read_access: '매핑된 Dashboard 자격 증명과 읽기 권한을 확인하세요.',
+        retry_dashboard: 'Dashboard 가용성을 확인한 뒤 제한된 조회를 다시 실행하세요.',
+        review_dashboard_path: '저장된 Dashboard 프록시 경로와 응답 호환성을 확인하세요.',
+        review_evidence: '반환된 Deployment 범위 자료를 확인하세요. 조회 성공이 정상 상태를 뜻하지는 않습니다.'
+      },
+      omitted: {
+        other_deployment_pods: '매핑된 Deployment 외부 Pod / namespace 전체 Pod 목록',
+        resource_requests_limits: '컨테이너 리소스 requests와 limits', live_resource_usage: '실시간 리소스 사용량',
+        container_logs: '컨테이너 로그'
+      }
+    }
+  };
+  const knownSteps = new Set(['binding', 'status', 'events', 'pods', 'output']);
+  const knownStates = new Set(['succeeded', 'failed', 'truncated']);
+  const knownErrors = new Set(Object.keys(translations.en.error));
+  const knownFindings = new Set(Object.keys(translations.en.finding));
+  const knownActions = new Set(Object.keys(translations.en.action));
+  const knownOmitted = new Set(Object.keys(translations.en.omitted));
+  const dnsName = value => typeof value === 'string' && value.length <= 253 && value.split('.').every(label =>
+    label.length > 0 && label.length <= 63 && /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(label));
+  const capturedTime = value => typeof value === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/.test(value);
+  let latestSummary = null;
+  let latestText = '';
+
+  function language() { return document.documentElement.lang === 'ko' ? 'ko' : 'en'; }
+  function format(summary, words) {
+    const lines = [words.heading, `${words.captured}: ${summary.captured_at}`];
+    if (summary.namespace && summary.deployment) lines.push(`${words.scope}: ${words.namespace} ${summary.namespace} / ${words.deployment} ${summary.deployment}`);
+    lines.push('', `${words.checks}:`);
+    for (const check of summary.checks) {
+      const step = knownSteps.has(check.step) ? check.step : 'unknown';
+      const state = knownStates.has(check.status) ? check.status : 'unknown';
+      const label = `${words.step[step]}: ${words.state[state]}`;
+      const guidance = knownErrors.has(check.error_code) ? words.error[check.error_code] : '';
+      lines.push(`- ${label}${guidance ? ` — ${guidance}` : ''}`);
+    }
+    lines.push('', `${words.findings}:`);
+    const findings = summary.findings.filter(value => knownFindings.has(value));
+    if (findings.length) for (const finding of findings) lines.push(`- ${words.finding[finding]}`);
+    else {
+      const partial = summary.details_shortened === true || summary.checks.some(check => check.status !== 'succeeded');
+      lines.push(`- ${partial ? words.noFindingsPartial : words.noFindings}`);
+    }
+    if (summary.details_shortened === true) lines.push(words.detailsShortened);
+    const action = knownActions.has(summary.next_action) ? summary.next_action : 'review_evidence';
+    lines.push('', `${words.next}: ${words.action[action]}`, words.successCaveat, '', `${words.notQueried}:`);
+    for (const code of summary.not_queried.filter(value => knownOmitted.has(value))) lines.push(`- ${words.omitted[code]}`);
+    return lines.join('\n');
+  }
+  function validSummary(value) {
+    if (!value || typeof value !== 'object' || !capturedTime(value.captured_at) || !Array.isArray(value.checks) ||
+        !Array.isArray(value.findings) || !Array.isArray(value.not_queried)) return false;
+    if ((value.namespace && !dnsName(value.namespace)) || (value.deployment && !dnsName(value.deployment))) return false;
+    return value.checks.length <= 8 && value.findings.length <= 16 && value.not_queried.length <= 16 &&
+      value.checks.every(check => check && typeof check === 'object' && typeof check.step === 'string' && typeof check.status === 'string' &&
+        (check.error_code === undefined || typeof check.error_code === 'string')) &&
+      value.findings.every(finding => typeof finding === 'string') && value.not_queried.every(scope => typeof scope === 'string');
+  }
+  function clear() {
+    latestSummary = null;
+    latestText = '';
+    root.hidden = true;
+    heading.textContent = '';
+    status.textContent = '';
+    output.textContent = '';
+    copy.textContent = translations[language()].copy;
+    fallback.value = '';
+    fallback.hidden = true;
+    fallbackLabel.hidden = true;
+    fallbackLabel.textContent = '';
+  }
+  function render(value, container) {
+    if (!validSummary(value)) { clear(); return false; }
+    latestSummary = value;
+    const words = translations[language()];
+    latestText = format(value, words);
+    heading.textContent = words.heading;
+    status.textContent = '';
+    output.textContent = latestText;
+    copy.textContent = words.copy;
+    fallback.value = '';
+    fallback.hidden = true;
+    fallbackLabel.hidden = true;
+    if (container && typeof container.append === 'function') container.append(root);
+    root.hidden = false;
+    return true;
+  }
+  copy.addEventListener('click', async () => {
+    if (!latestText) return;
+    const words = translations[language()];
+    try {
+      if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') throw new Error('clipboard unavailable');
+      await navigator.clipboard.writeText(latestText);
+      status.textContent = words.copied;
+    } catch {
+      fallback.value = latestText;
+      fallback.hidden = false;
+      fallbackLabel.textContent = words.fallback;
+      fallbackLabel.hidden = false;
+      fallback.focus();
+      fallback.select();
+      status.textContent = words.copyFailed;
+    }
+  });
+  window.LAHDashboardDiagnosisSummary = Object.freeze({render, clear});
+  if (typeof MutationObserver === 'function') {
+    new MutationObserver(() => {
+      if (latestSummary) render(latestSummary);
+      else clear();
+    }).observe(document.documentElement, {attributes: true, attributeFilter: ['lang']});
+  }
+  clear();
+})();
+</script>
+{{end}}

@@ -1,0 +1,26 @@
+{
+  "ui": {
+    "theme": "Default"
+  },
+  "mcp": {
+    "allowed": ["corp-server"],
+    "excluded": ["manual-server"]
+  },
+  "general": {
+    "preferredEditor": "vscode"
+  },
+  "security": {
+    "folderTrust": {
+      "enabled": true
+    }
+  },
+  "mcpServers": {
+    "other-server": {
+      "command": "synthetic-other-mcp.exe",
+      "args": ["--safe"],
+      "cwd": "C:\\fixture",
+      "timeout": 1000,
+      "trust": false
+    }
+  }
+}

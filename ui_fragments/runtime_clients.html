@@ -1,0 +1,428 @@
+{{define "lah-ui-fragment-runtime-clients"}}
+<style>
+  #runtime-clients .client-status-list { display: grid; grid-template-columns: minmax(88px, .7fr) minmax(0, 1.3fr); gap: 4px 12px; margin: 12px 0; }
+  #runtime-clients .client-status-list dt { color: var(--muted); font-weight: 650; }
+  #runtime-clients .client-status-list dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+  #runtime-clients h3:focus, #runtime-clients-review-heading:focus { outline: 3px solid var(--focus); outline-offset: 3px; }
+</style>
+<section id="runtime-clients" class="panel" style="margin-top:16px" aria-labelledby="runtime-clients-heading" data-csrf="{{.CSRF}}">
+  <h2 id="runtime-clients-heading" data-message-en="AI client setup and status" data-message-ko="AI 클라이언트 설정 및 상태">{{if eq .Language "ko"}}AI 클라이언트 설정 및 상태{{else}}AI client setup and status{{end}}</h2>
+  <p class="hint" data-runtime-clients-copy="intro"></p>
+  <p id="runtime-clients-runtime" class="status" role="status" aria-live="polite" data-runtime-clients-copy="runtimeLoading"></p>
+  <p id="runtime-clients-runtime-observed" class="hint" role="status" aria-live="polite"></p>
+  <button id="runtime-clients-refresh" class="secondary" type="button" data-runtime-clients-copy="refresh"></button>
+  <p id="runtime-clients-action-status" class="status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+  <div id="runtime-clients-list" class="client-guides" aria-label="MCP clients">
+    <article class="panel" data-runtime-client="codex" aria-labelledby="runtime-client-codex-heading">
+      <h3 id="runtime-client-codex-heading" tabindex="-1">Codex CLI</h3>
+      <p class="status" data-client-field="availability" role="status" aria-live="polite"></p>
+      <dl class="client-status-list">
+        <dt data-runtime-clients-copy="registration"></dt><dd data-client-field="registration"></dd>
+        <dt data-runtime-clients-copy="connection"></dt><dd data-client-field="connection"></dd>
+        <dt data-runtime-clients-copy="toolCall"></dt><dd data-client-field="toolCall"></dd>
+        <dt data-runtime-clients-copy="backup"></dt><dd data-client-field="backup"></dd>
+        <dt data-runtime-clients-copy="evidence"></dt><dd data-client-field="evidence"></dd>
+      </dl>
+      <p class="hint" data-client-field="caveat"></p>
+      <div class="actions">
+        <button type="button" data-client-action="plan"></button>
+        <button type="button" class="secondary" data-client-action="verify"></button>
+      </div>
+    </article>
+    <article class="panel" data-runtime-client="claude" aria-labelledby="runtime-client-claude-heading">
+      <h3 id="runtime-client-claude-heading" tabindex="-1">Claude Code CLI</h3>
+      <p class="status" data-client-field="availability" role="status" aria-live="polite"></p>
+      <dl class="client-status-list">
+        <dt data-runtime-clients-copy="registration"></dt><dd data-client-field="registration"></dd>
+        <dt data-runtime-clients-copy="connection"></dt><dd data-client-field="connection"></dd>
+        <dt data-runtime-clients-copy="toolCall"></dt><dd data-client-field="toolCall"></dd>
+        <dt data-runtime-clients-copy="backup"></dt><dd data-client-field="backup"></dd>
+        <dt data-runtime-clients-copy="evidence"></dt><dd data-client-field="evidence"></dd>
+      </dl>
+      <p class="hint" data-client-field="caveat"></p>
+      <div class="actions">
+        <button type="button" data-client-action="plan"></button>
+        <button type="button" class="secondary" data-client-action="verify"></button>
+      </div>
+    </article>
+    <article class="panel" data-runtime-client="gemini" aria-labelledby="runtime-client-gemini-heading">
+      <h3 id="runtime-client-gemini-heading" tabindex="-1">Gemini CLI</h3>
+      <p class="status" data-client-field="availability" role="status" aria-live="polite"></p>
+      <dl class="client-status-list">
+        <dt data-runtime-clients-copy="registration"></dt><dd data-client-field="registration"></dd>
+        <dt data-runtime-clients-copy="connection"></dt><dd data-client-field="connection"></dd>
+        <dt data-runtime-clients-copy="toolCall"></dt><dd data-client-field="toolCall"></dd>
+        <dt data-runtime-clients-copy="backup"></dt><dd data-client-field="backup"></dd>
+        <dt data-runtime-clients-copy="evidence"></dt><dd data-client-field="evidence"></dd>
+      </dl>
+      <p class="hint" data-client-field="caveat"></p>
+      <div class="actions">
+        <button type="button" data-client-action="plan"></button>
+        <button type="button" class="secondary" data-client-action="verify"></button>
+      </div>
+    </article>
+  </div>
+  <section id="runtime-clients-review" class="panel" style="margin-top:12px" hidden aria-labelledby="runtime-clients-review-heading" aria-live="polite">
+    <h3 id="runtime-clients-review-heading" tabindex="-1"></h3>
+    <p id="runtime-clients-review-entry"></p>
+    <p id="runtime-clients-review-scope"></p>
+    <p id="runtime-clients-review-revision"></p>
+    <ul id="runtime-clients-review-changes"></ul>
+    <p id="runtime-clients-review-status" class="status" role="status" aria-live="polite"></p>
+    <div class="actions">
+      <button id="runtime-clients-backup" class="secondary" type="button"></button>
+      <button id="runtime-clients-apply" type="button" aria-disabled="true"></button>
+      <button id="runtime-clients-restore" class="secondary" type="button" hidden></button>
+    </div>
+  </section>
+  <noscript><p class="notice" role="status">Enable JavaScript to inspect local client registration status.</p></noscript>
+</section>
+<script nonce="{{.CSPNonce}}">
+(() => {
+  const root = document.getElementById('runtime-clients');
+  if (!root) return;
+  const words = {
+    en: {
+      intro: 'Windows sign-in startup is managed separately in Advanced settings. This panel reports a fixed local MCP health-endpoint observation separately from each CLI registration. Registration, endpoint response, client connection, and an actual tool call are separate evidence. An endpoint response does not prove authentication, an AI app connection, or a tool call.',
+      runtimeLoading: 'Checking the fixed local health endpoint and client registration…', runtime: {running: 'Legacy runtime controller reports running; this is not a fixed-endpoint check.', stopped: 'Legacy runtime controller reports stopped; this is not a fixed-endpoint check.', error: 'Legacy runtime controller reported an error; this is not a fixed-endpoint check.', unavailable: 'Legacy runtime-controller status is unavailable; endpoint response was not observed.', unknown: 'Legacy runtime-controller status is unknown; endpoint response was not observed.'},
+      residentEndpoint: {not_checked: 'The fixed local endpoint has not been checked. This is separate from CLI stdio use.', responding: 'The fixed local health endpoint responded. This does not prove authentication, an AI app connection, or a tool call.', not_reachable: 'No response came from the fixed local health endpoint. This does not prove the service is stopped.', unknown: 'The fixed local endpoint response could not be determined.', unavailable: 'The fixed local endpoint could not be checked safely.'},
+      residentObservedAt: 'Fixed-endpoint observation time: {time} UTC.', legacyRuntimeNotice: 'This older runtime status describes lifecycle state, not a fixed-endpoint observation.',
+      refresh: 'Refresh status', registration: 'Registration status', connection: 'App connection', toolCall: 'Tool call', backup: 'Backup', evidence: 'Settings check',
+      availability: {installed: 'Installed CLI observed', notObserved: 'Installed CLI was not observed in this check. Verify installation before registration.', unknown: 'Could not check whether this CLI is installed. Registration is unavailable.', unsupported: 'Registration is not supported for this client in the current build.'},
+      version: 'Version', registrationState: {registered: 'Registered in client settings', not_registered: 'Not registered', conflict: 'Another entry already uses this name', not_observed: 'Not checked yet', unknown: 'Unknown'},
+      connectionState: {unverified: 'Not checked yet', unknown: 'Unknown'}, toolCallState: {unverified: 'Not checked yet', unknown: 'Unknown'},
+      backupState: {not_created: 'No backup yet', created: 'Backup created', applied: 'Registration saved', restored: 'Backup restored', stale: 'Settings changed after backup', unknown: 'Unknown'},
+      evidenceState: {config_observed: 'Client settings read', not_observed: 'Client settings not checked', unknown: 'Unknown'},
+      caveat: 'A saved registration does not confirm that the AI app connected or called a tool. Check registration below only reads the entry again.',
+      plan: 'Review planned changes', verify: 'Check registration', reviewHeading: 'Review {client} settings',
+      entryKey: 'Registration name', scope: 'Connection method: local process (stdio). Applies to this Windows user.', revision: 'Settings version at review', added: 'Add the Local Agent Harness registration. Existing client settings will be preserved.', unchanged: 'This registration is already up to date. Applying it will not change settings.',
+      backup: 'Create local backup', apply: 'Apply reviewed changes', restore: 'Restore this backup',
+      backupPrompt: 'Create a backup that only your Windows user can access before applying. Its contents and location stay hidden.',
+      backupReady: 'Backup created. You may now apply the reviewed changes or restore this backup.',
+      planReady: 'Review the proposed change. Apply stays unavailable until you create a backup.',
+      applied: 'Registration saved. This does not confirm an active connection or a tool call.',
+      alreadyApplied: 'These changes were already applied. No additional settings were changed.',
+      verified: 'Registration was checked again. App connection and tool-call status are still not checked.',
+      restored: 'The selected backup was restored. App connection and tool-call status are still not checked.',
+      restoreConfirm: 'Restore this client backup? If its settings changed after the backup, restore may be refused.',
+      loadFailed: 'Local status could not be loaded. No client configuration was changed.',
+      errors: {request_rejected: 'The request was rejected. Reload the local settings page and try again.', invalid_request: 'The request was invalid. Reload the local settings page and try again.', method_not_allowed: 'This action is unavailable.', unsupported_client: 'This client is not supported by the current build.', client_not_installed: 'This CLI was not found. No client settings were changed.', client_unavailable: 'Client settings could not be safely checked. No settings were changed.', registration_unavailable: 'This client cannot be registered by the current build.', plan_expired: 'The review expired. Review the changes again and create a new backup.', stale_settings: 'Client settings changed during review. Review the current changes and create a new backup.', backup_required: 'Create a backup before applying these changes.', backup_not_found: 'Create a new backup before restoring.', backup_stale: 'Client settings changed after the backup. Review the current settings again and create a new backup.', name_conflict: 'Another client entry already uses the required registration name. Existing settings were left unchanged. Review the client settings before trying again.', config_too_large: 'The client settings exceed the supported size. No change was made.', invalid_spec: 'The registration plan could not be validated. No change was made.', unsupported_transport: 'This connection method is not supported. No settings were changed.', apply_in_progress: 'These changes are already being applied. Refresh the status in a moment.', confirmation_required: 'Confirm the restore action before continuing.', failed: 'The action could not be completed. Check the current client settings before trying again.'},
+      pending: 'Working…', noStatus: 'Status is not available.',
+    },
+    ko: {
+      intro: 'Windows 로그인 자동 시작은 고급 설정에서 별도로 관리합니다. 이 패널은 각 CLI 등록과 분리해 고정된 로컬 MCP 상태 확인 endpoint의 응답을 보여줍니다. 등록, endpoint 응답, 클라이언트 연결, 실제 도구 호출은 서로 다른 근거입니다. endpoint 응답은 인증, AI 앱 연결 또는 도구 호출을 증명하지 않습니다.',
+      runtimeLoading: '고정된 로컬 상태 확인 endpoint와 클라이언트 등록을 확인하고 있습니다…', runtime: {running: '기존 runtime controller에서 실행 상태를 보고했습니다. 고정 endpoint 확인 결과는 아닙니다.', stopped: '기존 runtime controller에서 중지 상태를 보고했습니다. 고정 endpoint 확인 결과는 아닙니다.', error: '기존 runtime controller에서 오류를 보고했습니다. 고정 endpoint 확인 결과는 아닙니다.', unavailable: '기존 runtime controller 상태를 확인할 수 없습니다. endpoint 응답은 관측하지 않았습니다.', unknown: '기존 runtime controller 상태를 알 수 없습니다. endpoint 응답은 관측하지 않았습니다.'},
+      residentEndpoint: {not_checked: '고정된 로컬 endpoint를 확인하지 않았습니다. CLI stdio 사용과는 별개입니다.', responding: '고정된 로컬 상태 확인 endpoint가 응답했습니다. 인증, AI 앱 연결 또는 도구 호출을 증명하지 않습니다.', not_reachable: '고정된 로컬 상태 확인 endpoint에서 응답을 받지 못했습니다. 서비스가 중지됐다는 뜻은 아닙니다.', unknown: '고정된 로컬 endpoint 응답을 판별할 수 없습니다.', unavailable: '고정된 로컬 endpoint를 안전하게 확인하지 못했습니다.'},
+      residentObservedAt: '고정 endpoint 확인 시각: {time} UTC.', legacyRuntimeNotice: '이전 runtime 상태는 수명 주기 정보이며 고정 endpoint 확인 결과가 아닙니다.',
+      refresh: '상태 새로 고침', registration: '등록 상태', connection: '앱 연결', toolCall: '도구 호출', backup: '백업', evidence: '설정 확인',
+      availability: {installed: '설치된 CLI 확인됨', notObserved: '설치된 CLI를 이 확인에서 관찰하지 못했습니다. 등록 전에 설치 상태를 직접 확인하세요.', unknown: 'CLI 설치 여부를 확인하지 못해 등록할 수 없습니다.', unsupported: '현재 빌드에서 이 클라이언트 등록을 지원하지 않습니다.'},
+      version: '버전', registrationState: {registered: '클라이언트 설정에 등록됨', not_registered: '등록되지 않음', conflict: '같은 이름을 다른 항목이 사용 중', not_observed: '아직 확인하지 않음', unknown: '알 수 없음'},
+      connectionState: {unverified: '아직 확인하지 않음', unknown: '알 수 없음'}, toolCallState: {unverified: '아직 확인하지 않음', unknown: '알 수 없음'},
+      backupState: {not_created: '아직 백업을 만들지 않았습니다.', created: '백업 생성됨', applied: '등록 저장됨', restored: '백업 복원됨', stale: '백업 뒤 설정이 바뀜', unknown: '알 수 없음'},
+      evidenceState: {config_observed: '클라이언트 설정을 확인함', not_observed: '클라이언트 설정을 확인하지 않음', unknown: '알 수 없음'},
+      caveat: '등록을 저장해도 AI 앱 연결이나 도구 호출이 확인되는 것은 아닙니다. 아래에서 등록 상태만 다시 확인합니다.',
+      plan: '변경 내용 검토', verify: '등록 상태 확인', reviewHeading: '{client} 설정 검토',
+      entryKey: '등록 이름', scope: '연결 방식: 로컬 프로세스(stdio) · 적용 범위: 현재 Windows 사용자', revision: '확인 당시 설정 버전', added: 'Local Agent Harness 등록을 추가합니다. 기존 클라이언트 설정은 보존합니다.', unchanged: '이미 같은 항목이 등록되어 있습니다. 적용해도 설정은 바뀌지 않습니다.',
+      backup: '현재 사용자용 백업 만들기', apply: '검토한 변경 내용 적용', restore: '이 백업 복원',
+      backupPrompt: '적용하기 전에 현재 Windows 사용자만 접근할 수 있는 백업을 만드세요. 백업 내용과 저장 위치는 표시하지 않습니다.',
+      backupReady: '백업을 만들었습니다. 검토한 변경 내용을 적용하거나 이 백업을 복원할 수 있습니다.',
+      planReady: '변경안을 검토하세요. 백업을 만들기 전에는 적용할 수 없습니다.',
+      applied: '등록을 저장했습니다. 활성 연결이나 도구 호출이 확인된 것은 아닙니다.',
+      alreadyApplied: '변경 내용을 이미 적용했습니다. 설정을 추가로 바꾸지 않았습니다.',
+      verified: '등록 상태를 다시 확인했습니다. 앱 연결과 도구 호출 여부는 확인하지 않았습니다.',
+      restored: '선택한 백업을 복원했습니다. 앱 연결과 도구 호출 여부는 확인하지 않았습니다.',
+      restoreConfirm: '이 클라이언트의 백업을 복원할까요? 백업 뒤 설정이 바뀌었다면 복원이 거부될 수 있습니다.',
+      loadFailed: '로컬 상태를 불러오지 못했습니다. 클라이언트 설정은 변경하지 않았습니다.',
+      errors: {request_rejected: '요청이 거부되었습니다. 로컬 설정 페이지를 새로고침한 뒤 다시 시도하세요.', invalid_request: '요청 형식이 올바르지 않습니다. 로컬 설정 페이지를 새로고침한 뒤 다시 시도하세요.', method_not_allowed: '이 작업을 사용할 수 없습니다.', unsupported_client: '현재 빌드에서 이 클라이언트를 지원하지 않습니다.', client_not_installed: 'CLI를 찾지 못했습니다. 클라이언트 설정은 변경하지 않았습니다.', client_unavailable: '클라이언트 설정을 안전하게 확인할 수 없습니다. 설정은 변경하지 않았습니다.', registration_unavailable: '현재 빌드에서는 이 클라이언트를 등록할 수 없습니다.', plan_expired: '검토 시간이 만료됐습니다. 변경 내용을 다시 확인하고 새 백업을 만드세요.', stale_settings: '검토 중 클라이언트 설정이 바뀌었습니다. 현재 변경 내용을 다시 확인하고 새 백업을 만드세요.', backup_required: '변경 내용을 적용하기 전에 백업을 만드세요.', backup_not_found: '복원하기 전에 새 백업을 만드세요.', backup_stale: '백업 뒤 클라이언트 설정이 바뀌었습니다. 현재 설정을 확인하고 변경안을 다시 검토한 뒤 백업을 새로 만드세요.', name_conflict: '필요한 등록 이름을 다른 항목이 사용 중입니다. 기존 설정은 그대로 두었습니다. 클라이언트 설정을 확인하세요.', config_too_large: '클라이언트 설정이 지원 크기를 초과합니다. 변경하지 않았습니다.', invalid_spec: '등록 계획을 검증하지 못했습니다. 변경하지 않았습니다.', unsupported_transport: '이 연결 방식을 지원하지 않습니다. 설정은 변경하지 않았습니다.', apply_in_progress: '이미 변경 내용을 적용 중입니다. 잠시 뒤 상태를 새로 고침하세요.', confirmation_required: '계속하려면 복원을 확인하세요.', failed: '작업을 완료하지 못했습니다. 다시 시도하기 전에 현재 클라이언트 설정을 확인하세요.'},
+      pending: '작업 중…', noStatus: '상태를 확인할 수 없습니다.',
+    }
+  };
+  const clientNames = {codex: 'Codex CLI', claude: 'Claude Code CLI', gemini: 'Gemini CLI'};
+  const changeCodes = new Set(['registration_added', 'registration_unchanged']);
+  const clientIDs = new Set(Object.keys(clientNames));
+  const runtimeStates = new Set(['running', 'stopped', 'error', 'unavailable', 'unknown']);
+  const residentEndpointStates = new Set(['not_checked', 'responding', 'not_reachable', 'unknown', 'unavailable']);
+  const clientStatuses = new Map();
+  const busy = new Set();
+  let currentPlan = null;
+  let actionNotice = null;
+  let statusRequest = 0;
+  let runtimeState = 'unknown';
+  let residentEndpoint = null;
+  let hasResidentEndpoint = false;
+  let runtimeLoading = true;
+
+  const getWords = () => document.documentElement.lang === 'ko' ? words.ko : words.en;
+  const byId = id => document.getElementById(id);
+  const text = (node, value) => { if (node) node.textContent = value; };
+  function translateStatic() {
+    const t = getWords();
+    root.querySelectorAll('[data-runtime-clients-copy]').forEach(node => {
+      const key = node.dataset.runtimeClientsCopy;
+      if (typeof t[key] === 'string') node.textContent = t[key];
+    });
+    byId('runtime-clients-refresh').textContent = t.refresh;
+    renderRuntime();
+    for (const [id, status] of clientStatuses) renderClient(id, status);
+    renderActionNotice();
+    renderReview();
+  }
+  function safeStatus(value) {
+    if (!value || typeof value !== 'object' || !clientIDs.has(value.client_id)) return null;
+    const installed = ['installed', 'installed_cli_not_observed', 'unknown'].includes(value.installed) ? value.installed : 'unknown';
+    const registration = ['registered', 'not_registered', 'conflict', 'not_observed', 'unknown'].includes(value.registration) ? value.registration : 'unknown';
+    const connection = value.connection === 'unverified' ? 'unverified' : 'unknown';
+    const toolCall = value.tool_call === 'unverified' ? 'unverified' : 'unknown';
+    const backup = ['not_created', 'created', 'applying', 'applied', 'restored', 'stale', 'unknown'].includes(value.backup) ? value.backup : 'unknown';
+    const evidence = ['config_observed', 'not_observed'].includes(value.evidence_source) ? value.evidence_source : 'unknown';
+    const version = typeof value.version === 'string' && /^[vV]?[0-9][A-Za-z0-9.+_-]{0,63}$/.test(value.version) ? value.version : '';
+    return {client_id: value.client_id, supported: value.supported === true, installed, registration, connection, tool_call: toolCall, backup, evidence_source: evidence, version};
+  }
+  function setBusy(key, value) {
+    if (value) busy.add(key); else busy.delete(key);
+    if (busy.size > 0) {
+      root.setAttribute('aria-busy', 'true');
+      root.querySelectorAll('button').forEach(button => button.setAttribute('aria-disabled', 'true'));
+      return;
+    }
+    root.removeAttribute('aria-busy');
+    root.querySelectorAll('button').forEach(button => button.removeAttribute('aria-disabled'));
+    renderReview();
+  }
+  function renderActionNotice() {
+    const node = byId('runtime-clients-action-status');
+    if (!actionNotice) { node.hidden = true; text(node, ''); return; }
+    node.hidden = false;
+    const t = getWords();
+    text(node, actionNotice.kind === 'error' ? (t.errors[actionNotice.code] || t.errors.failed) : (t[actionNotice.key] || t.noStatus));
+  }
+  function renderRuntime() {
+    const t = getWords();
+    if (runtimeLoading) {
+      text(byId('runtime-clients-runtime'), t.runtimeLoading);
+      text(byId('runtime-clients-runtime-observed'), '');
+      return;
+    }
+    if (hasResidentEndpoint) {
+      const endpointState = residentEndpoint && residentEndpointStates.has(residentEndpoint.state) ? residentEndpoint.state : 'unknown';
+      text(byId('runtime-clients-runtime'), t.residentEndpoint[endpointState]);
+      const rawTime = residentEndpoint && typeof residentEndpoint.observed_at === 'string' ? new Date(residentEndpoint.observed_at) : null;
+      let observedAt = '';
+      if (rawTime && !Number.isNaN(rawTime.getTime())) {
+        try { observedAt = new Intl.DateTimeFormat(document.documentElement.lang === 'ko' ? 'ko' : 'en', {dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC'}).format(rawTime); }
+        catch { observedAt = rawTime.toISOString(); }
+      }
+      text(byId('runtime-clients-runtime-observed'), observedAt ? t.residentObservedAt.replace('{time}', observedAt) : '');
+      return;
+    }
+    text(byId('runtime-clients-runtime'), t.runtime[runtimeStates.has(runtimeState) ? runtimeState : 'unknown']);
+    text(byId('runtime-clients-runtime-observed'), t.legacyRuntimeNotice);
+  }
+  function renderClient(id, value) {
+    const card = root.querySelector('[data-runtime-client="' + id + '"]');
+    if (!card || !value) return;
+    const t = getWords();
+    const installed = value.installed;
+    const installKey = installed === 'installed' ? 'installed' : installed === 'installed_cli_not_observed' ? 'notObserved' : 'unknown';
+    let availability = t.availability[installKey];
+    if (!value.supported) availability = t.availability.unsupported;
+    else if (installed === 'installed' && value.version) availability += ' · ' + t.version + ' ' + value.version;
+    text(card.querySelector('[data-client-field="availability"]'), availability);
+    text(card.querySelector('[data-client-field="registration"]'), t.registrationState[value.registration] || t.registrationState.unknown);
+    text(card.querySelector('[data-client-field="connection"]'), t.connectionState[value.connection] || t.connectionState.unknown);
+    text(card.querySelector('[data-client-field="toolCall"]'), t.toolCallState[value.tool_call] || t.toolCallState.unknown);
+    text(card.querySelector('[data-client-field="backup"]'), t.backupState[value.backup] || t.backupState.unknown);
+    text(card.querySelector('[data-client-field="evidence"]'), t.evidenceState[value.evidence_source] || t.evidenceState.unknown);
+    text(card.querySelector('[data-client-field="caveat"]'), t.caveat);
+    const ready = value.supported && installed === 'installed';
+    card.querySelectorAll('[data-client-action]').forEach(button => { button.disabled = !ready; });
+    const planButton = card.querySelector('[data-client-action="plan"]');
+    const verifyButton = card.querySelector('[data-client-action="verify"]');
+    planButton.textContent = t.plan;
+    verifyButton.textContent = t.verify;
+  }
+  function renderReview() {
+    const review = byId('runtime-clients-review');
+    const t = getWords();
+    if (!currentPlan) { review.hidden = true; return; }
+    review.hidden = false;
+    const client = clientNames[currentPlan.clientId] || 'MCP client';
+    text(byId('runtime-clients-review-heading'), t.reviewHeading.replace('{client}', client));
+    text(byId('runtime-clients-review-entry'), t.entryKey + ': local-agent-harness');
+    text(byId('runtime-clients-review-scope'), t.scope);
+    text(byId('runtime-clients-review-revision'), t.revision + ': ' + currentPlan.baseRevision);
+    const changes = byId('runtime-clients-review-changes');
+    changes.replaceChildren();
+    currentPlan.changes.forEach(code => {
+      const item = document.createElement('li');
+      item.textContent = code === 'registration_added' ? t.added : t.unchanged;
+      changes.append(item);
+    });
+    const defaultNotice = currentPlan.applied ? {kind: 'key', key: 'applied'} : currentPlan.backup ? {kind: 'key', key: 'backupReady'} : {kind: 'key', key: 'planReady'};
+    const notice = currentPlan.notice || defaultNotice;
+    text(byId('runtime-clients-review-status'), notice.kind === 'error' ? (t.errors[notice.code] || t.errors.failed) : (t[notice.key] || t.noStatus));
+    const backupButton = byId('runtime-clients-backup');
+    const applyButton = byId('runtime-clients-apply');
+    const restoreButton = byId('runtime-clients-restore');
+    backupButton.textContent = t.backup;
+    applyButton.textContent = t.apply;
+    restoreButton.textContent = t.restore;
+    backupButton.disabled = currentPlan.applied === true;
+    applyButton.disabled = !(currentPlan.backup && !currentPlan.applied);
+    applyButton.setAttribute('aria-disabled', applyButton.disabled ? 'true' : 'false');
+    restoreButton.hidden = !currentPlan.backup;
+    restoreButton.disabled = !currentPlan.backup;
+  }
+  async function requestStatus() {
+    const sequence = ++statusRequest;
+    runtimeLoading = true;
+    renderRuntime();
+    try {
+      const response = await fetch('/runtime-status', {method: 'GET', credentials: 'same-origin', cache: 'no-store', headers: {Accept: 'application/json'}});
+      const value = await response.json();
+      if (sequence !== statusRequest) return;
+      const state = value && value.runtime && typeof value.runtime.state === 'string' ? value.runtime.state : 'unknown';
+      runtimeState = runtimeStates.has(state) ? state : 'unknown';
+      if (!response.ok || !Array.isArray(value.clients)) throw new Error('failed');
+      hasResidentEndpoint = Object.prototype.hasOwnProperty.call(value, 'resident_endpoint');
+      residentEndpoint = hasResidentEndpoint ? value.resident_endpoint : null;
+      runtimeLoading = false;
+      const incoming = new Map();
+      value.clients.forEach(candidate => { const safe = safeStatus(candidate); if (safe) incoming.set(safe.client_id, safe); });
+      for (const id of clientIDs) {
+        const safe = incoming.get(id) || {client_id: id, supported: false, installed: 'unknown', registration: 'unknown', connection: 'unverified', tool_call: 'unverified', backup: 'not_created', evidence_source: 'unknown', version: ''};
+        clientStatuses.set(id, safe);
+        renderClient(id, safe);
+      }
+      renderRuntime();
+    } catch {
+      if (sequence !== statusRequest) return;
+      runtimeLoading = false;
+      hasResidentEndpoint = true;
+      residentEndpoint = {state: 'unknown'};
+      renderRuntime();
+      actionNotice = {kind: 'key', key: 'loadFailed'};
+      renderActionNotice();
+    }
+  }
+  async function post(path, values) {
+    const body = new URLSearchParams({csrf: root.dataset.csrf, ...values});
+    const response = await fetch(path, {method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: {'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json'}, body});
+    let value = {};
+    try { value = await response.json(); } catch { /* use a fixed fallback below */ }
+    return {ok: response.ok, value};
+  }
+  function showError(code, clientId) {
+    if (currentPlan && currentPlan.clientId === clientId && !byId('runtime-clients-review').hidden) {
+      currentPlan.notice = {kind: 'error', code};
+      renderReview();
+      return;
+    }
+    actionNotice = {kind: 'error', code};
+    renderActionNotice();
+  }
+  function applyClientUpdate(value) {
+    const safe = safeStatus(value);
+    if (safe) { clientStatuses.set(safe.client_id, safe); renderClient(safe.client_id, safe); }
+  }
+  root.addEventListener('click', async event => {
+    const button = event.target.closest('button');
+    if (!button || button.getAttribute('aria-disabled') === 'true') return;
+    if (button.id === 'runtime-clients-refresh') { await requestStatus(); return; }
+    const card = button.closest('[data-runtime-client]');
+    const clientId = card ? card.dataset.runtimeClient : currentPlan && currentPlan.clientId;
+    if (!clientId || !clientIDs.has(clientId)) return;
+    const key = clientId;
+    if (busy.size > 0) return;
+    const action = button.id === 'runtime-clients-backup' ? 'backup' : button.id === 'runtime-clients-apply' ? 'apply' : button.id === 'runtime-clients-restore' ? 'restore' : button.dataset.clientAction;
+    if (action === 'restore' && !window.confirm(getWords().restoreConfirm)) return;
+    setBusy(key, true);
+    const review = byId('runtime-clients-review');
+    if (action === 'plan' || action === 'verify') {
+      actionNotice = {kind: 'key', key: 'pending'};
+      renderActionNotice();
+    } else if (currentPlan && currentPlan.clientId === clientId) {
+      currentPlan.notice = {kind: 'key', key: 'pending'};
+      renderReview();
+    }
+    try {
+      let result;
+      if (action === 'plan') {
+        result = await post('/client-registration-plan', {client_id: clientId});
+        if (!result.ok || !result.value.plan) { showError(result.value.error_code, clientId); return; }
+        const plan = result.value.plan;
+        const valid = plan.client_id === clientId && /^[A-Za-z0-9_-]{32}$/.test(plan.token) && plan.display_name === 'local-agent-harness' &&
+          typeof plan.base_revision === 'string' && /^[A-Za-z0-9._-]{1,128}$/.test(plan.base_revision) &&
+          plan.transport === 'stdio' && Array.isArray(plan.scope) && plan.scope.length === 1 && plan.scope[0] === 'user' &&
+          Array.isArray(plan.changes) && plan.changes.length === 1 && plan.changes.every(code => changeCodes.has(code));
+        if (!valid) { showError('failed', clientId); return; }
+        actionNotice = null;
+        currentPlan = {clientId, token: plan.token, baseRevision: plan.base_revision, changes: plan.changes, backup: false, applied: false, notice: {kind: 'key', key: 'planReady'}};
+        renderReview();
+        byId('runtime-clients-review-heading').focus();
+        return;
+      }
+      if (action === 'backup') {
+        result = await post('/client-registration-backup', {client_id: clientId});
+        if (!result.ok || !result.value.backup || result.value.backup.status !== 'created') { showError(result.value.error_code, clientId); return; }
+        if (currentPlan && currentPlan.clientId === clientId) {
+          currentPlan.backup = true;
+          currentPlan.notice = {kind: 'key', key: 'backupReady'};
+        }
+        const status = clientStatuses.get(clientId);
+        if (status) status.backup = 'created';
+        renderReview();
+        return;
+      }
+      if (action === 'apply') {
+        if (!currentPlan || currentPlan.clientId !== clientId || !currentPlan.backup) { showError('backup_required', clientId); return; }
+        result = await post('/client-registration-apply', {plan_token: currentPlan.token});
+        if (!result.ok || !result.value.client) {
+          const code = result.value.error_code || 'failed';
+          if (['stale_settings', 'plan_expired', 'backup_stale'].includes(code)) {
+            currentPlan = null;
+            review.hidden = true;
+          }
+          showError(code, clientId);
+          return;
+        }
+        applyClientUpdate(result.value.client);
+        currentPlan.applied = true;
+        currentPlan.notice = {kind: 'key', key: result.value.already_applied ? 'alreadyApplied' : 'applied'};
+        renderReview();
+        return;
+      }
+      if (action === 'verify') {
+        result = await post('/client-registration-verify', {client_id: clientId});
+        if (!result.ok || !result.value.client) { showError(result.value.error_code, clientId); return; }
+        applyClientUpdate(result.value.client);
+        actionNotice = {kind: 'key', key: 'verified'};
+        renderActionNotice();
+        card.querySelector('h3').focus();
+        return;
+      }
+      if (action === 'restore') {
+        result = await post('/client-registration-restore', {client_id: clientId, confirm: 'restore'});
+        if (!result.ok || !result.value.client) { showError(result.value.error_code, clientId); return; }
+        applyClientUpdate(result.value.client);
+        if (currentPlan && currentPlan.clientId === clientId) {
+          currentPlan.applied = false;
+          currentPlan.notice = {kind: 'key', key: 'restored'};
+        }
+        renderReview();
+        byId('runtime-clients-review-heading').focus();
+      }
+    } catch {
+      showError('failed', clientId);
+    } finally {
+      setBusy(key, false);
+    }
+  });
+  if (typeof MutationObserver === 'function') {
+    new MutationObserver(() => translateStatic()).observe(document.documentElement, {attributes: true, attributeFilter: ['lang']});
+  }
+  translateStatic();
+  void requestStatus();
+})();
+</script>
+{{end}}

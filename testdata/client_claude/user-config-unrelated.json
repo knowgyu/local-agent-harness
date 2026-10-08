@@ -1,0 +1,26 @@
+{
+  "theme": "dark",
+  "settingsMarker": "c02-private-config-canary",
+  "mcpServers": {
+    "existing-server": {
+      "type": "stdio",
+      "command": "fixture-command",
+      "args": ["--fixture"],
+      "metadata": {
+        "preserve": [1, true, null]
+      }
+    }
+  },
+  "projects": {
+    "C:\\synthetic\\project": {
+      "hasTrustDialogAccepted": true,
+      "mcpServers": {
+        "project-server": {
+          "type": "stdio",
+          "command": "project-fixture-command",
+          "args": []
+        }
+      }
+    }
+  }
+}

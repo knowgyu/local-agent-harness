@@ -1,0 +1,261 @@
+{{define "lah-ui-fragment-ssh-drafts"}}
+<section id="ssh-settings-entry" class="lah-ssh-entry" aria-labelledby="ssh-settings-entry-heading">
+  <p class="eyebrow" data-message-en="SSH tasks and AI setup drafts" data-message-ko="SSH 작업 및 AI 설정 초안">SSH tasks and AI setup drafts</p>
+  <h2 id="ssh-settings-entry-heading" data-message-en="Configure SSH tasks and review AI setup drafts" data-message-ko="SSH 작업을 설정하고 AI 설정 초안을 검토하세요">Configure SSH tasks and review AI setup drafts</h2>
+  <p data-message-en="Save an existing OpenSSH alias as a named connection target, then review the fixed SSH tasks for that target. Review AI setup drafts before saving settings." data-message-ko="기존 OpenSSH 별칭을 이름 있는 연결 대상으로 저장하고 대상별 SSH 작업을 검토하세요. AI 설정 초안은 설정에 저장하기 전에 확인할 수 있습니다.">Save an existing OpenSSH alias as a named connection target, then review the fixed SSH tasks for that target. Review AI setup drafts before saving settings.</p>
+  <a class="lah-ssh-link" href="/ssh-settings" data-message-en="Open SSH task and AI draft settings" data-message-ko="SSH 작업 및 AI 설정 초안 열기">Open SSH task and AI draft settings</a>
+</section>
+<script nonce="{{.CSPNonce}}">
+(() => {
+  const language = document.documentElement.lang === 'ko' ? 'ko' : 'en';
+  for (const element of document.querySelectorAll('[data-message-en][data-message-ko]')) {
+    element.textContent = language === 'ko' ? element.dataset.messageKo : element.dataset.messageEn;
+  }
+})();
+</script>
+{{end}}
+
+{{define "ssh-settings-page"}}
+<!doctype html>
+<html lang="{{.Language}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title data-message-en="Local Agent Harness · SSH tasks" data-message-ko="Local Agent Harness · SSH 작업">Local Agent Harness · SSH tasks</title>
+  <style>
+    :root { color-scheme: light; font: 16px/1.5 system-ui, "Segoe UI", sans-serif; color: #17212b; background: #f1f4f7; --muted: #465568; --border: #c7d0d9; --navy: #1e293b; --focus: #125da8; --danger: #9f2424; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .ssh-topbar { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 24px; color: #fff; background: var(--navy); font-size: .9rem; }
+    .ssh-topbar a { color: #fff; }
+    main { width: min(1020px, 100%); margin: 24px auto; padding: 0 20px 32px; }
+    h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 1.9rem); line-height: 1.2; }
+    h2 { margin: 0 0 8px; font-size: 1.2rem; line-height: 1.3; }
+    h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    p { margin: 7px 0; }
+    .ssh-intro, .ssh-hint { color: var(--muted); }
+    .ssh-panel, .ssh-target, .ssh-operation, .ssh-draft-change { min-width: 0; margin: 14px 0; padding: 16px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+    .ssh-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+    .ssh-field { min-width: 0; margin: 10px 0; }
+    .ssh-wide { grid-column: 1 / -1; }
+    label, legend { display: block; margin: 0 0 5px; font-weight: 650; }
+    input:not([type="checkbox"]), select, textarea { display: block; width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid #7b8997; border-radius: 5px; color: #17212b; background: #fff; font: inherit; }
+    textarea { min-height: 96px; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: .9rem; }
+    input[type="checkbox"] { width: 20px; height: 20px; margin: 2px 0 0; accent-color: #1f5b8e; }
+    .ssh-check { display: flex; align-items: start; gap: 9px; margin: 12px 0; }
+    .ssh-check input { flex: 0 0 auto; }
+    .ssh-check span { min-width: 0; }
+    button, .ssh-button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 8px 13px; border: 1px solid var(--navy); border-radius: 5px; color: #fff; background: var(--navy); font: 650 .94rem/1.2 system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+    .ssh-secondary { color: #17212b; background: #fff; border-color: #586779; }
+    .ssh-danger { color: #fff; background: var(--danger); border-color: var(--danger); }
+    button:disabled { color: #536171; background: #e4e8ed; border-color: #aeb8c2; cursor: not-allowed; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .ssh-status { margin: 12px 0; padding: 10px 12px; border: 1px solid var(--border); border-left: 4px solid #28704a; border-radius: 6px; background: #fff; }
+    .ssh-status.error { border-left-color: var(--danger); }
+    .ssh-status.warning { border-left-color: #9a6400; background: #fff7df; }
+    .ssh-warning { padding: 10px 12px; border-left: 4px solid #9a6400; background: #fff7df; }
+    .ssh-meta { color: var(--muted); font-size: .9rem; }
+    .ssh-command { max-width: 100%; overflow: auto; padding: 10px; border-radius: 5px; color: #17212b; background: #f1f4f7; white-space: pre-wrap; overflow-wrap: anywhere; }
+    code { overflow-wrap: anywhere; padding: 2px 5px; border: 1px solid #d3dae1; border-radius: 3px; background: #f1f4f7; font: .9em ui-monospace, Consolas, monospace; }
+    details { margin: 12px 0; padding: 10px; border: 1px solid #d9e0e6; border-radius: 6px; background: #fff; }
+    summary { font-weight: 650; cursor: pointer; }
+    .ssh-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+    .ssh-empty { padding: 12px; border: 1px dashed #9ca9b5; border-radius: 6px; color: var(--muted); }
+    .ssh-skip { position: absolute; top: -100px; left: 12px; padding: 8px 12px; color: #fff; background: var(--navy); }
+    .ssh-skip:focus { top: 8px; }
+    @media (max-width: 720px) { .ssh-grid { grid-template-columns: 1fr; } .ssh-wide { grid-column: auto; } }
+    @media (max-width: 560px) { .ssh-topbar { flex-wrap: wrap; padding: 8px 14px; } main { margin-top: 18px; padding: 0 12px 24px; } .ssh-panel, .ssh-target, .ssh-operation, .ssh-draft-change { padding: 13px; } }
+  </style>
+</head>
+<body>
+  <header class="ssh-topbar"><strong>Local Agent Harness</strong><a href="/" data-message-en="Back to connection targets" data-message-ko="연결 대상으로 돌아가기">Back to connection targets</a></header>
+  <main>
+    <a class="ssh-skip" href="#ssh-settings-heading" data-message-en="Skip to SSH settings" data-message-ko="SSH 설정으로 건너뛰기">Skip to SSH settings</a>
+    <h1 id="ssh-settings-heading" tabindex="-1" data-message-en="SSH tasks and AI setup drafts" data-message-ko="SSH 작업 및 AI 설정 초안">SSH tasks and AI setup drafts</h1>
+    <p class="ssh-intro" data-message-en="Only saved OpenSSH aliases and reviewed SSH tasks can be used. This local page does not connect to SSH targets." data-message-ko="저장하고 검토한 OpenSSH 별칭과 SSH 작업만 사용할 수 있습니다. 이 로컬 화면은 SSH 대상에 접속하지 않습니다.">Only saved OpenSSH aliases and reviewed SSH tasks can be used. This local page does not connect to SSH targets.</p>
+    {{template "ssh-settings-workspace" .}}
+  </main>
+  <script nonce="{{.CSPNonce}}">
+  (() => {
+    const language = document.documentElement.lang === 'ko' ? 'ko' : 'en';
+    for (const element of document.querySelectorAll('[data-message-en][data-message-ko]')) {
+      element.textContent = language === 'ko' ? element.dataset.messageKo : element.dataset.messageEn;
+    }
+  })();
+  </script>
+</body>
+</html>
+{{end}}
+
+{{define "ssh-settings-workspace"}}
+{{if .Message}}<p class="ssh-status{{if .MessageIsError}} error{{else if .MessageIsWarning}} warning{{end}}" role="status" aria-live="polite">{{.Message}}</p>{{end}}
+<section class="ssh-panel" aria-labelledby="ssh-targets-heading">
+  <h2 id="ssh-targets-heading" data-message-en="Saved SSH connection targets" data-message-ko="저장된 SSH 연결 대상">Saved SSH connection targets</h2>
+  <p class="ssh-hint" data-message-en="The alias uses the user's existing OpenSSH configuration, agent, and known_hosts trust. Do not enter a key, host, or secret here." data-message-ko="별칭은 사용자의 기존 OpenSSH 설정, agent, known_hosts 신뢰 정보를 사용합니다. 이 화면에는 키, 호스트, 비밀값을 입력하지 않습니다.">The alias uses the user's existing OpenSSH configuration, agent, and known_hosts trust. Do not enter a key, host, or secret here.</p>
+  {{if .Targets}}
+    {{range .Targets}}
+    {{$target := .Definition}}
+    <article class="ssh-target" aria-labelledby="ssh-target-heading-{{$target.ID}}">
+      <h3 id="ssh-target-heading-{{$target.ID}}">{{$target.Name}}</h3>
+      <p class="ssh-meta"><span data-message-en="OpenSSH alias" data-message-ko="OpenSSH 별칭">OpenSSH alias</span>: <code>{{$target.Alias}}</code></p>
+      <form action="/save-ssh-target" method="post">
+        <input type="hidden" name="csrf" value="{{$.CSRF}}">
+        <input type="hidden" name="target_id" value="{{$target.ID}}">
+        <input type="hidden" name="expected_revision" value="{{$.Revision}}">
+        <div class="ssh-grid">
+          <div class="ssh-field"><label for="ssh-target-name-{{$target.ID}}" data-message-en="Connection target name" data-message-ko="연결 대상 이름">Connection target name</label><input id="ssh-target-name-{{$target.ID}}" name="name" maxlength="80" value="{{$target.Name}}" required autocomplete="off"></div>
+          <div class="ssh-field"><label for="ssh-target-alias-{{$target.ID}}" data-message-en="Existing OpenSSH alias" data-message-ko="기존 OpenSSH 별칭">Existing OpenSSH alias</label><input id="ssh-target-alias-{{$target.ID}}" name="alias" maxlength="128" value="{{$target.Alias}}" required autocomplete="off" spellcheck="false"></div>
+        </div>
+        <label class="ssh-check"><input type="checkbox" name="reviewed_alias" value="yes" required><span data-message-en="I reviewed this alias in my existing OpenSSH configuration and trust settings." data-message-ko="기존 OpenSSH 설정과 신뢰 정보를 확인해 이 별칭을 검토했습니다.">I reviewed this alias in my existing OpenSSH configuration and trust settings.</span></label>
+        <button class="ssh-secondary" type="submit" data-message-en="Save connection target" data-message-ko="연결 대상 저장">Save connection target</button>
+      </form>
+      <details>
+        <summary data-message-en="Remove target and its registered operations" data-message-ko="대상과 등록 작업 삭제">Remove target and its registered operations</summary>
+        <form action="/delete-ssh-target" method="post">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="target_id" value="{{$target.ID}}"><input type="hidden" name="expected_revision" value="{{$.Revision}}">
+          <label class="ssh-check"><input type="checkbox" name="confirm_delete" value="yes" required><span><span data-message-en="Delete target" data-message-ko="대상 삭제">Delete target</span> “{{$target.Name}}” <span data-message-en="and all its saved operations." data-message-ko="및 저장된 모든 작업을 삭제합니다.">and all its saved operations.</span></span></label>
+          <button class="ssh-danger" type="submit" data-message-en="Delete target" data-message-ko="대상 삭제">Delete target</button>
+        </form>
+      </details>
+      <h4 data-message-en="Reviewed fixed operations" data-message-ko="검토된 고정 작업">Reviewed fixed operations</h4>
+      {{if .Operations}}
+        {{range .Operations}}
+        <details class="ssh-operation">
+          <summary>{{.Definition.Name}} · {{if eq .Definition.Risk "read_only"}}<span data-message-en="read only" data-message-ko="읽기 전용">read only</span>{{else if eq .Definition.Risk "state_changing"}}<span data-message-en="state changing" data-message-ko="상태 변경">state changing</span>{{else}}<span data-message-en="destructive" data-message-ko="파괴적">destructive</span>{{end}}</summary>
+          <p>{{.Definition.Summary}}</p>
+          <p><strong data-message-en="Program and fixed arguments" data-message-ko="프로그램 및 고정 인자">Program and fixed arguments</strong></p>
+          <pre class="ssh-command" tabindex="0">{{.Definition.Program}}{{range .Definition.FixedArgs}} {{.}}{{end}}</pre>
+          <p class="ssh-meta"><span data-message-en="Parameters" data-message-ko="매개변수">Parameters</span>: {{len .Definition.Parameters}} · <span data-message-en="allowed parameter combinations" data-message-ko="허용된 매개변수 조합">allowed parameter combinations</span>: {{.ScopeCount}}</p>
+          <form action="/save-ssh-operation" method="post">
+            <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="target_id" value="{{$target.ID}}"><input type="hidden" name="operation_id" value="{{.Definition.ID}}"><input type="hidden" name="expected_revision" value="{{$.Revision}}">
+            <div class="ssh-grid">
+              <div class="ssh-field"><label for="ssh-operation-name-{{.Definition.ID}}" data-message-en="Operation name" data-message-ko="작업 이름">Operation name</label><input id="ssh-operation-name-{{.Definition.ID}}" name="name" maxlength="80" value="{{.Definition.Name}}" required></div>
+              <div class="ssh-field"><label for="ssh-operation-risk-{{.Definition.ID}}" data-message-en="Risk classification" data-message-ko="위험 분류">Risk classification</label><select id="ssh-operation-risk-{{.Definition.ID}}" name="risk" required><option value="read_only" {{if eq .Definition.Risk "read_only"}}selected{{end}} data-message-en="Read only" data-message-ko="읽기 전용">Read only</option><option value="state_changing" {{if eq .Definition.Risk "state_changing"}}selected{{end}} data-message-en="State changing" data-message-ko="상태 변경">State changing</option><option value="destructive" {{if eq .Definition.Risk "destructive"}}selected{{end}} data-message-en="Destructive" data-message-ko="파괴적">Destructive</option></select></div>
+              <div class="ssh-field ssh-wide"><label for="ssh-operation-summary-{{.Definition.ID}}" data-message-en="What this operation does" data-message-ko="작업 설명">What this operation does</label><input id="ssh-operation-summary-{{.Definition.ID}}" name="summary" maxlength="500" value="{{.Definition.Summary}}" required></div>
+              <div class="ssh-field"><label for="ssh-operation-program-{{.Definition.ID}}" data-message-en="Program token" data-message-ko="프로그램 토큰">Program token</label><input id="ssh-operation-program-{{.Definition.ID}}" name="program" maxlength="256" value="{{.Definition.Program}}" required spellcheck="false"></div>
+              <div class="ssh-field"><label for="ssh-operation-approval-{{.Definition.ID}}" data-message-en="Approval policy" data-message-ko="승인 정책">Approval policy</label><select id="ssh-operation-approval-{{.Definition.ID}}" name="approval_mode" required><option value="read_only" {{if eq .Definition.Risk "read_only"}}selected{{end}} data-message-en="Read only · no prompt each time" data-message-ko="읽기 전용 · 매번 묻지 않음">Read only · no prompt each time</option><option value="per_call_confirmation" {{if eq .EditApprovalMode "per_call_confirmation"}}selected{{end}} data-message-en="Ask me to approve every run" data-message-ko="실행할 때마다 승인 요청">Ask me to approve every run</option><option value="preapproved_exact_scope" data-message-en="Allow only these saved input combinations without asking" data-message-ko="저장한 입력값 조합만 매번 확인 없이 허용">Allow only these saved input combinations without asking</option></select></div>
+              <div class="ssh-field ssh-wide"><label for="ssh-operation-args-{{.Definition.ID}}" data-message-en="One fixed argument token per line; use &#123;&#123;name&#125;&#125; for a registered parameter." data-message-ko="한 줄에 고정 인자 토큰 하나를 입력하세요. 등록 매개변수는 &#123;&#123;name&#125;&#125; 형식으로 표시합니다.">One fixed argument token per line; use &#123;&#123;name&#125;&#125; for a registered parameter.</label><textarea id="ssh-operation-args-{{.Definition.ID}}" name="fixed_args" maxlength="20000" spellcheck="false">{{.FixedArgsText}}</textarea></div>
+              <div class="ssh-field ssh-wide"><label for="ssh-operation-parameters-{{.Definition.ID}}" data-message-en="Inputs accepted by this task (JSON array)" data-message-ko="작업 입력값 규칙(JSON 배열)">Inputs accepted by this task (JSON array)</label><textarea id="ssh-operation-parameters-{{.Definition.ID}}" name="parameters_json" maxlength="12000" spellcheck="false">{{.ParametersJSON}}</textarea><p class="ssh-hint" data-message-en="Each parameter has a name, type (string, integer, or boolean), required flag, and optional description. Names cannot contain secret or credential terms." data-message-ko="각 입력값에 name, type(string/integer/boolean), required와 선택 설명을 적습니다. 이름에는 비밀값이나 자격 증명 관련 단어를 쓸 수 없습니다.">Each parameter has a name, type (string, integer, or boolean), required flag, and optional description. Names cannot contain secret or credential terms.</p></div>
+              <div class="ssh-field ssh-wide"><label for="ssh-operation-scopes-{{.Definition.ID}}" data-message-en="Saved input combinations that may skip the prompt (JSON array; entered values are not kept)" data-message-ko="매번 확인을 생략할 입력값 조합(JSON 배열; 입력값은 저장하지 않음)">Saved input combinations that may skip the prompt (JSON array; entered values are not kept)</label><textarea id="ssh-operation-scopes-{{.Definition.ID}}" name="approved_parameter_sets" maxlength="48000" placeholder="[{}]" spellcheck="false"></textarea><p class="ssh-hint" data-message-en="Only these saved combinations can skip the prompt for state-changing tasks. Destructive tasks always require approval on every call. Saving an edit clears previous combinations; enter and review them again to keep this limited allowance." data-message-ko="저장한 입력값 조합에 한해 상태 변경 작업의 매번 확인을 생략할 수 있습니다. 파괴적 작업은 항상 호출마다 승인이 필요합니다. 작업을 수정해 저장하면 이전 조합은 지워집니다. 계속 허용하려면 조합을 다시 입력하고 검토하세요.">Only these saved combinations can skip the prompt for state-changing tasks. Destructive tasks always require approval on every call. Saving an edit clears previous combinations; enter and review them again to keep this limited allowance.</p></div>
+            </div>
+            <label class="ssh-check"><input type="checkbox" name="reviewed_command" value="yes" required><span data-message-en="I reviewed the full command, fixed arguments, accepted inputs, risk, and approval rule above." data-message-ko="위의 전체 명령, 고정 인자, 입력 규칙, 위험 수준과 승인 방식을 확인했습니다.">I reviewed the full command, fixed arguments, accepted inputs, risk, and approval rule above.</span></label>
+            <label class="ssh-check"><input type="checkbox" name="confirm_preapproval" value="yes"><span data-message-en="I reviewed the input combinations above. Only those exact combinations may skip the approval prompt." data-message-ko="위 입력값 조합을 확인했습니다. 승인 확인은 저장한 조합에서만 생략될 수 있습니다.">I reviewed the input combinations above. Only those exact combinations may skip the approval prompt.</span></label>
+            <div class="ssh-actions"><button type="submit" data-message-en="Save reviewed operation" data-message-ko="검토한 작업 저장">Save reviewed operation</button></div>
+          </form>
+          <form action="/delete-ssh-operation" method="post">
+            <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="target_id" value="{{$target.ID}}"><input type="hidden" name="operation_id" value="{{.Definition.ID}}"><input type="hidden" name="expected_revision" value="{{$.Revision}}">
+            <label class="ssh-check"><input type="checkbox" name="confirm_delete" value="yes" required><span><span data-message-en="I want to delete this saved operation:" data-message-ko="다음 저장 작업을 삭제합니다:">I want to delete this saved operation:</span> {{.Definition.Name}}</span></label>
+            <button class="ssh-danger" type="submit" data-message-en="Delete operation" data-message-ko="작업 삭제">Delete operation</button>
+          </form>
+        </details>
+        {{end}}
+      {{else}}
+        <p class="ssh-empty" data-message-en="No SSH tasks are saved for this target yet. Add one below, then review its command and approval rule before saving." data-message-ko="이 연결 대상에는 아직 저장한 SSH 작업이 없습니다. 아래에서 작업을 추가하고 명령과 승인 방식을 확인한 뒤 저장하세요.">No SSH tasks are saved for this target yet. Add one below, then review its command and approval rule before saving.</p>
+      {{end}}
+      <details class="ssh-operation" open>
+        <summary data-message-en="Add a fixed operation" data-message-ko="고정 작업 추가">Add a fixed operation</summary>
+        {{template "ssh-new-operation-form" .}}
+      </details>
+    </article>
+    {{end}}
+  {{else}}
+    <p class="ssh-empty" data-message-en="No SSH connection targets are saved. Check an existing OpenSSH alias, then enter it below and save a target." data-message-ko="저장한 SSH 연결 대상이 없습니다. 기존 OpenSSH 별칭을 확인해 아래에 입력한 뒤 연결 대상을 저장하세요.">No SSH connection targets are saved. Check an existing OpenSSH alias, then enter it below and save a target.</p>
+  {{end}}
+</section>
+<section class="ssh-panel" aria-labelledby="ssh-add-target-heading">
+  <h2 id="ssh-add-target-heading" data-message-en="Add an SSH connection target" data-message-ko="SSH 연결 대상 추가">Add an SSH connection target</h2>
+  <form action="/save-ssh-target" method="post">
+    <input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="target_id" value=""><input type="hidden" name="expected_revision" value="{{.Revision}}">
+    <div class="ssh-grid">
+      <div class="ssh-field"><label for="ssh-new-target-name" data-message-en="Connection target name" data-message-ko="연결 대상 이름">Connection target name</label><input id="ssh-new-target-name" name="name" maxlength="80" required autocomplete="off"></div>
+      <div class="ssh-field"><label for="ssh-new-target-alias" data-message-en="Existing OpenSSH alias" data-message-ko="기존 OpenSSH 별칭">Existing OpenSSH alias</label><input id="ssh-new-target-alias" name="alias" maxlength="128" required autocomplete="off" spellcheck="false"></div>
+    </div>
+    <label class="ssh-check"><input type="checkbox" name="reviewed_alias" value="yes" required><span data-message-en="I reviewed this alias in my existing OpenSSH configuration and trust settings." data-message-ko="기존 OpenSSH 설정과 신뢰 정보를 확인해 이 별칭을 검토했습니다.">I reviewed this alias in my existing OpenSSH configuration and trust settings.</span></label>
+    <button type="submit" data-message-en="Save connection target" data-message-ko="연결 대상 저장">Save connection target</button>
+  </form>
+</section>
+<section class="ssh-panel" aria-labelledby="setup-draft-review-heading">
+  <h2 id="setup-draft-review-heading" data-message-en="Review an AI setup draft" data-message-ko="AI 설정 초안 검토">Review an AI setup draft</h2>
+  <p class="ssh-hint" data-message-en="Paste the draft ID, settings version, and review code returned with the AI client's setup draft. Review only previews changes; it does not save settings, contact services, or read saved secrets." data-message-ko="AI 클라이언트가 설정 초안을 제출했을 때 받은 초안 ID, 설정 버전, 검토 코드를 붙여 넣으세요. 검토는 변경안을 미리 볼 뿐 설정을 저장하거나 서비스에 접속하지 않으며 저장된 비밀값도 읽지 않습니다.">Paste the draft ID, settings version, and review code returned with the AI client's setup draft. Review only previews changes; it does not save settings, contact services, or read saved secrets.</p>
+  <form action="/review-setup-draft" method="post">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="ssh-grid">
+      <div class="ssh-field"><label for="setup-draft-id" data-message-en="Draft ID" data-message-ko="초안 ID">Draft ID</label><input id="setup-draft-id" name="draft_id" maxlength="80" required autocomplete="off"></div>
+      <div class="ssh-field"><label for="setup-draft-revision" data-message-en="Settings version at draft creation" data-message-ko="초안 작성 당시 설정 버전">Settings version at draft creation</label><input id="setup-draft-revision" name="base_revision" maxlength="128" required autocomplete="off"></div>
+      <div class="ssh-field ssh-wide"><label for="setup-draft-digest" data-message-en="Review code" data-message-ko="검토 코드">Review code</label><input id="setup-draft-digest" name="digest" maxlength="128" required autocomplete="off" spellcheck="false"></div>
+    </div>
+    <button type="submit" data-message-en="Load draft for review" data-message-ko="초안을 불러와 검토">Load draft for review</button>
+  </form>
+  {{if .Draft}}
+    <article class="ssh-draft-change" aria-labelledby="setup-draft-loaded-heading">
+      <h3 id="setup-draft-loaded-heading" tabindex="-1" data-message-en="Proposed setup changes" data-message-ko="제안된 설정 변경">Proposed setup changes</h3>
+      <p class="ssh-meta"><span data-message-en="Draft ID" data-message-ko="초안 ID">Draft ID</span>: <code>{{.Draft.ID}}</code> · <span data-message-en="Settings version" data-message-ko="설정 버전">Settings version</span>: <code>{{.Draft.BaseRevision}}</code> · <span data-message-en="Expires" data-message-ko="만료">Expires</span>: <time datetime="{{.Draft.ExpiresAt.Format "2006-01-02T15:04:05Z07:00"}}">{{.Draft.ExpiresAt.UTC.Format "2006-01-02 15:04:05 UTC"}}</time></p>
+      <p><strong data-message-en="Sources and confidence" data-message-ko="출처 및 신뢰도">Sources and confidence</strong></p>
+      <ul>{{range .Draft.Sources}}<li>{{.Kind}} · {{.Label}} · {{.Confidence}}</li>{{end}}</ul>
+      {{if .Draft.Missing}}<p class="ssh-warning"><strong data-message-en="Missing information" data-message-ko="누락 정보">Missing information</strong></p><ul>{{range .Draft.Missing}}<li>{{.}}</li>{{end}}</ul>{{end}}
+      <h4 data-message-en="Change summary, scope, and permission increases" data-message-ko="변경 요약, 범위 및 권한 증가">Change summary, scope, and permission increases</h4>
+      {{range .Draft.Changes}}
+        <section class="ssh-draft-change">
+          <h5>{{.Kind}} · {{.Name}}</h5><p>{{.Summary}}</p>
+          <p><strong data-message-en="Scope" data-message-ko="범위">Scope</strong></p><ul>{{range .Scope}}<li>{{.}}</li>{{end}}</ul>
+          {{if .PermissionIncrease}}<p><strong data-message-en="Permission increases" data-message-ko="권한 증가">Permission increases</strong></p><ul>{{range .PermissionIncrease}}<li>{{.}}</li>{{end}}</ul>{{end}}
+        </section>
+      {{end}}
+      {{if .Draft.Proposal.Connections}}
+        <h4 data-message-en="Connection proposals" data-message-ko="연결 제안">Connection proposals</h4>
+        {{range .Draft.Proposal.Connections}}
+        <section class="ssh-draft-change"><h5>{{.Kind}} · {{.Action}} · {{.Name}}</h5>
+          {{if .Origin}}<p>Origin: <code>{{.Origin}}</code></p>{{end}}{{if .Repository}}<p>Repository: <code>{{.Repository}}</code></p>{{end}}
+          {{if .BaseURL}}<p>Base URL: <code>{{.BaseURL}}</code></p>{{end}}{{if .Username}}<p>Username: <code>{{.Username}}</code></p>{{end}}
+          {{if .Project}}<p>Project: <code>{{.Project}}</code></p>{{end}}{{if .JobPath}}<p>Job path: <code>{{.JobPath}}</code></p>{{end}}
+          {{if .Environment}}<p>Environment label: {{.Environment}}</p>{{end}}{{if .Namespace}}<p>Namespace: {{.Namespace}}</p>{{end}}
+          {{if .CredentialName}}<p><strong data-message-en="Saved secret" data-message-ko="저장된 비밀값">Saved secret</strong>: {{.CredentialName}}</p>{{else}}<p class="ssh-warning" data-message-en="No saved secret is selected." data-message-ko="저장된 비밀값을 선택하지 않았습니다.">No saved secret is selected.</p>{{end}}
+        </section>
+        {{end}}
+      {{end}}
+      {{if .Draft.Proposal.Bundles}}<h4 data-message-en="Connection group proposals" data-message-ko="연결 그룹 제안">Connection group proposals</h4>{{range .Draft.Proposal.Bundles}}<section class="ssh-draft-change"><h5>{{.Name}}</h5><p data-message-en="Repository IDs" data-message-ko="저장소 ID">Repository IDs</p><ul>{{range .RepositoryIDs}}<li>{{.}}</li>{{end}}</ul>{{range .Environments}}<p><strong>{{.Name}}</strong>{{if .JenkinsTargetID}} · Jenkins {{.JenkinsTargetID}}{{end}}{{if .HarborTargetID}} · Harbor {{.HarborTargetID}}{{end}}{{if .DashboardTargetID}} · Dashboard {{.DashboardTargetID}}{{end}}{{if .DashboardNamespace}} · {{.DashboardNamespace}} / {{.DashboardDeployment}}{{end}}</p>{{end}}</section>{{end}}{{end}}
+      {{if .Draft.Proposal.SSHTargets}}
+        <h4 data-message-en="SSH targets and command proposals" data-message-ko="SSH 연결 대상 및 명령 제안">SSH targets and command proposals</h4>
+        {{range .Draft.Proposal.SSHTargets}}
+          <section class="ssh-draft-change"><h5>{{.Name}} · OpenSSH alias <code>{{.Alias}}</code></h5>
+          {{range .Operations}}<article class="ssh-operation"><h6>{{.Name}} · {{.Risk}}</h6><p>{{.Summary}}</p><pre class="ssh-command" tabindex="0">{{.Program}}{{range .FixedArgs}} {{.}}{{end}}</pre><p data-message-en="Command parameters are used only when they match this reviewed task schema." data-message-ko="매개변수는 검토한 작업 스키마와 일치할 때만 사용합니다.">Command parameters are used only when they match this reviewed task schema.</p></article>{{end}}
+          </section>
+        {{end}}
+      {{end}}
+      <p class="ssh-warning" data-message-en="Approval saves the displayed proposal to local settings. It does not contact services or show secret values. Any missing information must be completed in a new draft." data-message-ko="승인하면 표시된 제안을 로컬 설정에 저장합니다. 서비스에 접속하거나 비밀값을 표시하지 않습니다. 누락 정보는 새 초안에서 보완해야 합니다.">Approval saves the displayed proposal to local settings. It does not contact services or show secret values. Any missing information must be completed in a new draft.</p>
+      <form action="/approve-setup-draft" method="post">
+        <input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="draft_id" value="{{.Draft.ID}}"><input type="hidden" name="base_revision" value="{{.Draft.BaseRevision}}"><input type="hidden" name="digest" value="{{.Draft.Digest}}">
+        <label class="ssh-check"><input type="checkbox" name="confirm_approve" value="yes" required {{if .DraftHasMissing}}disabled{{end}}><span data-message-en="I reviewed the sources, proposed changes, secret names, SSH commands, allowed targets, and permission changes above." data-message-ko="위의 출처, 변경안, 비밀값 이름, SSH 명령, 적용 대상과 권한 변화를 확인했습니다.">I reviewed the sources, proposed changes, secret names, SSH commands, allowed targets, and permission changes above.</span></label>
+        <button type="submit" {{if .DraftHasMissing}}disabled{{end}} data-message-en="Approve and save this draft" data-message-ko="초안 승인 및 저장">Approve and save this draft</button>
+        {{if .DraftHasMissing}}<p class="ssh-hint" data-message-en="Approval is unavailable while required information is missing. Submit a completed draft for review." data-message-ko="필수 정보가 누락된 동안 승인을 할 수 없습니다. 내용을 보완한 새 초안을 제출하세요.">Approval is unavailable while required information is missing. Submit a completed draft for review.</p>{{end}}
+      </form>
+      <form action="/reject-setup-draft" method="post">
+        <input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="draft_id" value="{{.Draft.ID}}"><input type="hidden" name="base_revision" value="{{.Draft.BaseRevision}}"><input type="hidden" name="digest" value="{{.Draft.Digest}}">
+        <label class="ssh-check"><input type="checkbox" name="confirm_reject" value="yes" required><span data-message-en="Discard this pending draft without saving it." data-message-ko="저장하지 않고 대기 중인 초안을 폐기합니다.">Discard this pending draft without saving it.</span></label>
+        <button class="ssh-secondary" type="submit" data-message-en="Reject draft" data-message-ko="초안 거부">Reject draft</button>
+      </form>
+    </article>
+  {{end}}
+</section>
+{{end}}
+
+{{define "ssh-new-operation-form"}}
+{{$target := .}}
+<form action="/save-ssh-operation" method="post">
+  <input type="hidden" name="csrf" value="{{$target.CSRF}}"><input type="hidden" name="target_id" value="{{$target.Definition.ID}}"><input type="hidden" name="operation_id" value=""><input type="hidden" name="expected_revision" value="{{$target.Revision}}">
+  <div class="ssh-grid">
+    <div class="ssh-field"><label for="ssh-new-operation-name-{{$target.Definition.ID}}" data-message-en="Operation name" data-message-ko="작업 이름">Operation name</label><input id="ssh-new-operation-name-{{$target.Definition.ID}}" name="name" maxlength="80" required></div>
+    <div class="ssh-field"><label for="ssh-new-operation-risk-{{$target.Definition.ID}}" data-message-en="Risk classification" data-message-ko="위험 분류">Risk classification</label><select id="ssh-new-operation-risk-{{$target.Definition.ID}}" name="risk" required><option value="read_only" data-message-en="Read only" data-message-ko="읽기 전용">Read only</option><option value="state_changing" selected data-message-en="State changing" data-message-ko="상태 변경">State changing</option><option value="destructive" data-message-en="Destructive" data-message-ko="파괴적">Destructive</option></select></div>
+    <div class="ssh-field ssh-wide"><label for="ssh-new-operation-summary-{{$target.Definition.ID}}" data-message-en="What this operation does" data-message-ko="작업 설명">What this operation does</label><input id="ssh-new-operation-summary-{{$target.Definition.ID}}" name="summary" maxlength="500" required></div>
+    <div class="ssh-field"><label for="ssh-new-operation-program-{{$target.Definition.ID}}" data-message-en="Program token" data-message-ko="프로그램 토큰">Program token</label><input id="ssh-new-operation-program-{{$target.Definition.ID}}" name="program" maxlength="256" required spellcheck="false"></div>
+    <div class="ssh-field"><label for="ssh-new-operation-approval-{{$target.Definition.ID}}" data-message-en="Approval policy" data-message-ko="승인 정책">Approval policy</label><select id="ssh-new-operation-approval-{{$target.Definition.ID}}" name="approval_mode" required><option value="per_call_confirmation" selected data-message-en="Ask me to approve every run" data-message-ko="실행할 때마다 승인 요청">Ask me to approve every run</option><option value="read_only" data-message-en="Read only · no prompt each time" data-message-ko="읽기 전용 · 매번 묻지 않음">Read only · no prompt each time</option><option value="preapproved_exact_scope" data-message-en="Allow only these saved input combinations without asking" data-message-ko="저장한 입력값 조합만 매번 확인 없이 허용">Allow only these saved input combinations without asking</option></select></div>
+    <div class="ssh-field ssh-wide"><label for="ssh-new-operation-args-{{$target.Definition.ID}}" data-message-en="One fixed argument token per line; use &#123;&#123;name&#125;&#125; for a registered parameter." data-message-ko="한 줄에 고정 인자 토큰 하나를 입력하세요. 등록 매개변수는 &#123;&#123;name&#125;&#125; 형식으로 표시합니다.">One fixed argument token per line; use &#123;&#123;name&#125;&#125; for a registered parameter.</label><textarea id="ssh-new-operation-args-{{$target.Definition.ID}}" name="fixed_args" maxlength="20000" spellcheck="false"></textarea></div>
+    <div class="ssh-field ssh-wide"><label for="ssh-new-operation-parameters-{{$target.Definition.ID}}" data-message-en="Inputs accepted by this task (JSON array)" data-message-ko="작업 입력값 규칙(JSON 배열)">Inputs accepted by this task (JSON array)</label><textarea id="ssh-new-operation-parameters-{{$target.Definition.ID}}" name="parameters_json" maxlength="12000" spellcheck="false">[]</textarea><p class="ssh-hint" data-message-en="Each parameter has a name, type (string, integer, or boolean), required flag, and optional description. Names cannot contain secret or credential terms." data-message-ko="각 입력값에 name, type(string/integer/boolean), required와 선택 설명을 적습니다. 이름에는 비밀값이나 자격 증명 관련 단어를 쓸 수 없습니다.">Each parameter has a name, type (string, integer, or boolean), required flag, and optional description. Names cannot contain secret or credential terms.</p></div>
+    <div class="ssh-field ssh-wide"><label for="ssh-new-operation-scopes-{{$target.Definition.ID}}" data-message-en="Saved input combinations that may skip the prompt (JSON array; entered values are not kept)" data-message-ko="매번 확인을 생략할 입력값 조합(JSON 배열; 입력값은 저장하지 않음)">Saved input combinations that may skip the prompt (JSON array; entered values are not kept)</label><textarea id="ssh-new-operation-scopes-{{$target.Definition.ID}}" name="approved_parameter_sets" maxlength="48000" placeholder="[{}]" spellcheck="false"></textarea><p class="ssh-hint" data-message-en="Saved combinations only skip prompts for state-changing tasks. Destructive tasks always require approval on every call." data-message-ko="저장한 입력값 조합에 한해 상태 변경 작업의 매번 확인을 생략할 수 있습니다. 파괴적 작업은 항상 호출마다 승인이 필요합니다.">Saved combinations only skip prompts for state-changing tasks. Destructive tasks always require approval on every call.</p></div>
+  </div>
+  <label class="ssh-check"><input type="checkbox" name="reviewed_command" value="yes" required><span data-message-en="I reviewed the full command, fixed arguments, accepted inputs, risk, and approval rule above." data-message-ko="위의 전체 명령, 고정 인자, 입력 규칙, 위험 수준과 승인 방식을 확인했습니다.">I reviewed the full command, fixed arguments, accepted inputs, risk, and approval rule above.</span></label>
+  <label class="ssh-check"><input type="checkbox" name="confirm_preapproval" value="yes"><span data-message-en="I reviewed the input combinations above. Only those exact combinations may skip the approval prompt." data-message-ko="위 입력값 조합을 확인했습니다. 승인 확인은 저장한 조합에서만 생략될 수 있습니다.">I reviewed the input combinations above. Only those exact combinations may skip the approval prompt.</span></label>
+  <button type="submit" data-message-en="Save reviewed operation" data-message-ko="검토한 작업 저장">Save reviewed operation</button>
+</form>
+{{end}}

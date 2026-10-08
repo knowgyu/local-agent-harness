@@ -1,0 +1,7 @@
+/output/
+/.playwright-cli/
+
+# Local Go build and test outputs
+*.exe
+*.test
+coverage.out
