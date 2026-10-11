@@ -438,6 +438,72 @@ func TestSetupDraftQueueSurvivesProcessBoundaryAndSerializesConcurrentWrites(t *
 	}
 }
 
+func TestSetupDraftQueuePutUsesTimeAfterLockWhenReadingEntries(t *testing.T) {
+	path := filepath.Join(t.TempDir(), setupDraftQueueDirectoryName, setupDraftQueueFileName)
+	start := time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC)
+	lockHeld := make(chan struct{})
+	releaseLock := make(chan struct{})
+	lockResult := make(chan error, 1)
+	go func() {
+		lockResult <- withSetupDraftQueueLock(path, func() error {
+			close(lockHeld)
+			<-releaseLock
+			return nil
+		})
+	}()
+	<-lockHeld
+
+	nowCalls := 0
+	nowCaptured := make(chan struct{})
+	store, err := newSetupDraftFileQueueStoreForTest(path, func() time.Time {
+		nowCalls++
+		if nowCalls == 1 {
+			close(nowCaptured)
+			return start
+		}
+		return start.Add(2 * time.Second)
+	})
+	if err != nil {
+		close(releaseLock)
+		<-lockResult
+		t.Fatalf("test queue constructor: %v", err)
+	}
+	putReview := setupDraftQueueTestReview(t, 2, start, 5*time.Minute)
+	putDone := make(chan error, 1)
+	go func() {
+		putDone <- store.Put(putReview)
+	}()
+	<-nowCaptured
+
+	concurrent := setupDraftQueueTestReview(t, 1, start.Add(time.Second), 5*time.Minute)
+	data, err := json.Marshal(setupDraftQueueEnvelope{
+		Version: setupDraftQueueVersion,
+		Entries: []setupDraftQueueEntry{{CreatedAt: start.Add(time.Second), Review: concurrent}},
+	})
+	if err != nil {
+		close(releaseLock)
+		<-lockResult
+		t.Fatalf("encode concurrent queue entry: %v", err)
+	}
+	if err := writeSetupDraftQueueFileAtomically(path, data); err != nil {
+		close(releaseLock)
+		<-lockResult
+		t.Fatalf("write concurrent queue entry while holding lock: %v", err)
+	}
+	close(releaseLock)
+	if err := <-lockResult; err != nil {
+		t.Fatalf("release held queue lock: %v", err)
+	}
+	if err := <-putDone; err != nil {
+		t.Fatalf("Put() after waiting for the queue lock: %v", err)
+	}
+
+	loaded, err := store.Load(start.Add(2 * time.Second))
+	if err != nil || len(loaded) != 2 {
+		t.Fatalf("Load() after lock wait returned %d records, %v; want both committed entries", len(loaded), err)
+	}
+}
+
 func TestSetupDraftQueueWithReviewSerializesApproveAndRejectAcrossProcesses(t *testing.T) {
 	path := filepath.Join(t.TempDir(), setupDraftQueueDirectoryName, setupDraftQueueFileName)
 	now := time.Now().UTC()

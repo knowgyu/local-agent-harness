@@ -244,11 +244,14 @@ func TestMCPClientSetupGuidanceIsManualAndHonest(t *testing.T) {
 		`<html lang="en">`,
 		`https://developers.openai.com/codex/mcp`,
 		`https://code.claude.com/docs/en/mcp`,
+		`https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop`,
+		`docs/CLAUDE_DESKTOP.md`,
+		`Claude Desktop installation, launch, and tool visibility have not been verified.`,
 		`https://geminicli.com/docs/tools/mcp-server/`,
 		`codex mcp add local-agent-harness --`,
 		`claude mcp add --scope user --transport stdio local-agent-harness --`,
 		`gemini mcp add --scope user local-agent-harness`,
-		`The client-registration panel checks supported CLI settings when this settings page opens and when you refresh. You must explicitly request review, backup, or registration changes. It cannot verify an AI app connection or tool call.`,
+		`The client-registration panel can inspect supported CLI settings; review, backup, and registration changes happen only when you request them. It cannot verify a client connection or tool call.`,
 		`Optional check-ins below record only what you report seeing. They stay in this page until it reloads, are not saved to app settings, and do not mean this app verified a client connection.`,
 		`id="client-codex-server-listed"`,
 		`id="client-codex-tools-visible"`,
@@ -299,8 +302,8 @@ func TestMCPClientSetupGuidanceIsManualAndHonest(t *testing.T) {
 		`'to reload servers. Stdio servers are reported as Connected only when the current folder is trusted. If Disconnected, review the folder before using': '로 서버를 다시 불러오세요. stdio 서버는 현재 폴더가 신뢰된 경우에만 Connected로 표시됩니다. Disconnected이면 폴더를 검토한 뒤 다음 명령을 사용하세요:'`,
 		`'. See the': '. 자세한 내용은'`,
 		`'Gemini CLI registration and verification commands': 'Gemini CLI 등록 및 확인 명령'`,
-		`'Connect an MCP client (CLI guide)': 'MCP 클라이언트 연결 안내(CLI)'`,
-		`These examples use CLI commands to register this executable as a local stdio process. Replace the example path with the absolute path to your built executable. Codex CLI, the ChatGPT desktop app, and the Codex IDE extension share MCP configuration on the same host. This guide covers CLI setup, not separate desktop or IDE setup steps. The client-registration panel checks supported CLI settings when this settings page opens and when you refresh. You must explicitly request review, backup, or registration changes. It cannot verify an AI app connection or tool call.': '아래 예시는 CLI 명령으로 이 실행 파일을 로컬 stdio 프로세스로 등록합니다. 예시 경로를 빌드한 실행 파일의 절대 경로로 바꾸세요. Codex CLI, ChatGPT 데스크톱 앱, Codex IDE 확장은 같은 호스트에서 MCP 설정을 공유합니다. 이 안내는 CLI 설정 절차를 다루며 데스크톱이나 IDE의 별도 설정 절차는 제공하지 않습니다. 이 설정 페이지를 열거나 새로 고칠 때 클라이언트 등록 패널이 지원 CLI 설정을 확인합니다. 검토, 백업, 등록 변경은 사용자가 직접 요청해야 합니다. AI 앱 연결이나 도구 호출은 검증하지 않습니다.`,
+		`'Connect an MCP client (CLI and desktop)': 'MCP 클라이언트 연결 안내(CLI 및 데스크톱)'`,
+		`The CLI examples show how to register this executable as a local stdio process. Replace the example path with the absolute path to your built executable. Separate desktop instructions are below and must be completed in the AI app. The client-registration panel can inspect supported CLI settings; review, backup, and registration changes happen only when you request them. It cannot verify a client connection or tool call.': 'CLI 예시는 이 실행 파일을 로컬 stdio 프로세스로 등록하는 명령입니다. 예시 경로를 빌드한 실행 파일의 절대 경로로 바꾸세요. 아래 데스크톱 안내는 AI 앱에서 직접 진행해야 합니다. 클라이언트 등록 패널은 지원하는 CLI 설정을 확인할 수 있으며, 검토·백업·등록 변경은 요청한 경우에만 진행합니다. 연결이나 도구 호출은 검증하지 않습니다.`,
 		`The ChatGPT desktop app and Codex IDE extension share this same-host configuration. If the server still does not appear, use the Restart control if that client provides one. This app does not detect whether the client reloaded or connected.': 'ChatGPT 데스크톱 앱과 Codex IDE 확장은`,
 	} {
 		if !strings.Contains(page, expected) {
@@ -681,15 +684,28 @@ const disabledTaskText = {
   set textContent(value) { disabledTaskOption.textContent = value; },
   parentElement: {closest(selector) { return selector === 'option' ? disabledTaskOption : null; }}
 };
+const draftList = {
+  attributes: new Map([['aria-label', 'Saved connection progress']]),
+  getAttribute(name) { return this.attributes.get(name) ?? null; },
+  setAttribute(name, value) { this.attributes.set(name, String(value)); },
+  matches() { return false; }
+};
 const root = {
   nodes: [...catalog, ...savedSecrets.flat(), runbookTitle, ...diagnosisHint, ...runbookHint, runbookLabel, disabledTaskText],
-  querySelectorAll(selector) { return selector === 'option[data-i18n-disabled]' ? [disabledTaskOption] : []; }
+  querySelectorAll(selector) {
+    if (selector === 'option[data-i18n-disabled]') return [disabledTaskOption];
+    if (selector === '[aria-label]') return [draftList];
+    return [];
+  }
 };
 `
 	checks := `
 applyLanguage(root);
 if (languageSelect.value !== 'ko' || languageLabel.textContent !== '언어' || languageSelect.ariaLabel !== '언어') {
   throw new Error('Korean language control has an incorrect value or accessible name');
+}
+if (draftList.getAttribute('aria-label') !== '저장된 연결 진행 상황') {
+  throw new Error('Korean draft-list accessible name = ' + draftList.getAttribute('aria-label'));
 }
 const renderedCatalog = catalog.map(node => node.textContent).join('');
 const wantedCatalog = '저장된 서비스에 요청하지 않고 클라이언트 도구 호출을 확인하려면 registered_targets 또는 registered_service_bundles로 시작하세요. 이 catalog에는 로컬 등록 정보만 표시됩니다.';
@@ -718,6 +734,9 @@ applyLanguage(root);
 if (languageSelect.value !== 'en' || languageLabel.textContent !== 'Language' || languageSelect.ariaLabel !== 'Language') {
   throw new Error('English language control has an incorrect value or accessible name');
 }
+if (draftList.getAttribute('aria-label') !== 'Saved connection progress') {
+  throw new Error('English draft-list accessible name = ' + draftList.getAttribute('aria-label'));
+}
 for (const [index, savedSecret] of savedSecrets.entries()) {
   const name = secretNames[index];
   const renderedSecret = savedSecret.map(node => node.textContent).join('');
@@ -744,6 +763,53 @@ if (englishRunbookHint !== 'Select one .md or .txt file, up to 64 KiB. Only line
 	cmd.Stdin = strings.NewReader(koDictionary + fixture + applyLanguage + checks)
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("static inline copy translation fixture failed: %v\n%s", err, output)
+	}
+}
+
+func TestOnboardingActivationLeavesNextTargetAvailableAndHistoryLocalized(t *testing.T) {
+	pageBytes, err := os.ReadFile("ui.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	page := string(pageBytes)
+	for _, want := range []string{
+		`save.disabled = busy;`,
+		`const canUpdateCurrentDraft = currentDraft?.service === service && currentDraft.activation_recovery_required !== true;`,
+		`const updating = currentDraft?.service === service && currentDraft.activation_recovery_required !== true;`,
+		`window.LAHOnboardingRecovery?.beginNewRegistration?.();`,
+		`byId('lah-no-connections').hidden = true;`,
+		`if (previewStatus) previewStatus.hidden = true;`,
+		`.lah-onboarding-prompt textarea { display: block; width: 100%; max-width: 100%; box-sizing: border-box;`,
+		`prompt.readOnly = true;`,
+		`else if (historyDraft && !activeNode.hidden) renderHistory(historyDraft);`,
+		`Guided registration saves a pasted value to Windows Credential Manager when confirmed; immediate save does so when you save.`,
+		`This connector sends the saved value unchanged as Bearer authentication. It does not log in, exchange tokens, or detect the installed Dashboard version.`,
+	} {
+		if !strings.Contains(page, want) {
+			t.Errorf("onboarding UI is missing %q", want)
+		}
+	}
+	if strings.Contains(page, `window.LAHOnboardingRecovery?.isBlocked?.(service)`) ||
+		strings.Contains(page, `raw Kubernetes/service-account tokens are unsupported`) {
+		t.Fatal("a recovery draft must not block unrelated target setup or assert an unsupported Dashboard token restriction")
+	}
+	activationStart := strings.Index(page, "      async function activateDraft()")
+	if activationStart < 0 {
+		t.Fatal("activation handler is missing")
+	}
+	activationEnd := strings.Index(page[activationStart:], "      function appendFirstReadPrompt(")
+	if activationEnd < 0 {
+		t.Fatal("activation handler boundary is missing")
+	}
+	activation := page[activationStart : activationStart+activationEnd]
+	if !strings.Contains(activation, `busy = false; updateDraftButtons(); updateAuthorizationButtons();`) {
+		t.Fatal("activation completion must refresh new-target save controls after busy state clears")
+	}
+	validated := strings.Index(activation, `throw Object.assign(new Error('invalid'), {code: 'operation_failed'});`)
+	emptyStateHidden := strings.Index(activation, `byId('lah-no-connections').hidden = true;`)
+	intakeStatusHidden := strings.Index(activation, `if (previewStatus) previewStatus.hidden = true;`)
+	if validated < 0 || emptyStateHidden <= validated || intakeStatusHidden <= validated {
+		t.Fatal("stale empty and unsaved notices must clear only after activation is confirmed")
 	}
 }
 
@@ -796,8 +862,8 @@ func TestLanguageSwitchPreservesNavigationAndQuickActionLinks(t *testing.T) {
 	navBlock := pageText[navTagEnd : navTagEnd+navCloseOffset]
 	navLinkPattern := regexp.MustCompile(`<a class="lah-nav-link" href="([^"]+)"[^>]*data-message-en="([^"]*)" data-message-ko="([^"]*)">([^<]*)</a>`)
 	navMatches := navLinkPattern.FindAllStringSubmatch(navBlock, -1)
-	if len(navMatches) != 10 {
-		t.Fatalf("settings navigation must expose all 10 localized leaf links, found %d", len(navMatches))
+	if len(navMatches) != 11 {
+		t.Fatalf("settings navigation must expose all 11 localized leaf links, found %d", len(navMatches))
 	}
 	type linkSpec struct {
 		Href        string `json:"href"`
@@ -806,12 +872,30 @@ func TestLanguageSwitchPreservesNavigationAndQuickActionLinks(t *testing.T) {
 		Description string `json:"description,omitempty"`
 		KoreanDesc  string `json:"koreanDescription,omitempty"`
 	}
+	expectedNav := []linkSpec{
+		{Href: "#lah-pane-connections", English: "Connections", Korean: "연결 대상"},
+		{Href: "#lah-pane-groups", English: "Connection groups", Korean: "연결 그룹"},
+		{Href: "#lah-pane-secrets", English: "Secrets", Korean: "비밀값"},
+		{Href: "#lah-pane-environment", English: "User environment", Korean: "사용자 환경 변수"},
+		{Href: "#lah-pane-clients", English: "AI app connection", Korean: "AI 앱 연결"},
+		{Href: "#lah-pane-advanced", English: "Advanced settings", Korean: "고급 설정"},
+		{Href: "#lah-pane-diagnosis", English: "Dashboard diagnosis", Korean: "Dashboard 진단"},
+		{Href: "#lah-pane-ssh", English: "SSH tasks", Korean: "SSH 작업"},
+		{Href: "#lah-pane-tasks", English: "Registered Python tasks", Korean: "등록된 Python 작업"},
+		{Href: "#lah-pane-draft", English: "AI proposal review", Korean: "AI 제안 검토"},
+		{Href: "#lah-onboarding", English: "Connection drafts", Korean: "작성 중인 연결"},
+	}
 	navLinks := make([]linkSpec, 0, len(navMatches))
 	for _, match := range navMatches {
 		if match[2] != match[4] {
 			t.Fatalf("settings navigation link text %q differs from its English source %q", match[4], match[2])
 		}
 		navLinks = append(navLinks, linkSpec{Href: match[1], English: match[2], Korean: match[3]})
+	}
+	for index, want := range expectedNav {
+		if navLinks[index] != want {
+			t.Fatalf("settings navigation link %d does not match its route and bilingual label: got %+v, want %+v", index, navLinks[index], want)
+		}
 	}
 
 	quickStart := strings.Index(pageText, `<nav class="lah-quick-actions"`)
@@ -836,6 +920,13 @@ func TestLanguageSwitchPreservesNavigationAndQuickActionLinks(t *testing.T) {
 	quickMatches := quickLinkPattern.FindAllStringSubmatch(quickBlock, -1)
 	if len(quickMatches) != 3 {
 		t.Fatalf("quick-action navigation must expose all 3 nested links, found %d", len(quickMatches))
+	}
+	quickActionRule := regexp.MustCompile(`(?s)\.lah-quick-action\s*\{([^}]*)\}`).FindStringSubmatch(pageText)
+	if len(quickActionRule) != 2 || strings.Contains(quickActionRule[1], "border-left") {
+		t.Fatal("quick-action cards must retain a plain border without a thick left accent")
+	}
+	if strings.Contains(pageText, `data-message-ko="로컬 설정과 운영"`) || strings.Contains(pageText, `data-message-en="Local settings and operations"`) {
+		t.Fatal("settings heading must not repeat its text in an eyebrow")
 	}
 	quickLinks := make([]linkSpec, 0, len(quickMatches))
 	for _, match := range quickMatches {

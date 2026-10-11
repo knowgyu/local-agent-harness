@@ -299,6 +299,7 @@ func (a *app) registeredHarborArtifacts(ctx context.Context, requestedName strin
 	if err != nil {
 		return harborArtifactsResult{}, err
 	}
+	observeFirstReadDefinition(ctx, target)
 	defer clear(secret)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()

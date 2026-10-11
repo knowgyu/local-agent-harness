@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>등록 흐름 비교 · Local Agent Harness</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font: 16px/1.5 system-ui, "Segoe UI", sans-serif;
+      color: #17212b;
+      background: #f1f4f7;
+      --muted: #465568;
+      --border: #c7d0d9;
+      --navy: #1e293b;
+      --blue: #1f5b8e;
+      --focus: #125da8;
+      --danger: #9f2424;
+      --success: #236541;
+      --warning: #775100;
+      --surface: #fff;
+      --surface-soft: #f6f8fa;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; }
+    button, input, select { font: inherit; }
+    .topbar {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 5px max(20px, calc((100vw - 1120px) / 2));
+      color: #fff;
+      background: var(--navy);
+      font-size: .875rem;
+    }
+    .brand { font-weight: 700; letter-spacing: .035em; }
+    .topbar-meta { color: #e0e8f0; }
+    main { width: min(1120px, 100%); margin: 24px auto 40px; padding: 0 20px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 7px; font-size: 1.75rem; line-height: 1.25; letter-spacing: -.025em; }
+    h2 { margin-bottom: 3px; font-size: 1.125rem; line-height: 1.35; }
+    h3 { margin-bottom: 5px; font-size: 1.0625rem; line-height: 1.35; }
+    p { margin-bottom: 10px; }
+    .page-intro { max-width: 72ch; margin-bottom: 16px; }
+    .intro-copy, .section-copy, .hint { color: var(--muted); }
+    .intro-copy { margin-bottom: 0; }
+    .demo-note {
+      margin: 14px 0 18px;
+      padding: 11px 14px;
+      border: 1px solid #bdc9d4;
+      border-radius: 7px;
+      background: #fff;
+    }
+    .demo-note strong { margin-right: 5px; }
+    .demo-note p { margin: 0; }
+    .section { min-width: 0; margin: 16px 0; padding: 18px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+    .section-heading { margin-bottom: 12px; }
+    .section-copy { margin-bottom: 0; font-size: .9375rem; }
+    .fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .field { min-width: 0; }
+    label, legend { display: block; margin-bottom: 5px; font-weight: 650; }
+    input:not([type="checkbox"]), select {
+      display: block;
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 10px;
+      border: 1px solid #7b8997;
+      border-radius: 5px;
+      color: #17212b;
+      background: #fff;
+    }
+    input::placeholder { color: #536171; opacity: 1; }
+    input[type="checkbox"] { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--blue); }
+    button {
+      min-height: 44px;
+      padding: 8px 13px;
+      border: 1px solid var(--blue);
+      border-radius: 5px;
+      color: #fff;
+      background: var(--blue);
+      font-weight: 650;
+      line-height: 1.25;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    button:hover:not(:disabled) { background: #184a75; }
+    button:active:not(:disabled) { background: #123d64; }
+    button.secondary { color: #17212b; background: #fff; border-color: #586779; }
+    button.secondary:hover:not(:disabled) { background: #eef2f6; }
+    button:disabled { color: #536171; background: #e4e8ed; border-color: #aeb8c2; cursor: not-allowed; }
+    input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .hint { margin: 5px 0 0; font-size: .875rem; }
+    .task-note { margin: 13px 0 0; padding-top: 12px; border-top: 1px solid #d9e0e6; }
+    .task-note strong { display: block; margin-bottom: 2px; }
+    .task-note span { color: var(--muted); }
+    .draft-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 11px 12px;
+      border: 1px solid #a8c7df;
+      border-radius: 6px;
+      background: #f1f7fb;
+    }
+    .draft-banner[hidden] { display: none; }
+    .draft-banner p { margin: 0; }
+    .draft-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .comparison { padding-bottom: 14px; }
+    .tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .tab {
+      min-width: 0;
+      display: grid;
+      align-content: start;
+      gap: 3px;
+      text-align: left;
+      color: #17212b;
+      background: #fff;
+      border-color: #7b8997;
+    }
+    .tab:hover:not(:disabled) { background: #f6f8fa; }
+    .tab[aria-selected="true"] { color: #fff; background: var(--blue); border-color: var(--blue); }
+    .tab[aria-selected="true"]:hover:not(:disabled) { color: #fff; background: #184a75; border-color: #184a75; }
+    .tab[aria-selected="true"]:active:not(:disabled) { color: #fff; background: #123d64; border-color: #123d64; }
+    .tab strong { font-size: 1rem; }
+    .tab span { font-size: .875rem; font-weight: 450; line-height: 1.35; }
+    .tab-panel[hidden] { display: none !important; }
+    .variant { padding: 18px; }
+    .variant-heading { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .variant-heading p { max-width: 65ch; margin: 0; color: var(--muted); }
+    .variant-heading h2 { margin-bottom: 4px; }
+    .step-count { flex: 0 0 auto; margin: 3px 0 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 16px;
+      padding: 0;
+      list-style: none;
+    }
+    .stepper li { min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); background: var(--surface-soft); }
+    .stepper li[aria-current="step"] { color: #173e5e; border-color: #6a94b3; background: #edf5fa; font-weight: 650; }
+    .step-pane[hidden] { display: none !important; }
+    .step-pane { min-width: 0; }
+    .step-title { margin-bottom: 11px; }
+    .input-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 9px; }
+    .inline-feedback { min-height: 24px; margin: 7px 0 0; color: var(--muted); font-size: .9rem; }
+    .inline-feedback.error { color: var(--danger); }
+    .inline-feedback.success { color: var(--success); }
+    .resource-preview { margin: 13px 0 0; padding: 11px 12px; border: 1px solid #d3dae1; border-radius: 6px; background: var(--surface-soft); }
+    .resource-preview strong { display: block; }
+    .resource-preview span { color: var(--muted); overflow-wrap: anywhere; }
+    .address-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 9px; margin-bottom: 13px; padding-bottom: 12px; border-bottom: 1px solid #d9e0e6; }
+    .address-summary p { min-width: 0; margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+    .address-summary strong { color: #17212b; }
+    .auth-state { margin: 11px 0; padding: 10px 12px; border: 1px solid #c7d0d9; border-radius: 6px; background: var(--surface-soft); }
+    .auth-state strong { display: block; margin-bottom: 2px; }
+    .auth-state p { margin: 0; color: var(--muted); }
+    .auth-state.warning { border-color: #cbb781; background: #fbf8f0; }
+    .auth-state.error { border-color: #d0a9a9; background: #fcf5f5; }
+    .auth-state.success { border-color: #a8c5b3; background: #f3f8f4; }
+    .guidance { margin: 12px 0 0; padding: 11px 12px; border: 1px solid #d3dae1; border-radius: 6px; background: #fff; }
+    .guidance-next { margin: 0; }
+    .guidance-details { margin-top: 9px; padding-top: 8px; border-top: 1px solid #d9e0e6; }
+    .guidance-details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 650; }
+    .guidance-body { padding-top: 7px; }
+    .guidance h4 { margin: 0 0 5px; font-size: .975rem; }
+    .guidance ul { margin: 5px 0 0; padding-left: 21px; }
+    .guidance li + li { margin-top: 4px; }
+    .dashboard-note { margin-top: 10px; padding: 10px 12px; border: 1px solid #cbb781; border-radius: 6px; background: #fbf8f0; }
+    .dashboard-note strong { display: block; }
+    .dashboard-note p { margin: 3px 0 0; color: #473c25; }
+    .scope-list { display: grid; gap: 9px; margin: 12px 0; }
+    .check-row { display: flex; align-items: start; gap: 9px; margin: 0; }
+    .check-row > span { min-width: 0; }
+    .check-row strong { display: block; }
+    .check-row small { display: block; color: var(--muted); font-size: .875rem; }
+    .scope-callout { margin: 12px 0 0; color: var(--muted); font-size: .9rem; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 15px; }
+    .actions-spread { justify-content: space-between; }
+    .actions .action-group { display: flex; flex-wrap: wrap; gap: 9px; }
+    .client-summary { margin: 10px 0 12px; padding: 10px 12px; border: 1px solid #d3dae1; border-radius: 6px; background: var(--surface-soft); }
+    .client-summary p { margin: 0; }
+    .client-summary p + p { margin-top: 4px; color: var(--muted); }
+    .read-result { margin-top: 14px; padding: 13px 14px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+    .read-result[hidden] { display: none; }
+    .read-result h4 { margin: 0 0 5px; font-size: 1rem; }
+    .read-result p { margin: 0; }
+    .read-result p + p { margin-top: 7px; }
+    .read-result.loading { border-color: #a8c7df; background: #f4f8fb; }
+    .read-result.success { border-color: #a8c5b3; background: #f3f8f4; }
+    .read-result.error { border-color: #d0a9a9; background: #fcf5f5; }
+    .read-result.pause { border-color: #cbb781; background: #fbf8f0; }
+    .result-sample { margin-top: 9px !important; padding: 8px 10px; border: 1px solid #d3dae1; border-radius: 5px; color: #17212b; background: #fff; font-variant-numeric: tabular-nums; }
+    .progressive { display: grid; gap: 9px; }
+    .progressive details { min-width: 0; border: 1px solid var(--border); border-radius: 7px; background: #fff; }
+    .progressive details[open] { border-color: #aebbc8; }
+    .progressive summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; cursor: pointer; font-weight: 650; }
+    .progressive details[open] summary { border-bottom: 1px solid #d9e0e6; background: #f6f8fa; }
+    .summary-meta { color: var(--muted); font-size: .875rem; font-weight: 450; text-align: right; }
+    .progressive-content { padding: 14px; }
+    .progressive-content h3 { margin-bottom: 9px; }
+    .progress-note { margin: 0 0 12px; color: var(--muted); }
+    .fine-print { margin-top: 16px; border-top: 1px solid #d9e0e6; padding-top: 12px; color: var(--muted); font-size: .9rem; }
+    .fine-print summary { min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; color: #17212b; font-weight: 650; }
+    .fine-print ul { margin: 6px 0 0; padding-left: 21px; }
+    .fine-print li + li { margin-top: 4px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+    @media (max-width: 760px) {
+      main { margin-top: 20px; }
+      .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .fields .field:last-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+      .topbar { flex-wrap: wrap; padding: 8px 14px; }
+      main { padding: 0 12px; }
+      h1 { font-size: 1.5rem; }
+      .section, .variant { padding: 14px; }
+      .fields { grid-template-columns: 1fr; gap: 10px; }
+      .fields .field:last-child { grid-column: auto; }
+      .tabs { grid-template-columns: 1fr; }
+      .variant-heading { display: block; }
+      .step-count { margin-top: 7px; }
+      .stepper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .input-row { grid-template-columns: 1fr; }
+      .input-row button { width: 100%; }
+      .draft-banner { align-items: start; flex-direction: column; }
+      .actions-spread { align-items: stretch; }
+      .actions-spread > *, .actions .action-group > * { flex: 1 1 auto; }
+      .summary-meta { text-align: left; }
+    }
+    @media (max-width: 360px) {
+      main { padding-right: 10px; padding-left: 10px; }
+      .stepper li { padding: 8px; }
+      .actions .action-group { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <span class="brand">LOCAL AGENT HARNESS</span>
+    <span class="topbar-meta">Windows · 로컬 UX 비교 미리 보기</span>
+  </header>
+  <main>
+    <section class="page-intro" aria-labelledby="page-title">
+      <h1 id="page-title">등록 흐름 비교</h1>
+      <p class="intro-copy">서비스 주소에서 시작해 인증 준비, 허용 범위 검토, AI의 첫 읽기까지 같은 과제를 두 구조로 살펴봅니다.</p>
+    </section>
+
+    <aside class="demo-note" role="note">
+      <p><strong>UX 비교 데모.</strong> 이름과 주소는 합성 예시입니다. 서비스나 AI 앱에 연결하지 않고, 설정을 바꾸거나 비밀값을 입력받지 않습니다. 조회 결과는 화면 안에서 만든 데모 응답입니다.</p>
+    </aside>
+
+    <section class="section" aria-labelledby="task-heading">
+      <div class="section-heading">
+        <h2 id="task-heading">공통 과제</h2>
+        <p class="section-copy">아래 시나리오를 바꾸면 A와 B에서 같은 URL, 인증 상태, 읽기 범위를 확인합니다.</p>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="service-select">등록할 서비스</label>
+          <select id="service-select">
+            <option value="github">GitHub Enterprise</option>
+            <option value="jenkins">Jenkins</option>
+            <option value="dashboard">Kubernetes Dashboard · 사용자 보고 1.7.0</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fixture-select">합성 인증·응답 시나리오</label>
+          <select id="fixture-select">
+            <option value="ready">인증 준비됨 · 합성 성공</option>
+            <option value="missing">토큰 없음 · 발급 안내</option>
+            <option value="denied">권한 부족 · 합성 실패</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="client-select">선호하는 AI 앱</label>
+          <select id="client-select">
+            <option value="chatgpt">ChatGPT Desktop</option>
+            <option value="claude">Claude Desktop</option>
+            <option value="codex">Codex CLI · 현재 CLI 대체 경로</option>
+          </select>
+        </div>
+      </div>
+      <p class="task-note"><strong id="task-name" tabindex="-1">첫 읽기 과제</strong><span id="task-description"></span></p>
+      <div id="draft-banner" class="draft-banner" role="status" hidden>
+        <p id="draft-copy"></p>
+        <div class="draft-actions">
+          <button id="draft-resume" type="button">초안 이어하기</button>
+          <button id="draft-delete" class="secondary" type="button">초안 삭제</button>
+        </div>
+      </div>
+      <p id="draft-announcement" class="sr-only" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="section comparison" aria-labelledby="comparison-heading">
+      <div class="section-heading">
+        <h2 id="comparison-heading">비교할 등록 구조</h2>
+        <p class="section-copy">한 번에 하나씩 진행하는 흐름과, 필요한 내용을 같은 화면에서 펼치는 흐름입니다.</p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="등록 흐름 선택">
+        <button id="tab-a" class="tab" type="button" role="tab" aria-selected="true" aria-controls="panel-a" tabindex="0">
+          <strong>A · 단계별 안내</strong><span>주소 → 인증 → 범위 → 첫 읽기. 뒤로 가도 입력을 유지합니다.</span>
+        </button>
+        <button id="tab-b" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-b" tabindex="-1">
+          <strong>B · 한 화면 순차 확장</strong><span>주소 아래에 필요한 섹션을 이어서 펼칩니다.</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="panel-a" class="section variant tab-panel" role="tabpanel" aria-labelledby="tab-a" tabindex="0">
+      <div class="variant-heading">
+        <div>
+          <h2>주소에서 첫 읽기까지, 한 단계씩</h2>
+          <p>토큰 발급이나 관리자 승인을 기다려도 현재 입력을 보존하고 나중에 이어갈 수 있습니다.</p>
+        </div>
+        <p id="a-step-count" class="step-count">1 / 4</p>
+      </div>
+      <ol class="stepper" aria-label="등록 진행 단계">
+        <li data-stepper="1" aria-current="step">주소</li>
+        <li data-stepper="2">인증 안내</li>
+        <li data-stepper="3">허용 범위</li>
+        <li data-stepper="4">첫 읽기</li>
+      </ol>
+
+      <section class="step-pane" data-a-step="1" aria-labelledby="a-title-1">
+        <h3 id="a-title-1" class="step-title" tabindex="-1">서비스 주소를 붙여넣으세요</h3>
+        <p class="section-copy">선택한 서비스의 주소에서 대상 후보를 제안합니다. 저장 전 고칠 수 있습니다.</p>
+        <div class="field">
+          <label for="url-a">합성 서비스 주소</label>
+          <div class="input-row">
+            <input id="url-a" type="url" inputmode="url" autocomplete="url" spellcheck="false" aria-describedby="url-a-hint url-a-feedback">
+            <button id="a-parse" type="button">주소 확인하고 계속</button>
+          </div>
+          <p id="url-a-hint" class="hint">이 비교 화면에서는 HTTPS와 *.invalid 주소만 사용할 수 있습니다. 실서비스 주소를 붙여넣지 마세요.</p>
+          <p id="url-a-feedback" class="inline-feedback" role="status" aria-live="polite"></p>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label for="name-a">연결 이름</label>
+          <input id="name-a" type="text" autocomplete="off" aria-describedby="name-a-hint">
+          <p id="name-a-hint" class="hint">URL에서 만든 이름 제안입니다. 이 값도 이 화면 안에서만 유지됩니다.</p>
+        </div>
+      </section>
+
+      <section class="step-pane" data-a-step="2" aria-labelledby="a-title-2" hidden>
+        <div class="address-summary"><p><strong>대상 후보</strong> <span id="a-candidate"></span></p><button class="secondary" type="button" data-edit-address="a">주소 수정</button></div>
+        <h3 id="a-title-2" class="step-title" tabindex="-1">인증이 준비됐는지 확인하세요</h3>
+        <p class="section-copy">비밀값은 이 데모에 입력하지 않습니다. 발급 위치와 읽기 권한만 확인합니다.</p>
+        <div id="auth-a" class="auth-state" role="status" aria-live="polite"></div>
+        <div id="guidance-a" class="guidance"></div>
+        <div id="dashboard-note-a" class="dashboard-note" hidden></div>
+        <div class="actions actions-spread">
+          <button class="secondary" type="button" data-a-back="1">이전</button>
+          <div class="action-group">
+            <button id="a-save-draft" class="secondary" type="button">일반 설정만 초안에 저장</button>
+            <button id="a-auth-next" type="button">범위 검토로 계속</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="step-pane" data-a-step="3" aria-labelledby="a-title-3" hidden>
+        <div class="address-summary"><p><strong>대상 후보</strong> <span id="a-candidate-scope"></span></p><button class="secondary" type="button" data-edit-address="a">주소 수정</button></div>
+        <h3 id="a-title-3" class="step-title" tabindex="-1">AI 앱에 허용할 범위를 확인하세요</h3>
+        <p class="section-copy">첫 작업은 선택한 대상 하나의 읽기입니다. 필요하지 않은 권한은 선택하지 않습니다.</p>
+        <fieldset class="scope-list" style="border:0;padding:0;margin-inline:0">
+          <legend class="sr-only">허용할 서비스 작업</legend>
+          <label class="check-row"><input id="read-a" type="checkbox"><span><strong id="read-label-a"></strong><small>첫 읽기 과제에 필요한 범위입니다.</small></span></label>
+          <label class="check-row"><input id="extra-a" type="checkbox"><span><strong id="extra-label-a"></strong><small>이번 과제에 필요하지 않은 추가 권한입니다. 기본값은 꺼져 있습니다.</small></span></label>
+        </fieldset>
+        <p class="scope-callout">여기서 선택한 범위는 데모 체크박스에만 반영됩니다. 실제 설정은 바뀌지 않습니다.</p>
+        <p id="scope-a-feedback" class="inline-feedback" role="status" aria-live="polite"></p>
+        <div class="actions actions-spread">
+          <button class="secondary" type="button" data-a-back="2">이전</button>
+          <button id="a-scope-next" type="button">첫 읽기 준비</button>
+        </div>
+      </section>
+
+      <section class="step-pane" data-a-step="4" aria-labelledby="a-title-4" hidden>
+        <div class="address-summary"><p><strong>대상 후보</strong> <span id="a-candidate-read"></span></p><button class="secondary" type="button" data-edit-address="a">주소 수정</button></div>
+        <h3 id="a-title-4" class="step-title" tabindex="-1">AI 앱에서 할 첫 읽기를 미리 봅니다</h3>
+        <div class="client-summary">
+          <p><strong>선호 앱:</strong> <span id="client-summary-a"></span></p>
+          <p id="client-note-a"></p>
+        </div>
+        <p id="read-task-a" class="section-copy"></p>
+        <p class="hint">아래 동작은 최대 0.7초 동안 화면 안의 합성 결과를 표시합니다. 외부 요청이나 실제 MCP 호출은 없습니다.</p>
+        <div class="actions">
+          <button class="secondary" type="button" data-a-back="3">범위 수정</button>
+          <button id="a-run" type="button">합성 첫 읽기 실행</button>
+        </div>
+        <div id="result-a" class="read-result" role="status" aria-live="polite" hidden></div>
+      </section>
+    </section>
+
+    <section id="panel-b" class="section variant tab-panel" role="tabpanel" aria-labelledby="tab-b" tabindex="0" hidden>
+      <div class="variant-heading">
+        <div>
+          <h2>주소 아래에 필요한 내용을 이어서 펼칩니다</h2>
+          <p>현재 값과 다음 내용을 함께 보며, 한 화면에서 수정하거나 순서대로 확장할 수 있습니다.</p>
+        </div>
+      </div>
+      <div class="progressive">
+        <details id="b-address" open>
+          <summary><span>서비스 주소</span><span id="b-address-meta" class="summary-meta">시작</span></summary>
+          <div class="progressive-content">
+            <h3>서비스 주소를 붙여넣으세요</h3>
+            <p class="progress-note">URL에서 대상 후보를 제안합니다. 선택한 서비스와 경로를 확인한 뒤 다음 내용을 펼칩니다.</p>
+            <div class="field">
+              <label for="url-b">합성 서비스 주소</label>
+              <div class="input-row">
+                <input id="url-b" type="url" inputmode="url" autocomplete="url" spellcheck="false" aria-describedby="url-b-hint url-b-feedback">
+                <button id="b-parse" type="button">주소 확인하고 인증 펼치기</button>
+              </div>
+              <p id="url-b-hint" class="hint">이 비교 화면에서는 HTTPS와 *.invalid 주소만 사용할 수 있습니다. 실서비스 주소를 붙여넣지 마세요.</p>
+              <p id="url-b-feedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            </div>
+            <div class="field" style="margin-top:12px">
+              <label for="name-b">연결 이름</label>
+              <input id="name-b" type="text" autocomplete="off" aria-describedby="name-b-hint">
+              <p id="name-b-hint" class="hint">URL에서 만든 이름 제안이며 이 화면 안에서만 유지됩니다.</p>
+            </div>
+            <div class="actions"><button id="b-open-auth" type="button">인증 안내 펼치기</button></div>
+          </div>
+        </details>
+
+        <details id="b-auth">
+          <summary><span>인증 안내</span><span id="b-auth-meta" class="summary-meta">주소 확인 후</span></summary>
+          <div class="progressive-content">
+            <h3 id="b-title-auth" tabindex="-1">인증이 준비됐는지 확인하세요</h3>
+            <p class="progress-note">비밀값은 이 데모에 입력하지 않습니다. 발급 위치와 읽기 권한만 확인합니다.</p>
+            <div id="auth-b" class="auth-state" role="status" aria-live="polite"></div>
+            <div id="guidance-b" class="guidance"></div>
+            <div id="dashboard-note-b" class="dashboard-note" hidden></div>
+            <div class="actions actions-spread">
+              <button id="b-save-draft" class="secondary" type="button">일반 설정만 초안에 저장</button>
+              <button id="b-auth-next" type="button">허용 범위 펼치기</button>
+            </div>
+          </div>
+        </details>
+
+        <details id="b-scope">
+          <summary><span>허용 범위</span><span id="b-scope-meta" class="summary-meta">필요한 읽기만</span></summary>
+          <div class="progressive-content">
+            <h3 id="b-title-scope" tabindex="-1">AI 앱에 허용할 범위를 확인하세요</h3>
+            <p class="progress-note">첫 작업은 선택한 대상 하나의 읽기입니다. 필요하지 않은 권한은 선택하지 않습니다.</p>
+            <fieldset class="scope-list" style="border:0;padding:0;margin-inline:0">
+              <legend class="sr-only">허용할 서비스 작업</legend>
+              <label class="check-row"><input id="read-b" type="checkbox"><span><strong id="read-label-b"></strong><small>첫 읽기 과제에 필요한 범위입니다.</small></span></label>
+              <label class="check-row"><input id="extra-b" type="checkbox"><span><strong id="extra-label-b"></strong><small>이번 과제에 필요하지 않은 추가 권한입니다. 기본값은 꺼져 있습니다.</small></span></label>
+            </fieldset>
+            <p class="scope-callout">여기서 선택한 범위는 데모 체크박스에만 반영됩니다. 실제 설정은 바뀌지 않습니다.</p>
+            <p id="scope-b-feedback" class="inline-feedback" role="status" aria-live="polite"></p>
+            <div class="actions"><button id="b-scope-next" type="button">첫 읽기 펼치기</button></div>
+          </div>
+        </details>
+
+        <details id="b-first-read">
+          <summary><span>AI의 첫 읽기</span><span id="b-read-meta" class="summary-meta">범위 검토 후</span></summary>
+          <div class="progressive-content">
+            <h3 id="b-title-read" tabindex="-1">AI 앱에서 할 첫 읽기를 미리 봅니다</h3>
+            <div class="client-summary">
+              <p><strong>선호 앱:</strong> <span id="client-summary-b"></span></p>
+              <p id="client-note-b"></p>
+            </div>
+            <p id="read-task-b" class="section-copy"></p>
+            <p class="hint">아래 동작은 최대 0.7초 동안 화면 안의 합성 결과를 표시합니다. 외부 요청이나 실제 MCP 호출은 없습니다.</p>
+            <div class="actions"><button id="b-run" type="button">합성 첫 읽기 실행</button></div>
+            <div id="result-b" class="read-result" role="status" aria-live="polite" hidden></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <details class="fine-print">
+      <summary>데모 범위와 아직 확인하지 않은 내용</summary>
+      <ul>
+        <li>인증 상태와 서비스 조회 결과는 선택한 fixture에서 만든 예시입니다. 실제 서비스 성공, 설치 버전, 권한 또는 연결 상태를 확인하지 않습니다.</li>
+        <li>ChatGPT Desktop과 Claude Desktop은 선호 앱으로만 표시됩니다. 실제 설치 경로와 도구 호출은 검증되지 않았습니다. 현재 CLI 대체 경로로는 Codex CLI를 표시합니다.</li>
+        <li>초안은 이 탭의 메모리에서 일반 설정만 유지하며, 새로고침하거나 탭을 닫으면 사라집니다. 비밀값은 입력·저장하지 않습니다.</li>
+        <li>Dashboard 1.7.0은 사용자 보고입니다. upstream v1.7.0과 별도 web/v1.7.0 구성 요소가 존재하므로, 설치된 구성 요소와 버전 출처를 확인하기 전 인증 계약은 미확인입니다. 로그인 입력과 응답의 형식·용도를 확인하고, 응답을 Authorization Bearer 값으로 복사하지 않습니다.</li>
+      </ul>
+    </details>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const services = {
+        github: {
+          label: "GitHub Enterprise",
+          url: "https://git.enterprise.invalid/platform/observability",
+          name: "platform/observability",
+          read: "지정 저장소의 기본 정보와 기본 브랜치 읽기",
+          extra: "파일 콘텐츠 읽기",
+          task: "저장소 기본 정보와 기본 브랜치 확인",
+          taskDescription: "등록한 저장소에서 기본 정보와 기본 브랜치를 읽습니다. 파일 내용 읽기나 쓰기 권한은 이번 과제에 포함하지 않습니다.",
+          helpTitle: "GitHub Enterprise 토큰 준비",
+          help: [
+            "계정 설정의 개발자 설정에서 서버가 지원하는 토큰 종류와 발급 위치를 확인하세요.",
+            "관리자에게 지정 저장소의 읽기 권한과 조직 승인 필요 여부를 확인하세요.",
+            "서버 버전과 API 경로에 따라 필요한 권한이 다를 수 있습니다. 파일 콘텐츠 권한은 기본 정보 조회와 별도로 검토하세요."
+          ],
+          result: "저장소 platform/observability · 기본 브랜치 main"
+        },
+        jenkins: {
+          label: "Jenkins",
+          url: "https://ci.invalid/jenkins/job/Platform/job/Release-Gate",
+          name: "Platform / Release-Gate",
+          read: "선택한 Jenkins 작업과 최근 빌드 읽기",
+          extra: "빌드 실행",
+          task: "작업 상태와 최근 빌드 확인",
+          taskDescription: "선택한 job의 상태와 최근 빌드 정보를 읽습니다. 빌드 실행은 이번 과제에 포함하지 않습니다.",
+          helpTitle: "Jenkins API 토큰 준비",
+          help: [
+            "Jenkins 계정 보안 설정에서 API 토큰을 발급하는 위치를 확인하세요. 실제 연동에서는 계정 이름과 API 토큰이 필요할 수 있습니다.",
+            "관리자에게 선택한 job의 읽기 권한을 요청하세요. 빌드 실행 권한은 요청하지 않습니다.",
+            "context path와 폴더 job 경로를 그대로 확인하세요. 메뉴 이름과 권한 정책은 서버 버전마다 다를 수 있습니다."
+          ],
+          result: "Job Platform / Release-Gate · 상태 SUCCESS · 최근 빌드 #128"
+        },
+        dashboard: {
+          label: "Kubernetes Dashboard · 사용자 보고 1.7.0",
+          url: "https://dashboard.invalid/k8s/dashboard",
+          name: "platform / edge-api",
+          read: "platform namespace의 edge-api Deployment 상태 읽기",
+          extra: "모든 namespace 목록 읽기",
+          task: "지정 Deployment의 준비 상태 확인",
+          taskDescription: "platform namespace의 edge-api Deployment 상태를 읽습니다. 전체 namespace 목록 권한은 이번 과제에 포함하지 않습니다.",
+          helpTitle: "Dashboard 버전과 인증 방식 확인",
+          help: [
+            "1.7.0은 사용자 보고입니다. 실제 설치 버전과 프록시 경로를 관리자에게 확인하세요.",
+            "로그인 화면에 입력하는 값과 로그인 응답의 형식·용도는 다를 수 있습니다. 확인 전에는 어떤 로그인 응답도 Authorization Bearer 값으로 복사하지 마세요.",
+            "선택한 Deployment 읽기 권한과 실제 토큰 전달 방식이 확인된 뒤 연동 방식을 정하세요."
+          ],
+          result: "Deployment platform/edge-api · Ready 3 / 3"
+        }
+      };
+
+      const state = {
+        service: "github",
+        fixture: "ready",
+        client: "chatgpt",
+        url: services.github.url,
+        name: services.github.name,
+        candidate: "",
+        parsed: false,
+        readScope: true,
+        extraScope: false,
+        aStep: 1,
+        activeView: "a",
+        result: null,
+        loading: false,
+        requestId: 0,
+        draft: null,
+        bOpen: new Set(["b-address"])
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const serviceSelect = $("service-select");
+      const fixtureSelect = $("fixture-select");
+      const clientSelect = $("client-select");
+      const taskName = $("task-name");
+      const taskDescription = $("task-description");
+      const authLabels = {
+        ready: "인증 준비됨 · 합성 성공 조건",
+        missing: "토큰 없음 · 발급 안내가 필요한 조건",
+        denied: "권한 부족 · 합성 실패 조건"
+      };
+
+      function clearResult() {
+        state.requestId += 1;
+        state.result = null;
+        state.loading = false;
+        if ($("result-a")) setResultMarkup("result-a");
+        if ($("result-b")) setResultMarkup("result-b");
+      }
+
+      function candidateFor(url) {
+        const data = services[state.service];
+        const segments = url.pathname.split("/").filter(Boolean).map((part) => {
+          try { return decodeURIComponent(part); } catch (_) { return part; }
+        });
+        if (state.service === "github") {
+          return segments.length >= 2 ? `${segments[0]}/${segments[1]}` : "저장소 후보를 확인해 주세요";
+        }
+        if (state.service === "jenkins") {
+          const jobs = [];
+          for (let i = 0; i < segments.length; i += 1) {
+            if (segments[i].toLowerCase() === "job" && segments[i + 1]) jobs.push(segments[i + 1]);
+          }
+          return jobs.length ? jobs.join(" / ") : "작업 경로 후보를 확인해 주세요";
+        }
+        const namespace = new URL(state.url).searchParams.get("namespace") || "platform";
+        return `${namespace} / edge-api`;
+      }
+
+      function syntheticUrl(raw) {
+        const trimmed = raw.trim();
+        let parsed;
+        try { parsed = new URL(trimmed); } catch (_) { return { ok: false, sensitive: false }; }
+        const safe = parsed.protocol === "https:" && parsed.hostname.toLowerCase().endsWith(".invalid") && !parsed.username && !parsed.password && !parsed.search && !parsed.hash;
+        return { ok: safe, sensitive: Boolean(parsed.username || parsed.password || parsed.search || parsed.hash), parsed };
+      }
+
+      function addressError(inputId, feedbackId, raw) {
+        const verdict = syntheticUrl(raw);
+        const input = $(inputId);
+        const feedback = $(feedbackId);
+        if (!verdict.ok) {
+          input.value = "";
+          state.url = "";
+          state.parsed = false;
+          state.candidate = "";
+          clearResult();
+          feedback.className = "inline-feedback error";
+          feedback.textContent = verdict.sensitive
+            ? "query·fragment·계정 정보가 있는 주소는 지웠습니다. 토큰을 URL에 넣지 말고 *.invalid 예시 주소를 사용하세요."
+            : "HTTPS와 *.invalid 호스트만 사용할 수 있습니다. 합성 예시 주소를 붙여넣어 주세요.";
+          updateAll();
+          input.focus();
+          return false;
+        }
+        state.url = verdict.parsed.href;
+        state.parsed = true;
+        state.candidate = candidateFor(verdict.parsed);
+        clearResult();
+        feedback.className = "inline-feedback success";
+        feedback.textContent = "주소 형식과 합성 호스트를 확인했습니다. 서비스에는 접속하지 않았습니다.";
+        updateAll();
+        return true;
+      }
+
+      function authStatusMarkup(targetId) {
+        const cls = state.fixture === "ready" ? "success" : state.fixture === "denied" ? "error" : "warning";
+        const body = state.fixture === "ready"
+          ? "이 데모에서는 인증이 준비된 fixture를 선택했습니다. 실제 토큰이나 서비스 상태는 확인하지 않았습니다."
+          : state.fixture === "missing"
+            ? "토큰이 없는 조건입니다. 서비스별 안내를 펼쳐 최소 읽기 권한을 확인하고, 기다리는 동안 초안으로 저장할 수 있습니다."
+            : "인증은 준비됐다고 가정하지만 선택한 리소스 읽기는 거부되는 fixture입니다. 실제 오류 원인은 확인하지 않았습니다.";
+        $(targetId).className = `auth-state ${cls}`;
+        $(targetId).innerHTML = `<strong>${authLabels[state.fixture]}</strong><p>${body}</p>`;
+      }
+
+      function guidanceMarkup(targetId) {
+        const data = services[state.service];
+        const wasOpen = targetId ? $(targetId).querySelector("details")?.open : false;
+        const nextStep = state.fixture === "ready"
+          ? "이 데모에서는 인증 준비됨 fixture입니다. 다음 단계에서 필요한 읽기 범위만 확인하세요."
+          : state.fixture === "missing"
+            ? `토큰이 없다면 상세 발급·권한 안내를 확인하고, 승인 전에는 일반 설정만 초안으로 저장하세요.`
+            : "이 데모는 선택 리소스의 읽기가 거부된 fixture입니다. 주소와 최소 읽기 권한을 확인하고, 실패 원인은 관리자와 함께 확인하세요.";
+        const openAttribute = wasOpen ? " open" : "";
+        return `<p class="guidance-next">${nextStep}</p><details id="${targetId}-details" class="guidance-details"${openAttribute}><summary>${data.label} 발급·권한 안내</summary><div class="guidance-body"><h4>${data.helpTitle}</h4><ul>${data.help.map((item) => `<li>${item}</li>`).join("")}</ul></div></details>`;
+      }
+
+      function setResultMarkup(targetId) {
+        const element = $(targetId);
+        if (!state.result) {
+          element.hidden = true;
+          element.className = "read-result";
+          element.replaceChildren();
+          return;
+        }
+        element.hidden = false;
+        element.className = `read-result ${state.result.kind}`;
+        const heading = document.createElement("h4");
+        const body = document.createElement("p");
+        heading.textContent = state.result.title;
+        body.textContent = state.result.body;
+        element.replaceChildren(heading, body);
+        if (state.result.sample) {
+          const sample = document.createElement("p");
+          sample.className = "result-sample";
+          sample.textContent = state.result.sample;
+          element.append(sample);
+        }
+        if (state.result.note) {
+          const note = document.createElement("p");
+          note.className = "hint";
+          note.textContent = state.result.note;
+          element.append(note);
+        }
+      }
+
+      function clientCopy() {
+        if (state.client === "chatgpt") {
+          return { label: "ChatGPT Desktop", note: "선호를 기록한 상태입니다. 실제 설치와 도구 호출은 확인하지 않았습니다." };
+        }
+        if (state.client === "claude") {
+          return { label: "Claude Desktop", note: "선호를 기록한 상태입니다. Desktop 설치 경로와 도구 호출은 확인되지 않았습니다." };
+        }
+        return { label: "Codex CLI · 현재 CLI 대체 경로", note: "현재 사용할 수 있는 CLI 대체 경로로 표시합니다. 이 화면의 데모 결과가 CLI 호출을 뜻하지는 않습니다." };
+      }
+
+      function updateAddressSummaries() {
+        const visibleCandidate = state.candidate || "주소를 확인하면 대상 후보가 표시됩니다.";
+        ["a-candidate", "a-candidate-scope", "a-candidate-read"].forEach((id) => { $(id).textContent = visibleCandidate; });
+        $("b-address-meta").textContent = state.parsed ? `후보: ${visibleCandidate}` : "시작";
+        $("b-auth-meta").textContent = state.parsed ? "안내를 확인할 수 있어요" : "주소 확인 후";
+        $("b-scope-meta").textContent = state.readScope ? "읽기 범위 선택됨" : "읽기 범위 미선택";
+        $("b-read-meta").textContent = state.result
+          ? state.result.title
+          : state.readScope ? "첫 읽기 예시" : "읽기 범위 미선택";
+      }
+
+      function updateStepA() {
+        document.querySelectorAll("[data-a-step]").forEach((pane) => {
+          pane.hidden = Number(pane.dataset.aStep) !== state.aStep;
+        });
+        document.querySelectorAll("[data-stepper]").forEach((item) => {
+          if (Number(item.dataset.stepper) === state.aStep) item.setAttribute("aria-current", "step");
+          else item.removeAttribute("aria-current");
+        });
+        $("a-step-count").textContent = `${state.aStep} / 4`;
+      }
+
+      function updateAll() {
+        const data = services[state.service];
+        serviceSelect.value = state.service;
+        fixtureSelect.value = state.fixture;
+        clientSelect.value = state.client;
+        if (document.activeElement !== $("url-a")) $("url-a").value = state.url;
+        if (document.activeElement !== $("url-b")) $("url-b").value = state.url;
+        if (document.activeElement !== $("name-a")) $("name-a").value = state.name;
+        if (document.activeElement !== $("name-b")) $("name-b").value = state.name;
+        taskName.textContent = data.task;
+        taskDescription.textContent = data.taskDescription;
+        $("read-label-a").textContent = data.read;
+        $("read-label-b").textContent = data.read;
+        $("extra-label-a").textContent = data.extra;
+        $("extra-label-b").textContent = data.extra;
+        $("read-a").checked = state.readScope;
+        $("read-b").checked = state.readScope;
+        $("extra-a").checked = state.extraScope;
+        $("extra-b").checked = state.extraScope;
+        authStatusMarkup("auth-a");
+        authStatusMarkup("auth-b");
+        $("guidance-a").innerHTML = guidanceMarkup("guidance-a");
+        $("guidance-b").innerHTML = guidanceMarkup("guidance-b");
+        const dashboard = state.service === "dashboard";
+        ["dashboard-note-a", "dashboard-note-b"].forEach((id) => {
+          const note = $(id);
+          note.hidden = !dashboard;
+          note.innerHTML = dashboard
+            ? "<strong>Dashboard · 인증 방식 확인 대기</strong><p>1.7.0은 사용자 보고입니다. 설치된 버전과 토큰 전달 방식을 확인하세요. 확인 전 로그인 응답을 Authorization Bearer 값으로 복사하지 마세요.</p>"
+            : "";
+        });
+        const client = clientCopy();
+        $("client-summary-a").textContent = client.label;
+        $("client-summary-b").textContent = client.label;
+        $("client-note-a").textContent = client.note;
+        $("client-note-b").textContent = client.note;
+        $("read-task-a").textContent = `${data.task}. 이는 합성 미리 보기이며 ${data.label}에 접속하지 않습니다.`;
+        $("read-task-b").textContent = `${data.task}. 이는 합성 미리 보기이며 ${data.label}에 접속하지 않습니다.`;
+        updateAddressSummaries();
+        updateStepA();
+        setResultMarkup("result-a");
+        setResultMarkup("result-b");
+        $("a-run").disabled = state.loading;
+        $("b-run").disabled = state.loading;
+        $("a-run").textContent = state.loading ? "합성 결과를 준비하고 있습니다…" : "합성 첫 읽기 실행";
+        $("b-run").textContent = state.loading ? "합성 결과를 준비하고 있습니다…" : "합성 첫 읽기 실행";
+        $("draft-banner").hidden = !state.draft;
+        if (state.draft) {
+          $("draft-copy").textContent = `초안: ${services[state.draft.service].label} · ${state.draft.name || "이름 없음"}. 주소와 이름, 읽기 범위만 이 탭 메모리에 있습니다.`;
+        }
+      }
+
+      function updateView(view, moveFocus) {
+        state.activeView = view;
+        const isA = view === "a";
+        $("tab-a").setAttribute("aria-selected", String(isA));
+        $("tab-a").tabIndex = isA ? 0 : -1;
+        $("tab-b").setAttribute("aria-selected", String(!isA));
+        $("tab-b").tabIndex = isA ? -1 : 0;
+        $("panel-a").hidden = !isA;
+        $("panel-b").hidden = isA;
+        if (moveFocus) $(isA ? "panel-a" : "panel-b").focus();
+      }
+
+      function scrollToElement(element) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        element.scrollIntoView({ block: "nearest", behavior });
+      }
+
+      function setBOpen(id, open) {
+        const element = $(id);
+        element.open = open;
+        if (open) state.bOpen.add(id);
+        else state.bOpen.delete(id);
+      }
+
+      function focusA(step) {
+        state.aStep = step;
+        updateAll();
+        $(`a-title-${step}`).focus();
+      }
+
+      function parseForA() {
+        if (!addressError("url-a", "url-a-feedback", $("url-a").value)) return;
+        state.name = state.candidate;
+        $("name-a").value = state.name;
+        clearResult();
+        focusA(2);
+      }
+
+      function parseForB() {
+        if (!addressError("url-b", "url-b-feedback", $("url-b").value)) return;
+        state.name = state.candidate;
+        $("name-b").value = state.name;
+        clearResult();
+        setBOpen("b-address", true);
+        setBOpen("b-auth", true);
+        updateAll();
+        scrollToElement($("b-auth"));
+      }
+
+      function saveDraft() {
+        const verdict = syntheticUrl(state.url);
+        if (!verdict.ok) {
+          if (state.activeView === "a") {
+            state.aStep = 1;
+            updateAll();
+            addressError("url-a", "url-a-feedback", state.url);
+          } else {
+            setBOpen("b-address", true);
+            updateAll();
+            addressError("url-b", "url-b-feedback", state.url);
+          }
+          return;
+        }
+        state.url = verdict.parsed.href;
+        if (!state.parsed) {
+          state.parsed = true;
+          state.candidate = candidateFor(verdict.parsed);
+          if (!state.name.trim()) state.name = state.candidate;
+        }
+        state.draft = {
+          service: state.service,
+          url: state.url,
+          name: state.name,
+          readScope: state.readScope,
+          extraScope: state.extraScope,
+          client: state.client
+        };
+        $("draft-announcement").textContent = "초안을 저장했습니다. 비밀값은 포함하지 않았습니다.";
+        updateAll();
+        $("draft-resume").focus();
+      }
+
+      function resumeDraft() {
+        if (!state.draft) return;
+        const draft = state.draft;
+        state.service = draft.service;
+        state.url = draft.url;
+        state.name = draft.name;
+        state.readScope = draft.readScope;
+        state.extraScope = draft.extraScope;
+        state.client = draft.client;
+        state.fixture = "missing";
+        state.parsed = true;
+        state.candidate = candidateFor(new URL(state.url));
+        state.aStep = 2;
+        clearResult();
+        $("draft-announcement").textContent = "초안을 불러왔습니다. 인증 상태는 토큰 없음 fixture로 이어집니다.";
+        updateAll();
+        if (state.activeView === "a") {
+          $("a-title-2").focus();
+        } else {
+          setBOpen("b-address", true);
+          setBOpen("b-auth", true);
+          $("b-title-auth").focus();
+          scrollToElement($("b-auth"));
+        }
+      }
+
+      function readOutcome() {
+        if (!state.readScope) {
+          return { kind: "pause", title: "읽기 권한을 선택하지 않았습니다", body: "첫 읽기 과제는 허용 범위 밖이므로 실행하지 않았습니다.", note: "A와 B의 읽기 범위 체크박스는 같은 상태를 공유합니다." };
+        }
+        if (state.fixture === "missing") {
+          return { kind: "pause", title: "합성 데모 중단 · 토큰 없음", body: "선택한 fixture에 인증값이 없어 읽기를 시작하지 않았습니다.", note: "발급 안내를 확인하거나 일반 설정만 초안으로 저장해 이어갈 수 있습니다. 실제 서비스는 호출되지 않았습니다." };
+        }
+        if (state.fixture === "denied") {
+          const detail = state.service === "jenkins"
+            ? "Jenkins의 403 응답만으로 잘못된 토큰과 권한 부족을 구분할 수 없습니다. 선택한 job의 읽기 권한과 계정 상태를 확인하세요."
+            : "선택한 리소스의 읽기가 거부된 합성 결과입니다. 계정 권한, 승인 상태와 대상 주소를 함께 확인하세요.";
+          return { kind: "error", title: "합성 데모 실패 · 읽기 권한 확인 필요", body: detail, note: "실제 응답 코드나 서비스 상태를 확인하지 않았습니다." };
+        }
+        return { kind: "success", title: "합성 데모 성공 · 예시 결과", body: "fixture에서 만든 읽기 결과입니다. 실제 서비스 연결 확인은 아닙니다.", sample: services[state.service].result, note: "값은 시나리오를 설명하기 위한 합성 데이터입니다." };
+      }
+
+      function runRead() {
+        if (state.loading) return;
+        const requestId = ++state.requestId;
+        state.loading = true;
+        state.result = { kind: "loading", title: "합성 조회를 준비하고 있습니다…", body: "화면 안의 fixture만 처리합니다. 실제 요청은 보내지 않습니다." };
+        updateAll();
+        window.setTimeout(() => {
+          if (requestId !== state.requestId) return;
+          state.loading = false;
+          state.result = readOutcome();
+          updateAll();
+        }, 600);
+      }
+
+      serviceSelect.addEventListener("change", () => {
+        state.service = serviceSelect.value;
+        state.url = services[state.service].url;
+        state.name = services[state.service].name;
+        state.parsed = false;
+        state.candidate = "";
+        state.readScope = true;
+        state.extraScope = false;
+        state.aStep = 1;
+        state.bOpen = new Set(["b-address"]);
+        ["b-address", "b-auth", "b-scope", "b-first-read"].forEach((id) => { $(id).open = id === "b-address"; });
+        clearResult();
+        $("url-a-feedback").textContent = "";
+        $("url-b-feedback").textContent = "";
+        $("scope-a-feedback").textContent = "";
+        $("scope-b-feedback").textContent = "";
+        updateAll();
+      });
+      fixtureSelect.addEventListener("change", () => { state.fixture = fixtureSelect.value; clearResult(); updateAll(); });
+      clientSelect.addEventListener("change", () => { state.client = clientSelect.value; clearResult(); updateAll(); });
+
+      ["url-a", "url-b"].forEach((id) => $(id).addEventListener("input", (event) => {
+        state.url = event.currentTarget.value;
+        state.parsed = false;
+        state.candidate = "";
+        clearResult();
+        const other = id === "url-a" ? "url-b" : "url-a";
+        if (document.activeElement !== $(other)) $(other).value = state.url;
+        updateAddressSummaries();
+      }));
+      ["name-a", "name-b"].forEach((id) => $(id).addEventListener("input", (event) => {
+        state.name = event.currentTarget.value;
+        clearResult();
+        const other = id === "name-a" ? "name-b" : "name-a";
+        if (document.activeElement !== $(other)) $(other).value = state.name;
+      }));
+      $("a-parse").addEventListener("click", parseForA);
+      $("b-parse").addEventListener("click", parseForB);
+      $("b-open-auth").addEventListener("click", () => { setBOpen("b-auth", true); $("b-title-auth").focus(); scrollToElement($("b-auth")); });
+      $("a-auth-next").addEventListener("click", () => focusA(3));
+      $("b-auth-next").addEventListener("click", () => { setBOpen("b-scope", true); $("b-title-scope").focus(); scrollToElement($("b-scope")); });
+      $("a-scope-next").addEventListener("click", () => { $("scope-a-feedback").textContent = ""; focusA(4); });
+      $("b-scope-next").addEventListener("click", () => { $("scope-b-feedback").textContent = ""; setBOpen("b-first-read", true); $("b-title-read").focus(); scrollToElement($("b-first-read")); });
+      $("a-save-draft").addEventListener("click", saveDraft);
+      $("b-save-draft").addEventListener("click", saveDraft);
+      $("draft-resume").addEventListener("click", resumeDraft);
+      $("draft-delete").addEventListener("click", () => { state.draft = null; updateAll(); $("draft-announcement").textContent = "초안을 삭제했습니다."; $("task-heading").focus(); });
+      $("a-run").addEventListener("click", runRead);
+      $("b-run").addEventListener("click", runRead);
+      document.querySelectorAll("[data-a-back]").forEach((button) => button.addEventListener("click", () => focusA(Number(button.dataset.aBack))));
+      document.querySelectorAll("[data-edit-address]").forEach((button) => button.addEventListener("click", () => focusA(1)));
+      ["read-a", "read-b"].forEach((id) => $(id).addEventListener("change", (event) => {
+        state.readScope = event.currentTarget.checked;
+        clearResult();
+        const other = id === "read-a" ? "read-b" : "read-a";
+        $(other).checked = state.readScope;
+        $("scope-a-feedback").textContent = state.readScope ? "" : "첫 읽기에는 허용 범위가 필요합니다. 선택하지 않은 상태로도 미리 보기는 가능하지만 조회는 실행되지 않습니다.";
+        $("scope-b-feedback").textContent = state.readScope ? "" : "첫 읽기에는 허용 범위가 필요합니다. 선택하지 않은 상태로도 미리 보기는 가능하지만 조회는 실행되지 않습니다.";
+        updateAddressSummaries();
+      }));
+      ["extra-a", "extra-b"].forEach((id) => $(id).addEventListener("change", (event) => {
+        state.extraScope = event.currentTarget.checked;
+        clearResult();
+        const other = id === "extra-a" ? "extra-b" : "extra-a";
+        $(other).checked = state.extraScope;
+      }));
+
+      $("tab-a").addEventListener("click", () => updateView("a", false));
+      $("tab-b").addEventListener("click", () => updateView("b", false));
+      document.querySelectorAll("[role=tab]").forEach((tab) => tab.addEventListener("keydown", (event) => {
+        const next = event.key === "ArrowRight" || event.key === "ArrowDown" ? (tab.id === "tab-a" ? "tab-b" : "tab-a")
+          : event.key === "ArrowLeft" || event.key === "ArrowUp" ? (tab.id === "tab-a" ? "tab-b" : "tab-a")
+            : event.key === "Home" ? "tab-a" : event.key === "End" ? "tab-b" : null;
+        if (next) { event.preventDefault(); $(next).focus(); updateView(next === "tab-a" ? "a" : "b", false); }
+      }));
+      document.querySelectorAll(".progressive details").forEach((details) => details.addEventListener("toggle", () => {
+        if (details.open) state.bOpen.add(details.id);
+        else state.bOpen.delete(details.id);
+      }));
+
+      updateAll();
+      updateView("a", false);
+    })();
+  </script>
+</body>
+</html>

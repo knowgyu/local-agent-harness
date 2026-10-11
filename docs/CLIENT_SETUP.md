@@ -52,6 +52,12 @@ claude mcp get local-agent-harness
 
 `claude mcp list`의 상태와 `claude mcp get local-agent-harness`를 확인하고, `claude` 세션의 `/mcp`에서 연결 및 도구를 확인한다. 서버가 보이지 않거나 연결에 실패하면 `/mcp`에서 상태를 확인한 다음 `claude mcp get local-agent-harness`를 실행한다. 그래도 해결되지 않으면 새 Claude Code CLI 세션을 연다. 옵션과 상태 의미는 [Claude Code MCP 안내](https://code.claude.com/docs/en/mcp)를 참조한다. 이 예시는 Claude Code CLI에 한정되며 Claude Desktop 연결을 뜻하지 않는다.
 
+## Claude Desktop
+
+Claude Desktop은 Claude Code CLI와 다른 설치 경로를 사용한다. Windows용 `.mcpb` 확장 패키지가 제공된 경우 Claude Desktop에서 **Settings → Extensions → Advanced settings → Extension Developer → Install Extension…**을 열어 해당 파일을 선택한다. 설치 뒤 대화의 **+ → Connectors**에서 Local Agent Harness와 도구가 표시되는지 직접 확인한다. 시작 오류는 Desktop의 Developer 설정과 확장 로그에서 확인한다. 단계는 Anthropic의 [Claude Desktop 로컬 MCP 서버 안내](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop)에도 설명되어 있다.
+
+일반 Windows portable ZIP의 실행 파일만으로는 `.mcpb` 확장이 설치되지 않는다. 확장은 별도 패키지이며, 이 저장소의 `docs/CLAUDE_DESKTOP.md`에는 패키지 구성 및 확인 범위가 정리되어 있다. 확장 프로세스도 같은 Windows 사용자로 실행되어 `%AppData%\LocalAgentHarness\config.json`과 그 사용자의 Credential Manager를 사용한다. 도구가 표시된 사실은 실제 대상 연결이나 서비스 호출이 성공했음을 뜻하지 않는다.
+
 ## Gemini CLI
 
 1. 현재 공식 문서는 Windows 11 24H2 이상과 Node.js 20 이상을 명시한다. Node.js가 준비된 PowerShell에서 [Gemini CLI 설치 안내](https://geminicli.com/docs/get-started/installation/)의 npm 설치를 실행하고 `gemini --version`으로 버전을 기록한다.

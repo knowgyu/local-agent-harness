@@ -20,14 +20,26 @@ func newLocalUIHandlerWithResidentObserver(a *app, observer ResidentEndpointObse
 		clientRegistrationUIErrorCode,
 		observer,
 	)
-	readinessHandler := newReadinessStatusHandler(a.configPath, a.clientRegistration, observer)
 	mux.Handle(readinessStatusPath, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !mcpHTTPOriginAllowed(r, "http://"+a.host) {
 			http.Error(w, "Request rejected.", http.StatusForbidden)
 			return
 		}
-		readinessHandler.ServeHTTP(w, r)
+		controller, _ := a.ensureOnboardingController()
+		newReadinessStatusHandlerWithOnboarding(
+			a.configPath,
+			a.clientRegistration,
+			observer,
+			controller,
+		).ServeHTTP(w, r)
 	}))
+	onboardingHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		controller, _ := a.ensureOnboardingController()
+		newOnboardingUIHandler(a.host, a.csrf, controller).ServeHTTP(w, r)
+	})
+	mux.Handle(onboardingDraftsPath, onboardingHandler)
+	mux.Handle(onboardingDraftItemPath, onboardingHandler)
+	mux.Handle(onboardingReadReceiptsPath, onboardingHandler)
 	for _, route := range []string{
 		runtimeClientsUIStatusPath,
 		runtimeClientsUIPlanPath,
@@ -82,5 +94,6 @@ func newLocalUIHandlerWithResidentObserver(a *app, observer ResidentEndpointObse
 	mux.HandleFunc("/preview-ssh-config", a.handleSSHConfigPreview)
 	mux.HandleFunc("/preview-settings-json", a.handleSettingsImportPreview)
 	mux.HandleFunc("/preview-json-remotes", a.handleJSONGitRemotePreview)
+	mux.HandleFunc("/preview-registration-url", a.handleRegistrationURLPreview)
 	return a.securityHeaders(mux)
 }

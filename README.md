@@ -2,9 +2,9 @@
 
 Local Agent Harness는 이름 있는 개발 서비스 대상을 등록하고, loopback 웹 UI에서 관리하며, 등록된 대상과 허용된 작업만 MCP로 제공하는 Windows 앱입니다.
 
-## v0.1.0-rc.2
+## v0.1.0-rc.3
 
-[빠른 시작](docs/releases/v0.1.0-rc.2/START_HERE.ko.md), [릴리스 노트](docs/releases/v0.1.0-rc.2/RELEASE_NOTES.ko.md), [검증 요약](docs/releases/v0.1.0-rc.2/VALIDATION_SUMMARY.ko.md), [수용 체크리스트](docs/releases/v0.1.0-rc.2/USER_ACCEPTANCE_CHECKLIST.md)를 확인하세요. Windows x64 압축 파일은 이 저장소의 Releases 페이지에서 받고, 사용 전에 함께 제공되는 checksum 파일로 검증하세요.
+[빠른 시작](docs/releases/v0.1.0-rc.3/START_HERE.ko.md), [릴리스 노트](docs/releases/v0.1.0-rc.3/RELEASE_NOTES.ko.md), [검증 요약](docs/releases/v0.1.0-rc.3/VALIDATION_SUMMARY.ko.md), [수용 체크리스트](docs/releases/v0.1.0-rc.3/USER_ACCEPTANCE_CHECKLIST.md)를 확인하세요. Windows x64 압축 파일은 이 저장소의 Releases 페이지에서 받고, `SHA256SUMS.txt`와 `release-manifest.json`으로 실제 자산 이름과 해시를 확인하세요. RC3는 서명되지 않은 사전 공개 후보다.
 
 ## 기능과 경계
 
@@ -15,6 +15,8 @@ Local Agent Harness는 이름 있는 개발 서비스 대상을 등록하고, lo
 - 반환 데이터의 크기와 개수를 제한하고 알려진 민감 필드를 best-effort 방식으로 필터링합니다. 모든 비밀을 찾아낸다고 보장하지 않습니다.
 
 제품은 GitHub Enterprise, Jenkins, Harbor, Kubernetes Dashboard REST, SSH 및 등록된 로컬 작업 흐름을 포함합니다. 정확한 범위와 제한은 릴리스 문서에 설명되어 있습니다. 실제 서비스와 클라이언트의 호환성은 사용 환경에서 확인해야 합니다. 합성 검사는 실제 환경 호환성을 입증하지 않습니다.
+
+현재 UI 사용·검증 범위는 데스크톱입니다. 모바일은 사용하지 않으며 모바일 뷰포트는 현재 지원 목표나 수용 기준이 아닙니다. 좁은 데스크톱 창은 데스크톱 사용 범위에 포함됩니다.
 
 ## 프로젝트 문서
 

@@ -250,6 +250,17 @@ func (a *app) saveJenkinsTarget(targetID, name, baseURL, username, jobPath, envi
 }
 
 func (a *app) saveJenkinsTargetWithNamedSecret(targetID, name, baseURL, username, jobPath, environment, secret string, nonProductionPreapproved bool, namedSecretID string) (string, error) {
+	return a.saveJenkinsTargetWithNamedSecretMode(targetID, name, baseURL, username, jobPath, environment, secret, nonProductionPreapproved, namedSecretID, false)
+}
+
+func (a *app) saveOnboardingJenkinsTargetWithNamedSecret(stableTargetID, name, baseURL, username, jobPath, environment, secret, namedSecretID string) (string, error) {
+	if !jenkinsIDPattern.MatchString(stableTargetID) {
+		return "", errors.New("The onboarding Jenkins target ID is invalid.")
+	}
+	return a.saveJenkinsTargetWithNamedSecretMode(stableTargetID, name, baseURL, username, jobPath, environment, secret, false, namedSecretID, true)
+}
+
+func (a *app) saveJenkinsTargetWithNamedSecretMode(targetID, name, baseURL, username, jobPath, environment, secret string, nonProductionPreapproved bool, namedSecretID string, allowReservedCreate bool) (string, error) {
 	current, err := readConfig(a.configPath)
 	if err != nil {
 		return "", errors.New("Could not read current settings. They were not changed.")
@@ -257,9 +268,15 @@ func (a *app) saveJenkinsTargetWithNamedSecret(targetID, name, baseURL, username
 	index := -1
 	if targetID != "" {
 		index = findJenkinsTargetIndex(current.JenkinsTargets, targetID)
-		if index < 0 {
+		if index < 0 && !allowReservedCreate {
 			return "", errors.New("The selected Jenkins target is not registered.")
 		}
+	}
+	if allowReservedCreate && targetID == "" {
+		return "", errors.New("The onboarding Jenkins target ID is invalid.")
+	}
+	if allowReservedCreate && index >= 0 {
+		return "", errors.New("The onboarding Jenkins target ID is already registered.")
 	}
 	for i, existing := range current.JenkinsTargets {
 		if existing.Name == name && i != index {
@@ -285,9 +302,13 @@ func (a *app) saveJenkinsTargetWithNamedSecret(targetID, name, baseURL, username
 		}
 		updated.ID, updated.SecretRef, updated.Disabled = old.ID, old.SecretRef, old.Disabled
 	} else {
-		updated.ID, err = newTargetID("jenkins")
-		if err != nil {
-			return "", errors.New("Could not create target ID. Settings were not changed.")
+		if allowReservedCreate {
+			updated.ID = targetID
+		} else {
+			updated.ID, err = newTargetID("jenkins")
+			if err != nil {
+				return "", errors.New("Could not create target ID. Settings were not changed.")
+			}
 		}
 	}
 	if !validJenkinsUsername(username) || !validJenkinsJobPath(jobPath) || !validJenkinsEnvironmentLabel(environment) || name == "" || len(name) > 80 || strings.ContainsAny(name, "\r\n\x00") {
@@ -371,6 +392,7 @@ func (a *app) registeredJenkinsJob(ctx context.Context, requestedName string) (j
 	if err != nil {
 		return jenkinsJobInfo{}, err
 	}
+	observeFirstReadDefinition(ctx, t)
 	defer clear(token)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()
@@ -706,6 +728,7 @@ func (a *app) registeredJenkinsLog(ctx context.Context, requestedName string, bu
 	if err != nil {
 		return jenkinsLogSegmentResult{}, err
 	}
+	observeFirstReadDefinition(ctx, target)
 	defer clear(token)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()
@@ -807,6 +830,7 @@ func (a *app) registeredJenkinsQueue(ctx context.Context, requestedName string, 
 	if err != nil {
 		return jenkinsQueueInfo{}, err
 	}
+	observeFirstReadDefinition(ctx, target)
 	defer clear(token)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()

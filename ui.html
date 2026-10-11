@@ -129,7 +129,7 @@
     .lah-shell-pane { min-width: 0; }
     .lah-shell-pane[hidden] { display: none !important; }
     .lah-quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
-    .lah-quick-action { display: grid; min-width: 0; align-content: start; gap: 4px; padding: 12px; border: 1px solid var(--border); border-left: 4px solid #4b657e; border-radius: 6px; background: #fff; color: inherit; text-decoration: none; }
+    .lah-quick-action { display: grid; min-width: 0; align-content: start; gap: 4px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; background: #fff; color: inherit; text-decoration: none; }
     .lah-quick-action:hover { background: #f8fafc; }
     .lah-quick-action strong { overflow-wrap: anywhere; }
     .lah-quick-action span { color: var(--muted); font-size: .86rem; }
@@ -137,6 +137,76 @@
     .lah-empty-state h3 { margin: 0 0 5px; font-size: 1rem; }
     .lah-empty-state p { margin: 0 0 10px; color: var(--muted); }
     .lah-empty-state a { display: inline-flex; min-height: 44px; align-items: center; padding: 8px 12px; border: 1px solid var(--navy); border-radius: 5px; color: #fff; background: var(--navy); font-weight: 650; text-decoration: none; }
+    .lah-registration-start { margin: 12px 0 16px; padding: 16px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+    .lah-registration-start h3, .lah-registration-start h4 { margin: 0 0 5px; font-size: 1rem; line-height: 1.35; }
+    .lah-registration-start > p { max-width: 72ch; margin: 0 0 12px; color: var(--muted); }
+    .lah-registration-form { display: grid; grid-template-columns: minmax(180px, .7fr) minmax(260px, 1.5fr) auto; align-items: end; gap: 10px; }
+    .lah-registration-form .field { min-width: 0; }
+    .lah-registration-form .actions { margin: 0; }
+    .lah-registration-form button { white-space: nowrap; }
+    .lah-registration-after-save { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 13px; padding-top: 11px; border-top: 1px solid #d9e0e6; }
+    .lah-registration-after-save strong { flex: 0 0 auto; }
+    .lah-registration-after-save p { flex: 1 1 420px; margin: 0; color: var(--muted); font-size: .9rem; }
+    .lah-registration-after-save a { min-height: 44px; display: inline-flex; align-items: center; text-underline-offset: 2px; }
+    .lah-registration-status { min-height: 24px; margin: 8px 0 0; color: var(--muted); }
+    .lah-registration-status.error { color: var(--danger); }
+    .lah-registration-status[hidden], .lah-registration-candidate[hidden], .lah-registration-switch[hidden] { display: none !important; }
+    .lah-onboarding { margin: 16px 0; padding: 16px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+    .lah-onboarding h3, .lah-onboarding h4 { margin: 0 0 6px; line-height: 1.35; }
+    .lah-onboarding > p { max-width: 72ch; color: var(--muted); }
+    .lah-onboarding-list { display: grid; gap: 8px; margin: 10px 0; padding: 0; list-style: none; }
+    .lah-onboarding-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #d9e0e6; }
+    .lah-onboarding-list button { min-height: 40px; }
+    .lah-onboarding-active { margin-top: 14px; padding-top: 14px; border-top: 1px solid #d9e0e6; }
+    .lah-onboarding-active[hidden] { display: none !important; }
+    .lah-onboarding-status { min-height: 24px; margin: 8px 0; }
+    .lah-onboarding-status.error { color: var(--danger); font-weight: 650; }
+    .lah-onboarding-result { padding: 10px 0; }
+    .lah-onboarding-result dl { display: grid; grid-template-columns: minmax(120px, .4fr) minmax(0, 1fr); gap: 5px 12px; }
+    .lah-onboarding-result dt { color: var(--muted); }
+    .lah-onboarding-result dd { margin: 0; overflow-wrap: anywhere; }
+    .lah-onboarding-result ul { margin-top: 4px; }
+    .lah-onboarding-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    .lah-onboarding-actions button { min-height: 44px; }
+    .lah-onboarding-warning { padding: 10px; border: 1px solid #9b6b1e; border-radius: 6px; background: #fff8e8; }
+    .lah-registration-candidate, .lah-registration-switch { margin-top: 14px; padding-top: 13px; border-top: 1px solid #d9e0e6; }
+    .lah-registration-candidate > p, .lah-registration-switch > p { margin: 0 0 9px; color: var(--muted); }
+    .lah-registration-candidate dl { display: grid; grid-template-columns: minmax(120px, 190px) minmax(0, 1fr); gap: 5px 12px; margin: 10px 0; }
+    .lah-registration-candidate dt { font-weight: 650; }
+    .lah-registration-candidate dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+    .lah-registration-meta { margin: 10px 0 0; }
+    .lah-registration-meta ul { margin: 4px 0 0; padding-left: 21px; }
+    .lah-registration-meta li + li { margin-top: 3px; }
+    .lah-registration-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .lah-registration-actions button { min-width: 44px; }
+    .lah-registration-switch { padding: 12px; border: 1px solid #cbb781; border-radius: 6px; background: #fbf8f0; }
+    .lah-registration-switch > p { color: #473c25; }
+    .lah-registration-flow { margin: 12px 0 14px; padding: 11px 0 0; border-top: 1px solid #d9e0e6; }
+    .lah-registration-flow[hidden], .lah-registration-edit-help[hidden] { display: none !important; }
+    .lah-registration-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+    .lah-registration-steps > li { min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 5px; background: #f6f8fa; }
+    .lah-registration-steps strong { display: block; margin-bottom: 3px; }
+    .lah-registration-steps p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .lah-registration-help { margin-top: 7px; }
+    .lah-registration-help > summary { min-height: 44px; padding: 9px 10px; border: 1px solid #c7d0d9; border-radius: 5px; background: #fff; cursor: pointer; font-weight: 650; }
+    .lah-registration-help[open] > summary { border-radius: 5px 5px 0 0; background: #eef2f6; }
+    .lah-registration-help > div { padding: 10px; border: 1px solid #c7d0d9; border-top: 0; border-radius: 0 0 5px 5px; }
+    .lah-registration-help p { margin: 0; color: var(--muted); }
+    .lah-registration-edit-help { margin: 9px 0 12px; }
+    .lah-registration-edit-help > summary { min-height: 44px; padding: 9px 10px; border: 1px solid #c7d0d9; border-radius: 5px; background: #fff; cursor: pointer; font-weight: 650; }
+    .lah-registration-edit-help[open] > summary { border-radius: 5px 5px 0 0; background: #eef2f6; }
+    .lah-registration-edit-help > div { padding: 10px; border: 1px solid #c7d0d9; border-top: 0; border-radius: 0 0 5px 5px; }
+    .lah-registration-edit-help p { margin: 0; color: var(--muted); }
+    .lah-registration-edit-help p + p { margin-top: 6px; }
+    .lah-registration-edit-help a, .lah-registration-flow a { text-underline-offset: 2px; }
+    .lah-manual-save { flex: 1 1 100%; min-width: 0; }
+    .lah-manual-save > summary { min-height: 44px; padding: 9px 10px; border: 1px solid #c7d0d9; border-radius: 5px; background: #fff; cursor: pointer; font-weight: 650; }
+    .lah-manual-save[open] > summary { border-radius: 5px 5px 0 0; background: #eef2f6; }
+    .lah-manual-save > p { margin: 8px 0; color: var(--muted); }
+    .lah-manual-save > button { margin-bottom: 4px; }
+    .lah-onboarding-save-hint { flex: 1 1 100%; margin: 0; color: var(--muted); font-size: .88rem; }
+    .lah-onboarding-prompt { margin-top: 12px; padding-top: 12px; border-top: 1px solid #d9e0e6; }
+    .lah-onboarding-prompt textarea { display: block; width: 100%; max-width: 100%; box-sizing: border-box; min-height: 88px; margin: 8px 0; resize: vertical; }
     .lah-service-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
     .lah-service-detail { min-width: 0; }
     .lah-service-detail > summary { min-height: 48px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: #17212b; cursor: pointer; font-weight: 650; }
@@ -157,6 +227,8 @@
       .lah-shell-nav { position: static; }
       .lah-nav-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .lah-quick-actions { grid-template-columns: 1fr; }
+      .lah-registration-form { grid-template-columns: 1fr; }
+      .lah-registration-form .actions { justify-content: start; }
       .grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
@@ -168,6 +240,11 @@
       .wide { grid-column: auto; }
       .topbar-right { flex-wrap: wrap; justify-content: flex-end; gap: 4px 12px; padding: 8px 0; }
       .local { text-align: left; }
+      .lah-registration-form { grid-template-columns: 1fr; }
+      .lah-registration-form .actions { justify-content: start; }
+      .lah-registration-steps { grid-template-columns: 1fr; gap: 7px; }
+      .lah-registration-candidate dl { grid-template-columns: 1fr; gap: 2px; }
+      .lah-registration-candidate dd { margin-bottom: 7px; }
     }
     @media (max-width: 380px) {
       main { padding-right: 10px; padding-left: 10px; }
@@ -201,7 +278,6 @@
     <noscript>
       <p class="notice" role="status">{{if eq .Language "ko"}}일부 화면 기능과 현재 상태 조회에는 JavaScript가 필요합니다. 정적 안내는 계속 볼 수 있습니다. <a href="/readiness">연결 준비 상태 안내</a>를 확인하세요.{{else}}Some interactive settings and the current status view require JavaScript. Static guidance remains available. See the <a href="/readiness">readiness guide</a>.{{end}}</p>
     </noscript>
-    <p class="eyebrow" data-message-en="Local settings and operations" data-message-ko="로컬 설정과 운영">Local settings and operations</p>
     <h1 data-message-en="Settings and operations" data-message-ko="설정과 운영">Settings and operations</h1>
     <p class="intro" data-message-en="Manage saved targets and run explicitly selected local operations. Opening a section does not contact a service or change settings." data-message-ko="저장된 대상과 사용자가 선택한 로컬 작업을 관리합니다. 섹션을 여는 것만으로 서비스에 접속하거나 설정을 바꾸지 않습니다.">Manage saved targets and run explicitly selected local operations. Opening a section does not contact a service or change settings.</p>
 
@@ -232,7 +308,8 @@
               <a class="lah-nav-link" href="#lah-pane-diagnosis" data-pane-link="diagnosis" data-message-en="Dashboard diagnosis" data-message-ko="Dashboard 진단">Dashboard diagnosis</a>
               <a class="lah-nav-link" href="#lah-pane-ssh" data-pane-link="ssh" data-message-en="SSH tasks" data-message-ko="SSH 작업">SSH tasks</a>
               <a class="lah-nav-link" href="#lah-pane-tasks" data-pane-link="tasks" data-message-en="Registered Python tasks" data-message-ko="등록된 Python 작업">Registered Python tasks</a>
-              <a class="lah-nav-link" href="#lah-pane-draft" data-pane-link="draft" data-message-en="AI setup draft" data-message-ko="AI 설정 초안">AI setup draft</a>
+              <a class="lah-nav-link" href="#lah-pane-draft" data-pane-link="draft" data-message-en="AI proposal review" data-message-ko="AI 제안 검토">AI proposal review</a>
+              <a class="lah-nav-link" href="#lah-onboarding" data-nav-anchor="lah-onboarding" data-message-en="Connection drafts" data-message-ko="작성 중인 연결">Connection drafts</a>
             </div>
           </div>
         </nav>
@@ -243,14 +320,116 @@
             <div id="lah-no-connections" class="lah-empty-state" hidden>
               <h3 data-message-en="No connection targets yet" data-message-ko="연결 대상이 없습니다">No connection targets yet</h3>
               <p data-message-en="Add a target, then save only the permissions and credentials it needs." data-message-ko="대상을 추가하고 필요한 권한과 자격 증명만 저장하세요.">Add a target, then save only the permissions and credentials it needs.</p>
-              <a class="lah-route-card-link" href="#github-heading" data-message-en="Add a connection target" data-message-ko="연결 대상 추가">Add a connection target</a>
+              <a class="lah-route-card-link" href="#lah-registration-start" data-message-en="Start with a service address" data-message-ko="서비스 주소부터 시작">Start with a service address</a>
             </div>
+            <section id="lah-registration-start" class="lah-registration-start" aria-labelledby="lah-registration-start-heading">
+              <h3 id="lah-registration-start-heading" data-message-en="1 · Add a connection from its address" data-message-ko="1 · 서비스 주소로 연결 대상 추가">1 · Add a connection from its address</h3>
+              <p data-message-en="Choose a service and paste its HTTPS address. Checking the address sends it only to this local app; it does not contact the service or save settings." data-message-ko="서비스를 고르고 HTTPS 주소를 붙여 넣으세요. 주소 확인은 이 로컬 앱에만 전송하며 서비스에 접속하거나 설정을 저장하지 않습니다.">Choose a service and paste its HTTPS address. Checking the address sends it only to this local app; it does not contact the service or save settings.</p>
+              <form id="lah-registration-preview-form" class="lah-registration-form" action="/preview-registration-url" method="post">
+                <input type="hidden" name="csrf" value="{{.CSRF}}">
+                <div class="field">
+                  <label for="lah-registration-service" data-message-en="Service" data-message-ko="서비스">Service</label>
+                  <select id="lah-registration-service" name="service" required>
+                    <option value="" selected disabled data-message-en="Choose a service" data-message-ko="서비스 선택">Choose a service</option>
+                    <option value="github" data-message-en="GitHub Enterprise" data-message-ko="GitHub Enterprise">GitHub Enterprise</option>
+                    <option value="jenkins" data-message-en="Jenkins" data-message-ko="Jenkins">Jenkins</option>
+                    <option value="dashboard" data-message-en="Kubernetes Dashboard" data-message-ko="Kubernetes Dashboard">Kubernetes Dashboard</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="lah-registration-url" data-message-en="HTTPS service, repository, or job address" data-message-ko="HTTPS 서비스·저장소·작업 주소">HTTPS service, repository, or job address</label>
+                  <input id="lah-registration-url" name="url" type="url" maxlength="2048" autocomplete="url" spellcheck="false" placeholder="https://service.example.invalid/path" required aria-describedby="lah-registration-url-hint">
+                  <p id="lah-registration-url-hint" class="hint" data-message-en="Do not include a password, token, query string, or fragment. Nothing is checked until you choose the button." data-message-ko="비밀번호, 토큰, 쿼리 문자열, 프래그먼트를 포함하지 마세요. 버튼을 눌러야 주소를 확인합니다.">Do not include a password, token, query string, or fragment. Nothing is checked until you choose the button.</p>
+                </div>
+                <div class="actions">
+                  <button id="lah-registration-preview-submit" type="submit" data-message-en="Check address" data-message-ko="주소 확인">Check address</button>
+                </div>
+              </form>
+              <div class="lah-registration-after-save">
+                <strong data-message-en="After saving" data-message-ko="저장 후">After saving</strong>
+                <p data-message-en="Run the separate connection test, then review the AI app guide. A service test does not confirm the AI app's first read; verify that in the active app." data-message-ko="별도의 연결 테스트를 실행한 뒤 AI 앱 안내를 확인하세요. 서비스 테스트는 AI 앱의 첫 읽기를 확인하지 않으므로 사용 중인 앱에서 직접 확인해야 합니다.">Run the separate connection test, then review the AI app guide. A service test does not confirm the AI app's first read; verify that in the active app.</p>
+                <a href="#lah-pane-clients" data-message-en="Open AI app connection guide" data-message-ko="AI 앱 연결 안내 열기">Open AI app connection guide</a>
+              </div>
+              <p id="lah-registration-preview-status" class="lah-registration-status" role="status" aria-live="polite" hidden></p>
+              <section id="lah-registration-candidate" class="lah-registration-candidate" aria-labelledby="lah-registration-candidate-heading" hidden>
+                <h4 id="lah-registration-candidate-heading" data-message-en="Review the address candidate" data-message-ko="주소 후보 확인">Review the address candidate</h4>
+                <p data-message-en="The values below are suggestions from URL shape only. Review them before using the existing target form. This preview never stores credentials or proves that the service or resource exists." data-message-ko="아래 값은 URL 모양에서 제안한 후보입니다. 기존 대상 양식에 적용하기 전에 확인하세요. 이 미리보기는 자격 증명을 저장하거나 서비스·리소스의 존재를 확인하지 않습니다.">The values below are suggestions from URL shape only. Review them before using the existing target form. This preview never stores credentials or proves that the service or resource exists.</p>
+                <dl id="lah-registration-candidate-values"></dl>
+                <div class="lah-registration-meta">
+                  <strong data-message-en="Information not found in the address" data-message-ko="주소에서 찾지 못한 정보">Information not found in the address</strong>
+                  <ul id="lah-registration-missing-fields"></ul>
+                  <p id="lah-registration-no-missing-fields" class="hint" data-message-en="No required resource field was missing from the address." data-message-ko="주소에 필요한 리소스 항목이 누락되지 않았습니다." hidden>No required resource field was missing from the address.</p>
+                </div>
+                <div class="lah-registration-meta">
+                  <strong data-message-en="Review these inferred parts" data-message-ko="추정한 항목을 검토하세요">Review these inferred parts</strong>
+                  <ul id="lah-registration-review-fields"></ul>
+                  <p id="lah-registration-no-review-fields" class="hint" data-message-en="Review the suggested address and resource values above." data-message-ko="위에 제안된 주소와 리소스 값을 확인하세요." hidden>Review the suggested address and resource values above.</p>
+                </div>
+                <div id="lah-registration-form-missing" class="lah-registration-meta" hidden>
+                  <strong data-message-en="Still required by the target form" data-message-ko="대상 양식에서 추가로 필요한 항목">Still required by the target form</strong>
+                  <ul id="lah-registration-form-missing-fields"></ul>
+                  <p id="lah-registration-form-complete" class="hint" data-message-en="Required form fields are filled. Review the target and credential before saving." data-message-ko="필수 양식 항목을 입력했습니다. 저장 전에 대상과 자격 증명을 확인하세요." hidden>Required form fields are filled. Review the target and credential before saving.</p>
+                </div>
+                <div id="lah-registration-switch" class="lah-registration-switch" hidden>
+                  <p id="lah-registration-switch-message" role="status" aria-live="polite"></p>
+                  <div class="lah-registration-actions">
+                    <button id="lah-registration-switch-confirm" type="button" data-message-en="Continue as a new target" data-message-ko="새 대상으로 계속">Continue as a new target</button>
+                    <button id="lah-registration-switch-cancel" class="secondary" type="button" data-message-en="Keep editing this target" data-message-ko="현재 대상 계속 수정">Keep editing this target</button>
+                  </div>
+                </div>
+                <div class="lah-registration-actions">
+                  <button id="lah-registration-apply" type="button" data-message-en="Use these values in a new target" data-message-ko="새 대상 양식에 값 적용">Use these values in a new target</button>
+                  <button id="lah-registration-check-another" class="secondary" type="button" data-message-en="Check another address" data-message-ko="다른 주소 확인">Check another address</button>
+                </div>
+              </section>
+            </section>
+            <div class="lah-pane-content" data-pane-content="connections"></div>
+            <section id="lah-onboarding" class="lah-onboarding" aria-labelledby="lah-onboarding-heading">
+              <h3 id="lah-onboarding-heading" data-message-en="Continue connection setup" data-message-ko="연결 설정 이어하기">Continue connection setup</h3>
+              <p data-message-en="Save ordinary, incomplete setup progress here and resume it later. Drafts keep ordinary fields such as the normalized service address, but not the original pasted text, passwords, tokens, or credential references. In this guided flow, a target is saved only after a separate check, fixed-scope review, and your explicit activation. New-target forms also retain an explicitly separate immediate-save option." data-message-ko="필수 항목이 덜 채워진 일반 설정 진행 상황을 저장하고 나중에 이어갈 수 있습니다. 초안에는 정규화한 서비스 주소 등 일반 설정 필드를 저장하지만, 붙여 넣은 원문·비밀번호·토큰·자격 증명 참조는 저장하지 않습니다. 이 안내 흐름에서는 별도 확인과 고정 범위 검토 뒤 직접 등록을 선택해야 대상이 저장됩니다. 새 대상 양식에는 별도의 즉시 저장 선택지도 있습니다.">Save ordinary, incomplete setup progress here and resume it later. Drafts keep ordinary fields such as the normalized service address, but not the original pasted text, passwords, tokens, or credential references. In this guided flow, a target is saved only after a separate check, fixed-scope review, and your explicit activation. New-target forms also retain an explicitly separate immediate-save option.</p>
+              <div class="lah-onboarding-actions"><button id="lah-onboarding-refresh" class="secondary" type="button" data-message-en="Refresh saved progress" data-message-ko="저장된 진행 상황 새로고침">Refresh saved progress</button></div>
+              <p id="lah-onboarding-status" class="lah-onboarding-status" role="status" aria-live="polite" data-message-en="Loading saved progress…" data-message-ko="저장된 진행 상황을 불러오는 중…">Loading saved progress…</p>
+              <ul id="lah-onboarding-drafts" class="lah-onboarding-list" aria-label="Saved connection progress"></ul>
+              <div id="lah-onboarding-resume-confirm" class="lah-onboarding-warning" hidden>
+                <p id="lah-onboarding-resume-message" role="status" aria-live="polite"></p>
+                <div class="lah-onboarding-actions">
+                  <button id="lah-onboarding-resume-confirm-button" type="button" data-message-en="Discard unsaved form values and resume" data-message-ko="저장하지 않은 양식 값을 버리고 이어하기">Discard unsaved form values and resume</button>
+                  <button id="lah-onboarding-resume-cancel" class="secondary" type="button" data-message-en="Keep current form" data-message-ko="현재 양식 유지">Keep current form</button>
+                </div>
+              </div>
+              <section id="lah-onboarding-active" class="lah-onboarding-active" aria-labelledby="lah-onboarding-active-heading" hidden>
+                <h4 id="lah-onboarding-active-heading"></h4>
+                <div id="lah-onboarding-recovery-alert" class="lah-onboarding-warning" role="alert" hidden>
+                  <p data-message-en="Registration is on hold — credential storage or cleanup needs review. Inspect this service target in Settings and its Windows Credential Manager entry before taking further action. This draft cannot be checked, activated, or deleted here." data-message-ko="등록 처리 보류 — 자격 증명 저장·정리 상태를 확인해야 합니다. 설정에서 해당 서비스 대상과 Windows Credential Manager 항목을 직접 확인하세요. 이 화면에서는 다시 검사·등록하거나 초안을 삭제할 수 없습니다.">Registration is on hold — credential storage or cleanup needs review. Inspect this service target in Settings and its Windows Credential Manager entry before taking further action. This draft cannot be checked, activated, or deleted here.</p>
+                </div>
+                <p id="lah-onboarding-history" class="hint"></p>
+                <div class="lah-onboarding-result"><dl id="lah-onboarding-fields"></dl></div>
+                <p id="lah-onboarding-auth-help" class="hint"></p>
+                <div class="lah-onboarding-actions">
+                  <button id="lah-onboarding-check" type="button" data-message-en="Run temporary connection check" data-message-ko="임시 연결 확인 실행">Run temporary connection check</button>
+                  <button id="lah-onboarding-review" class="secondary" type="button" disabled data-message-en="Review fixed operation scope" data-message-ko="고정 작업 범위 검토">Review fixed operation scope</button>
+                </div>
+                <div id="lah-onboarding-check-result" class="lah-onboarding-result" aria-live="polite" hidden></div>
+                <div id="lah-onboarding-policy" class="lah-onboarding-result" hidden>
+                  <h4 data-message-en="Fixed operation scope" data-message-ko="고정 작업 범위">Fixed operation scope</h4>
+                  <p data-message-en="This review describes the service's fixed tools. Individual MCP operations cannot be selected or gated here." data-message-ko="이 검토는 서비스의 고정 도구 범위를 설명합니다. 여기서 개별 MCP 작업을 선택하거나 제한할 수는 없습니다.">This review describes the service's fixed tools. Individual MCP operations cannot be selected or gated here.</p>
+                  <strong data-message-en="Read capabilities included" data-message-ko="포함되는 읽기 기능">Read capabilities included</strong><ul id="lah-onboarding-included"></ul>
+                  <div id="lah-onboarding-excluded-section" hidden>
+                    <strong data-message-en="Excluded tools" data-message-ko="제외되는 도구">Excluded tools</strong><ul id="lah-onboarding-excluded"></ul>
+                  </div>
+                  <strong data-message-en="Mapping required" data-message-ko="매핑 필요">Mapping required</strong><ul id="lah-onboarding-mapping"></ul>
+                  <ul id="lah-onboarding-policy-notes"></ul>
+                  <label class="check-row"><input id="lah-onboarding-policy-confirmed" type="checkbox"><span data-message-en="I reviewed this fixed scope and want to activate this target." data-message-ko="고정 범위를 확인했으며 이 대상을 등록하겠습니다.">I reviewed this fixed scope and want to activate this target.</span></label>
+                  <div class="lah-onboarding-actions"><button id="lah-onboarding-activate" type="button" disabled data-message-en="Activate this target" data-message-ko="이 대상 등록">Activate this target</button></div>
+                </div>
+                <div id="lah-onboarding-activation-result" class="lah-onboarding-result" role="status" aria-live="polite" hidden></div>
+              </section>
+            </section>
             <nav class="lah-quick-actions" aria-label="Related local operations">
               <a class="lah-quick-action" href="#lah-pane-diagnosis"><strong data-message-en="Dashboard diagnosis" data-message-ko="Dashboard 진단">Dashboard diagnosis</strong><span data-message-en="{{if .DashboardDiagnosisChoices}}Choose a saved mapping and run a read-only check.{{else}}Add a target and save a complete mapping to enable a diagnosis.{{end}}" data-message-ko="{{if .DashboardDiagnosisChoices}}저장된 매핑을 선택해 읽기 전용 확인을 실행하세요.{{else}}진단을 사용하려면 대상을 추가하고 매핑을 완성해 저장하세요.{{end}}">{{if .DashboardDiagnosisChoices}}Choose a saved mapping and run a read-only check.{{else}}Add a target and save a complete mapping to enable a diagnosis.{{end}}</span></a>
               <a class="lah-quick-action" href="#lah-pane-ssh"><strong data-message-en="SSH tasks" data-message-ko="SSH 작업">SSH tasks</strong><span data-message-en="Review approved operations; no command runs until you start one." data-message-ko="승인된 작업을 확인하세요. 직접 시작하기 전에는 명령을 실행하지 않습니다.">Review approved operations; no command runs until you start one.</span></a>
               <a class="lah-quick-action" href="#lah-pane-tasks"><strong data-message-en="Registered Python tasks" data-message-ko="등록된 Python 작업">Registered Python tasks</strong><span data-message-en="Each run requires separate local approval." data-message-ko="실행할 때마다 별도의 로컬 승인이 필요합니다.">Each run requires separate local approval.</span></a>
             </nav>
-            <div class="lah-pane-content" data-pane-content="connections"></div>
           </section>
           <section id="lah-pane-groups" class="lah-shell-pane" aria-labelledby="lah-pane-groups-heading" data-pane="groups" hidden inert>
             <h2 id="lah-pane-groups-heading" class="lah-pane-heading" tabindex="-1" data-message-en="Connection groups" data-message-ko="연결 그룹">Connection groups</h2>
@@ -274,9 +453,9 @@
             <div class="lah-pane-content" data-pane-content="ssh"></div>
           </section>
           <section id="lah-pane-draft" class="lah-shell-pane" aria-labelledby="lah-pane-draft-heading" data-pane="draft" hidden inert>
-            <h2 id="lah-pane-draft-heading" class="lah-pane-heading" tabindex="-1" data-message-en="AI setup draft" data-message-ko="AI 설정 초안">AI setup draft</h2>
+            <h2 id="lah-pane-draft-heading" class="lah-pane-heading" tabindex="-1" data-message-en="AI proposal review" data-message-ko="AI 제안 검토">AI proposal review</h2>
             <div class="lah-route-card" data-pane-content="draft">
-              <h3 data-message-en="Review an AI setup draft" data-message-ko="AI 설정 초안 검토">Review an AI setup draft</h3>
+              <h3 data-message-en="Review an AI setup proposal" data-message-ko="AI 설정 제안 검토">Review an AI setup proposal</h3>
               <p data-message-en="Draft review and approval are available on the SSH and setup settings page. Review does not save; approval saves the reviewed proposal." data-message-ko="초안 검토와 승인은 SSH 및 설정 페이지에서 할 수 있습니다. 검토는 저장하지 않으며 승인은 검토한 제안을 저장합니다.">Draft review and approval are available on the SSH and setup settings page. Review does not save; approval saves the reviewed proposal.</p>
               <a href="/ssh-settings#setup-draft-review-heading" data-message-en="Open AI setup draft review" data-message-ko="AI 설정 초안 검토 열기">Open AI setup draft review</a>
             </div>
@@ -330,6 +509,25 @@
     <div class="grid">
       <section class="panel" aria-labelledby="github-heading">
         <h2 id="github-heading">GitHub Enterprise</h2>
+        <div class="lah-registration-flow" data-registration-new-help="github" {{if ne .GitHubID "new"}}hidden{{end}}>
+          <ol class="lah-registration-steps">
+            <li><strong data-message-en="2 · Prepare authentication" data-message-ko="2 · 인증 준비">2 · Prepare authentication</strong><p data-message-en="Use a token issued for this Enterprise server and the intended repository." data-message-ko="이 Enterprise 서버와 지정 저장소에 사용할 토큰을 준비하세요.">Use a token issued for this Enterprise server and the intended repository.</p></li>
+            <li><strong data-message-en="3 · Review the target" data-message-ko="3 · 대상 검토">3 · Review the target</strong><p data-message-en="Check the name, server origin, one repository, and the token field before saving." data-message-ko="저장 전에 이름, 서버 원본 주소, 저장소 하나, 토큰 항목을 확인하세요.">Check the name, server origin, one repository, and the token field before saving.</p></li>
+            <li><strong data-message-en="4 · Test, then read" data-message-ko="4 · 테스트 후 읽기">4 · Test, then read</strong><p data-message-en="After saving, run the separate connection test, then review the AI app guide and verify a read in that app." data-message-ko="저장 후 별도의 연결 테스트를 실행하고 AI 앱 안내를 확인한 뒤 해당 앱에서 읽기를 직접 확인하세요.">After saving, run the separate connection test, then review the AI app guide and verify a read in that app.</p></li>
+          </ol>
+          <details id="github-registration-auth-help" class="lah-registration-help">
+            <summary data-message-en="Authentication preparation" data-message-ko="인증 준비 안내">Authentication preparation</summary>
+            <div><p data-message-en="Follow the documentation for your GitHub Enterprise version. Issue a personal access token for this server, grant only the read access needed for the intended repository, and complete any organization approval. The URL preview does not request or send a token." data-message-ko="사용 중인 GitHub Enterprise 버전의 안내를 확인하세요. 이 서버용 개인 액세스 토큰을 발급하고 지정 저장소에 필요한 읽기 권한만 부여한 뒤 조직 승인이 필요하면 완료하세요. URL 미리보기는 토큰을 요청하거나 전송하지 않습니다.">Follow the documentation for your GitHub Enterprise version. Issue a personal access token for this server, grant only the read access needed for the intended repository, and complete any organization approval. The URL preview does not request or send a token.</p></div>
+          </details>
+          <details class="lah-registration-help">
+            <summary data-message-en="Review the saved operation boundary" data-message-ko="저장할 작업 범위 확인">Review the saved operation boundary</summary>
+            <div><p data-message-en="The candidate fills a server origin and one repository; it does not grant GitHub permissions or change the registered target's supported MCP operations. Confirm the account can read only the intended repository before testing." data-message-ko="후보는 서버 원본 주소와 저장소 하나만 채웁니다. GitHub 권한을 부여하거나 등록 대상의 MCP 작업을 바꾸지 않습니다. 테스트 전에 계정이 지정 저장소를 읽을 수 있는지 확인하세요.">The candidate fills a server origin and one repository; it does not grant GitHub permissions or change the registered target's supported MCP operations. Confirm the account can read only the intended repository before testing.</p></div>
+          </details>
+        </div>
+        <details class="lah-registration-edit-help" data-registration-edit-help="github" {{if eq .GitHubID "new"}}hidden{{end}}>
+          <summary data-message-en="Review before saving changes" data-message-ko="변경 사항 저장 전 확인">Review before saving changes</summary>
+          <div><p data-message-en="Review the name, Enterprise origin, and fixed repository. Read the credential hint beside the token field; changing the host can require a new token." data-message-ko="이름, Enterprise 원본 주소, 고정 저장소를 확인하세요. 토큰 항목 옆 자격 증명 안내를 읽으세요. 호스트를 바꾸면 새 토큰이 필요할 수 있습니다.">Review the name, Enterprise origin, and fixed repository. Read the credential hint beside the token field; changing the host can require a new token.</p><p data-message-en="Saving updates the local target. The connection test is a separate action and is not run by opening or reviewing this editor. A client-side read must be verified in the active AI app." data-message-ko="저장하면 로컬 대상이 갱신됩니다. 연결 테스트는 별도 동작이며 편집기를 열거나 검토할 때 실행되지 않습니다. AI 앱에서 수행한 읽기는 사용 중인 앱에서 확인해야 합니다.">Saving updates the local target. The connection test is a separate action and is not run by opening or reviewing this editor. A client-side read must be verified in the active AI app.</p><p><a href="#lah-pane-clients" data-message-en="Open AI app connection guide" data-message-ko="AI 앱 연결 안내 열기">Open AI app connection guide</a></p></div>
+        </details>
         <form class="picker" action="/" method="get">
           <label for="github-selection">Registered GitHub targets</label>
           <div class="picker-row">
@@ -362,12 +560,25 @@
             </div>
             <div class="field">
               <label for="github-token">Personal access token</label>
-              <input id="github-token" name="token" type="password" maxlength="4096" autocomplete="new-password" spellcheck="false" aria-describedby="github-token-hint">
-              <p class="hint" id="github-token-hint">{{if .SecretSaved}}Saved in Windows Credential Manager. Leave blank to keep it.{{else}}Required for a new target. It is stored in Windows Credential Manager.{{end}}</p>
+              <input id="github-token" name="token" type="password" maxlength="4096" autocomplete="new-password" spellcheck="false" {{if eq .GitHubID "new"}}required{{end}} aria-describedby="github-token-hint">
+              <p class="hint" id="github-token-hint">{{if .SecretSaved}}Saved in Windows Credential Manager. Leave blank to keep it.{{else}}Required for a new target. Guided registration saves a pasted value to Windows Credential Manager when confirmed; immediate save does so when you save.{{end}}</p>
             </div>
           </div>
           <div class="actions">
-            <button type="submit" {{if not .StorageReady}}disabled{{end}}>Save GitHub target</button>
+            {{if eq .GitHubID "new"}}
+              <p class="lah-onboarding-save-hint" data-message-en="Only ordinary fields, including the normalized service address, are saved. Credentials are not saved; enter one again at the check step." data-message-ko="정규화한 서비스 주소를 포함한 일반 설정 필드만 저장합니다. 자격 증명은 저장하지 않으므로 확인 단계에서 다시 입력해야 합니다.">Only ordinary fields, including the normalized service address, are saved. Credentials are not saved; enter one again at the check step.</p>
+              <button type="button" data-onboarding-save-draft="github" data-message-en="Save guided progress" data-message-ko="안내에 따라 진행 상황 저장">Save guided progress</button>
+              <button class="secondary" type="button" data-onboarding-go="github" hidden data-message-en="Continue to check and registration" data-message-ko="확인 및 등록 단계로">Continue to check and registration</button>
+              <details class="lah-manual-save">
+                <summary data-message-en="Other option: save immediately without checks" data-message-ko="다른 방법: 검사 없이 바로 저장">Other option: save immediately without checks</summary>
+                <p data-message-en="This is the existing manual-save route. It saves this target and credential immediately without the guided temporary check or fixed-scope review." data-message-ko="기존 수동 저장 방식입니다. 안내 흐름의 임시 확인과 고정 범위 검토를 건너뛰고 대상과 자격 증명을 바로 저장합니다.">This is the existing manual-save route. It saves this target and credential immediately without the guided temporary check or fixed-scope review.</p>
+                <button class="secondary" type="submit" {{if not .StorageReady}}disabled{{end}} data-message-en="Save GitHub target without a check" data-message-ko="검사 없이 GitHub 대상 바로 저장">Save GitHub target without a check</button>
+              </details>
+            {{else}}
+              <button type="submit" {{if not .StorageReady}}disabled{{end}}>Save GitHub target</button>
+              <button class="secondary" type="button" data-onboarding-save-draft="github" hidden data-message-en="Save progress" data-message-ko="진행 상황 저장">Save progress</button>
+              <button class="secondary" type="button" data-onboarding-go="github" hidden data-message-en="Continue to check and registration" data-message-ko="확인 및 등록 단계로">Continue to check and registration</button>
+            {{end}}
           </div>
         </form>
         <div class="actions">
@@ -401,6 +612,25 @@
 
       <section class="panel" aria-labelledby="jenkins-heading">
         <h2 id="jenkins-heading">Jenkins</h2>
+        <div class="lah-registration-flow" data-registration-new-help="jenkins" {{if ne .JenkinsID "new"}}hidden{{end}}>
+          <ol class="lah-registration-steps">
+            <li><strong data-message-en="2 · Prepare authentication" data-message-ko="2 · 인증 준비">2 · Prepare authentication</strong><p data-message-en="Use the authorized account's Jenkins API token and username." data-message-ko="승인된 계정의 Jenkins API 토큰과 사용자 이름을 준비하세요.">Use the authorized account's Jenkins API token and username.</p></li>
+            <li><strong data-message-en="3 · Review the target" data-message-ko="3 · 대상 검토">3 · Review the target</strong><p data-message-en="Check the base URL, fixed job path, environment label, and optional trigger preapproval before saving." data-message-ko="저장 전에 기본 URL, 고정 작업 경로, 환경 이름표, 선택적 실행 사전 승인을 확인하세요.">Check the base URL, fixed job path, environment label, and optional trigger preapproval before saving.</p></li>
+            <li><strong data-message-en="4 · Test, then read" data-message-ko="4 · 테스트 후 읽기">4 · Test, then read</strong><p data-message-en="After saving, run the separate connection test, then review the AI app guide and verify a read in that app." data-message-ko="저장 후 별도의 연결 테스트를 실행하고 AI 앱 안내를 확인한 뒤 해당 앱에서 읽기를 직접 확인하세요.">After saving, run the separate connection test, then review the AI app guide and verify a read in that app.</p></li>
+          </ol>
+          <details id="jenkins-registration-auth-help" class="lah-registration-help">
+            <summary data-message-en="Authentication preparation" data-message-ko="인증 준비 안내">Authentication preparation</summary>
+            <div><p data-message-en="Create an API token for the Jenkins account used by this connection and confirm that account can read the selected job. The URL preview never contacts Jenkins and does not request credentials." data-message-ko="이 연결에 사용할 Jenkins 계정의 API 토큰을 만들고 해당 계정이 선택한 작업을 읽을 수 있는지 확인하세요. URL 미리보기는 Jenkins에 접속하거나 자격 증명을 요청하지 않습니다.">Create an API token for the Jenkins account used by this connection and confirm that account can read the selected job. The URL preview never contacts Jenkins and does not request credentials.</p></div>
+          </details>
+          <details class="lah-registration-help">
+            <summary data-message-en="Review the saved operation boundary" data-message-ko="저장할 작업 범위 확인">Review the saved operation boundary</summary>
+            <div><p data-message-en="The job path fixes which job this target addresses. Trigger preapproval is a separate optional control and remains off for a new target; enable it only for a non-production job when you intend to skip per-call confirmation." data-message-ko="작업 경로는 이 대상이 가리킬 job을 고정합니다. 실행 사전 승인은 별도의 선택 항목이며 새 대상에서는 꺼져 있습니다. 호출별 확인을 생략하려면 비운영 작업임을 확인한 경우에만 켜세요.">The job path fixes which job this target addresses. Trigger preapproval is a separate optional control and remains off for a new target; enable it only for a non-production job when you intend to skip per-call confirmation.</p></div>
+          </details>
+        </div>
+        <details class="lah-registration-edit-help" data-registration-edit-help="jenkins" {{if eq .JenkinsID "new"}}hidden{{end}}>
+          <summary data-message-en="Review before saving changes" data-message-ko="변경 사항 저장 전 확인">Review before saving changes</summary>
+          <div><p data-message-en="Review the name, username, base URL, and fixed job path. Read the credential hint beside the API token; changing the base URL can require a new token." data-message-ko="이름, 사용자 이름, 기본 URL, 고정 작업 경로를 확인하세요. API 토큰 옆 자격 증명 안내를 읽으세요. 기본 URL을 바꾸면 새 토큰이 필요할 수 있습니다.">Review the name, username, base URL, and fixed job path. Read the credential hint beside the API token; changing the base URL can require a new token.</p><p data-message-en="Saving updates the local target. The connection test is a separate action and is not run by opening or reviewing this editor. A client-side read must be verified in the active AI app." data-message-ko="저장하면 로컬 대상이 갱신됩니다. 연결 테스트는 별도 동작이며 편집기를 열거나 검토할 때 실행되지 않습니다. AI 앱에서 수행한 읽기는 사용 중인 앱에서 확인해야 합니다.">Saving updates the local target. The connection test is a separate action and is not run by opening or reviewing this editor. A client-side read must be verified in the active AI app.</p><p><a href="#lah-pane-clients" data-message-en="Open AI app connection guide" data-message-ko="AI 앱 연결 안내 열기">Open AI app connection guide</a></p></div>
+        </details>
         <form class="picker" action="/" method="get">
           <label for="jenkins-selection">Registered Jenkins targets</label>
           <div class="picker-row">
@@ -442,14 +672,27 @@
             </div>
             <div class="field wide">
               <label for="jenkins-token">Jenkins API token</label>
-              <input id="jenkins-token" name="jenkins_token" type="password" maxlength="4096" autocomplete="new-password" spellcheck="false" aria-describedby="jenkins-token-hint">
-              <p class="hint" id="jenkins-token-hint">{{if .JenkinsSecret}}Saved in Windows Credential Manager. Leave blank to keep it.{{else}}Required for a new target. It is stored in Windows Credential Manager.{{end}}</p>
+              <input id="jenkins-token" name="jenkins_token" type="password" maxlength="4096" autocomplete="new-password" spellcheck="false" {{if eq .JenkinsID "new"}}required{{end}} aria-describedby="jenkins-token-hint">
+              <p class="hint" id="jenkins-token-hint">{{if .JenkinsSecret}}Saved in Windows Credential Manager. Leave blank to keep it.{{else}}Required for a new target. Guided registration saves a pasted value to Windows Credential Manager when confirmed; immediate save does so when you save.{{end}}</p>
             </div>
           </div>
           <label class="check-row"><input id="jenkins-preapprove" type="checkbox" name="jenkins_nonproduction_preapproved" value="yes" {{if .JenkinsRun}}checked{{end}} {{if .JenkinsDisabled}}disabled{{end}}><span data-i18n-static>Preapprove this exact job only if it is non-production; skip its per-call confirmation.</span></label>
           {{if .JenkinsDisabled}}<p class="hint">Re-enable the target before granting trigger approval. Disabling cleared its previous approval.</p>{{end}}
           <div class="actions">
-            <button type="submit" {{if not .StorageReady}}disabled{{end}}>Save Jenkins target</button>
+            {{if eq .JenkinsID "new"}}
+              <p class="lah-onboarding-save-hint" data-message-en="Only ordinary fields, including the normalized service address, are saved. Credentials are not saved; enter one again at the check step." data-message-ko="정규화한 서비스 주소를 포함한 일반 설정 필드만 저장합니다. 자격 증명은 저장하지 않으므로 확인 단계에서 다시 입력해야 합니다.">Only ordinary fields, including the normalized service address, are saved. Credentials are not saved; enter one again at the check step.</p>
+              <button type="button" data-onboarding-save-draft="jenkins" data-message-en="Save guided progress" data-message-ko="안내에 따라 진행 상황 저장">Save guided progress</button>
+              <button class="secondary" type="button" data-onboarding-go="jenkins" hidden data-message-en="Continue to check and registration" data-message-ko="확인 및 등록 단계로">Continue to check and registration</button>
+              <details class="lah-manual-save">
+                <summary data-message-en="Other option: save immediately without checks" data-message-ko="다른 방법: 검사 없이 바로 저장">Other option: save immediately without checks</summary>
+                <p data-message-en="This is the existing manual-save route. It saves this target and credential immediately without the guided temporary check or fixed-scope review." data-message-ko="기존 수동 저장 방식입니다. 안내 흐름의 임시 확인과 고정 범위 검토를 건너뛰고 대상과 자격 증명을 바로 저장합니다.">This is the existing manual-save route. It saves this target and credential immediately without the guided temporary check or fixed-scope review.</p>
+                <button class="secondary" type="submit" {{if not .StorageReady}}disabled{{end}} data-message-en="Save Jenkins target without a check" data-message-ko="검사 없이 Jenkins 대상 바로 저장">Save Jenkins target without a check</button>
+              </details>
+            {{else}}
+              <button type="submit" {{if not .StorageReady}}disabled{{end}}>Save Jenkins target</button>
+              <button class="secondary" type="button" data-onboarding-save-draft="jenkins" hidden data-message-en="Save progress" data-message-ko="진행 상황 저장">Save progress</button>
+              <button class="secondary" type="button" data-onboarding-go="jenkins" hidden data-message-en="Continue to check and registration" data-message-ko="확인 및 등록 단계로">Continue to check and registration</button>
+            {{end}}
           </div>
         </form>
         <div class="actions">
@@ -571,6 +814,26 @@
       <section class="panel" aria-labelledby="dashboard-heading">
         <h2 id="dashboard-heading">Kubernetes Dashboard</h2>
 
+        <div class="lah-registration-flow" data-registration-new-help="dashboard" {{if ne .DashboardID "new"}}hidden{{end}}>
+          <ol class="lah-registration-steps">
+            <li><strong data-message-en="2 · Prepare authentication" data-message-ko="2 · 인증 준비">2 · Prepare authentication</strong><p data-message-en="Confirm the installed Dashboard or proxy authentication contract before entering a token." data-message-ko="토큰을 입력하기 전에 설치된 Dashboard 또는 proxy의 인증 방식을 확인하세요.">Confirm the installed Dashboard or proxy authentication contract before entering a token.</p></li>
+            <li><strong data-message-en="3 · Review the target" data-message-ko="3 · 대상 검토">3 · Review the target</strong><p data-message-en="Check the name, HTTPS base and proxy path, and API Bearer field before saving." data-message-ko="저장 전에 이름, HTTPS 기본 주소와 proxy 경로, API Bearer 항목을 확인하세요.">Check the name, HTTPS base and proxy path, and API Bearer field before saving.</p></li>
+            <li><strong data-message-en="4 · Test, then read" data-message-ko="4 · 테스트 후 읽기">4 · Test, then read</strong><p data-message-en="After saving, run the separate connection test, then review the AI app guide and verify a read in that app." data-message-ko="저장 후 별도의 연결 테스트를 실행하고 AI 앱 안내를 확인한 뒤 해당 앱에서 읽기를 직접 확인하세요.">After saving, run the separate connection test, then review the AI app guide and verify a read in that app.</p></li>
+          </ol>
+          <details id="dashboard-registration-auth-help" class="lah-registration-help">
+            <summary data-message-en="Authentication preparation" data-message-ko="인증 준비 안내">Authentication preparation</summary>
+            <div><p data-message-en="This connector sends the saved value unchanged as Bearer authentication. It does not log in, exchange tokens, or detect the installed Dashboard version. Confirm the required value for your installed Dashboard or proxy with its administrator or version documentation." data-message-ko="이 연결은 저장한 값을 변경하지 않고 Bearer 인증으로 보냅니다. 로그인이나 토큰 교환을 하지 않으며 설치된 Dashboard 버전도 확인하지 않습니다. 관리자나 해당 버전 문서에서 설치된 Dashboard 또는 proxy에 필요한 값을 확인하세요.">This connector sends the saved value unchanged as Bearer authentication. It does not log in, exchange tokens, or detect the installed Dashboard version. Confirm the required value for your installed Dashboard or proxy with its administrator or version documentation.</p></div>
+          </details>
+          <details class="lah-registration-help">
+            <summary data-message-en="Review the saved operation boundary" data-message-ko="저장할 작업 범위 확인">Review the saved operation boundary</summary>
+            <div><p data-message-en="The URL candidate can suggest a base and proxy path but cannot confirm the installed Dashboard or route. Confirm the path and namespace access the saved API Bearer should have before testing. This preview does not grant access or change the connector's operations." data-message-ko="URL 후보는 기본 주소와 proxy 경로를 제안할 수 있지만 설치된 Dashboard나 경로를 확인하지는 않습니다. 테스트 전에 저장할 API Bearer가 접근할 경로와 namespace를 확인하세요. 이 미리보기는 권한을 부여하거나 연결의 작업을 변경하지 않습니다.">The URL candidate can suggest a base and proxy path but cannot confirm the installed Dashboard or route. Confirm the path and namespace access the saved API Bearer should have before testing. This preview does not grant access or change the connector's operations.</p></div>
+          </details>
+        </div>
+        <details class="lah-registration-edit-help" data-registration-edit-help="dashboard" {{if eq .DashboardID "new"}}hidden{{end}}>
+          <summary data-message-en="Review before saving changes" data-message-ko="변경 사항 저장 전 확인">Review before saving changes</summary>
+          <div><p data-message-en="Review the name and base URL including its proxy path. Read the token hint: the saved value is used for Bearer authentication, and changing the URL can require a new credential." data-message-ko="이름과 proxy 경로를 포함한 기본 URL을 확인하세요. 토큰 안내를 읽으세요. 저장한 값으로 Bearer 인증을 하며 URL을 바꾸면 새 자격 증명이 필요할 수 있습니다.">Review the name and base URL including its proxy path. Read the token hint: the saved value is used for Bearer authentication, and changing the URL can require a new credential.</p><p data-message-en="Saving updates the local target. The connection test is a separate action and is not run by opening or reviewing this editor. A client-side read must be verified in the active AI app." data-message-ko="저장하면 로컬 대상이 갱신됩니다. 연결 테스트는 별도 동작이며 편집기를 열거나 검토할 때 실행되지 않습니다. AI 앱에서 수행한 읽기는 사용 중인 앱에서 확인해야 합니다.">Saving updates the local target. The connection test is a separate action and is not run by opening or reviewing this editor. A client-side read must be verified in the active AI app.</p><p><a href="#lah-pane-clients" data-message-en="Open AI app connection guide" data-message-ko="AI 앱 연결 안내 열기">Open AI app connection guide</a></p></div>
+        </details>
+
         {{if .DashboardFieldError}}
         <div class="status error" role="alert" tabindex="0"><a href="#{{.DashboardErrorField}}" data-message-en="{{.DashboardFieldErrorEN}}" data-message-ko="{{.DashboardFieldErrorKO}}">{{.DashboardFieldError}}</a></div>
         {{end}}
@@ -606,11 +869,26 @@
             <div class="field wide">
               <label for="dashboard-token">Dashboard API Bearer token</label>
               <input id="dashboard-token" name="dashboard_token" type="password" maxlength="4096" autocomplete="off" spellcheck="false" {{if not .DashboardSecret}}required{{end}} aria-describedby="dashboard-token-hint{{if eq .DashboardErrorField "dashboard-token"}} dashboard-token-error{{end}}" {{if eq .DashboardErrorField "dashboard-token"}}autofocus aria-invalid="true"{{end}}>
-              <p class="hint" id="dashboard-token-hint"><span>{{if .DashboardSecret}}Saved in Windows Credential Manager. Leave blank to keep it.{{else}}Required for a new target; stored in Windows Credential Manager.{{end}}</span> <span>Use Dashboard's API Bearer from</span> <code>/api/v1/login</code>. Token exchange is not performed here; raw Kubernetes/service-account tokens are unsupported.</p>
-              {{if eq .DashboardErrorField "dashboard-token"}}<p class="hint" id="dashboard-token-error">Enter the Dashboard API Bearer from its login flow, up to 4096 characters without line breaks. Raw Kubernetes and service-account tokens are unsupported.</p>{{end}}
+              <p class="hint" id="dashboard-token-hint"><span>{{if .DashboardSecret}}Saved in Windows Credential Manager. Leave blank to keep it.{{else}}Required for a new target. Guided registration saves a pasted value to Windows Credential Manager when confirmed; immediate save does so when you save.{{end}}</span> <span data-message-en="Use the value required by your installed Dashboard or proxy; confirm it with your administrator or version documentation. This connector sends the value unchanged as Bearer authentication and does not log in or exchange tokens. The installed version is not detected." data-message-ko="설치된 Dashboard 또는 proxy에 필요한 값은 관리자나 해당 버전 문서에서 확인하세요. 연결은 입력값을 그대로 Bearer 인증으로 보내며 로그인이나 토큰 교환은 하지 않습니다. 설치 버전은 확인하지 않습니다.">Use the value required by your installed Dashboard or proxy; confirm it with your administrator or version documentation. This connector sends the value unchanged as Bearer authentication and does not log in or exchange tokens. The installed version is not detected.</span></p>
+              {{if eq .DashboardErrorField "dashboard-token"}}<p class="hint" id="dashboard-token-error" data-message-en="Enter the API Bearer confirmed for your installed Dashboard or proxy, up to 4096 characters without line breaks. Do not paste a login response unless its format is confirmed." data-message-ko="설치된 Dashboard 또는 proxy에서 확인한 API Bearer를 줄바꿈 없이 4096자 이하로 입력하세요. 형식을 확인하지 않았다면 로그인 응답을 붙여 넣지 마세요.">Enter the API Bearer confirmed for your installed Dashboard or proxy, up to 4096 characters without line breaks. Do not paste a login response unless its format is confirmed.</p>{{end}}
             </div>
           </div>
-          <div class="actions"><button type="submit" {{if not .StorageReady}}disabled{{end}}>Save Dashboard target</button></div>
+          <div class="actions">
+            {{if eq .DashboardID "new"}}
+              <p class="lah-onboarding-save-hint" data-message-en="Only ordinary fields, including the normalized service address, are saved. Credentials are not saved; enter one again at the check step." data-message-ko="정규화한 서비스 주소를 포함한 일반 설정 필드만 저장합니다. 자격 증명은 저장하지 않으므로 확인 단계에서 다시 입력해야 합니다.">Only ordinary fields, including the normalized service address, are saved. Credentials are not saved; enter one again at the check step.</p>
+              <button type="button" data-onboarding-save-draft="dashboard" data-message-en="Save guided progress" data-message-ko="안내에 따라 진행 상황 저장">Save guided progress</button>
+              <button class="secondary" type="button" data-onboarding-go="dashboard" hidden data-message-en="Continue to check and registration" data-message-ko="확인 및 등록 단계로">Continue to check and registration</button>
+              <details class="lah-manual-save">
+                <summary data-message-en="Other option: save immediately without checks" data-message-ko="다른 방법: 검사 없이 바로 저장">Other option: save immediately without checks</summary>
+                <p data-message-en="This is the existing manual-save route. It saves this target and credential immediately without the guided temporary check or fixed-scope review." data-message-ko="기존 수동 저장 방식입니다. 안내 흐름의 임시 확인과 고정 범위 검토를 건너뛰고 대상과 자격 증명을 바로 저장합니다.">This is the existing manual-save route. It saves this target and credential immediately without the guided temporary check or fixed-scope review.</p>
+                <button class="secondary" type="submit" {{if not .StorageReady}}disabled{{end}} data-message-en="Save Dashboard target without a check" data-message-ko="검사 없이 Dashboard 대상 바로 저장">Save Dashboard target without a check</button>
+              </details>
+            {{else}}
+              <button type="submit" {{if not .StorageReady}}disabled{{end}}>Save Dashboard target</button>
+              <button class="secondary" type="button" data-onboarding-save-draft="dashboard" hidden data-message-en="Save progress" data-message-ko="진행 상황 저장">Save progress</button>
+              <button class="secondary" type="button" data-onboarding-go="dashboard" hidden data-message-en="Continue to check and registration" data-message-ko="확인 및 등록 단계로">Continue to check and registration</button>
+            {{end}}
+          </div>
         </form>
         <div class="actions">
           <form action="/test-dashboard" method="post">
@@ -879,10 +1157,21 @@
       </div>
     </template>
     <section class="panel" aria-labelledby="mcp-client-setup-heading" style="margin-top:16px">
-      <h2 id="mcp-client-setup-heading">Connect an MCP client (CLI guide)</h2>
-      <p class="hint">These examples use CLI commands to register this executable as a local stdio process. Replace the example path with the absolute path to your built executable. Codex CLI, the ChatGPT desktop app, and the Codex IDE extension share MCP configuration on the same host. This guide covers CLI setup, not separate desktop or IDE setup steps. The client-registration panel checks supported CLI settings when this settings page opens and when you refresh. You must explicitly request review, backup, or registration changes. It cannot verify an AI app connection or tool call.</p>
+      <h2 id="mcp-client-setup-heading">Connect an MCP client (CLI and desktop)</h2>
+      <p class="hint">The CLI examples show how to register this executable as a local stdio process. Replace the example path with the absolute path to your built executable. Separate desktop instructions are below and must be completed in the AI app. The client-registration panel can inspect supported CLI settings; review, backup, and registration changes happen only when you request them. It cannot verify a client connection or tool call.</p>
       <p class="hint">Optional check-ins below record only what you report seeing. They stay in this page until it reloads, are not saved to app settings, and do not mean this app verified a client connection.</p>
       <p class="hint">To check a client tool call without contacting a saved service, start with <code>registered_targets</code> or <code>registered_service_bundles</code>. These catalogs list local registrations only.</p>
+      <details class="lah-registration-help">
+        <summary data-message-en="ChatGPT desktop app on the same host" data-message-ko="같은 호스트의 ChatGPT 데스크톱 앱">ChatGPT desktop app on the same host</summary>
+        <div>
+          <p data-message-en="The ChatGPT desktop app can use a local stdio MCP server on the same host as Codex. In ChatGPT, open Settings → MCP servers → Add server, choose STDIO, enter the local executable command and arguments, Save, then Restart. Use /mcp in ChatGPT to inspect the connection. This does not configure hosted ChatGPT in a browser or prove that the app connected." data-message-ko="ChatGPT 데스크톱 앱은 Codex와 같은 호스트의 로컬 stdio MCP 서버를 사용할 수 있습니다. ChatGPT에서 Settings → MCP servers → Add server를 열고 STDIO를 선택한 다음 로컬 실행 파일 명령과 인수를 입력하고 Save와 Restart를 선택하세요. 연결 확인에는 ChatGPT에서 /mcp를 사용하세요. 브라우저의 호스팅 ChatGPT를 설정하거나 앱 연결을 증명하는 절차는 아닙니다.">The ChatGPT desktop app can use a local stdio MCP server on the same host as Codex. In ChatGPT, open Settings → MCP servers → Add server, choose STDIO, enter the local executable command and arguments, Save, then Restart. Use /mcp in ChatGPT to inspect the connection. This does not configure hosted ChatGPT in a browser or prove that the app connected.</p>
+          <p class="hint"><a href="https://learn.chatgpt.com/docs/extend/mcp?site_variant=chatgpt" target="_blank" rel="noopener noreferrer" data-message-en="Official ChatGPT MCP setup guide (opens in a new tab)" data-message-ko="ChatGPT 공식 MCP 설정 안내 (새 탭에서 열림)">Official ChatGPT MCP setup guide (opens in a new tab)</a></p>
+        </div>
+      </details>
+      <details class="lah-registration-help">
+        <summary data-message-en="Claude Desktop" data-message-ko="Claude Desktop">Claude Desktop</summary>
+        <div><p data-message-en="A local preview MCPB package and build/install steps are described in docs/CLAUDE_DESKTOP.md. Package checks passed, but Claude Desktop installation, launch, and tool visibility have not been verified." data-message-ko="로컬 미리 보기 MCPB 패키지와 빌드·설치 절차는 docs/CLAUDE_DESKTOP.md에 있습니다. 패키지 검사는 통과했지만 Claude Desktop 설치·실행·도구 표시는 확인하지 않았습니다.">A local preview MCPB package and build/install steps are described in docs/CLAUDE_DESKTOP.md. Package checks passed, but Claude Desktop installation, launch, and tool visibility have not been verified.</p><p><a href="https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop" target="_blank" rel="noopener noreferrer" data-message-en="Official Claude Desktop local MCP guide (opens in a new tab)" data-message-ko="Claude Desktop 공식 로컬 MCP 안내 (새 탭에서 열림)">Official Claude Desktop local MCP guide (opens in a new tab)</a></p></div>
+      </details>
       <div class="client-guides">
         <details>
           <summary>Codex CLI</summary>
@@ -976,7 +1265,7 @@ gemini mcp list</code></pre>
         'One owner/name pair.': '소유자/이름 한 쌍을 입력하세요.',
         'Personal access token': '개인 액세스 토큰',
         'Saved in Windows Credential Manager. Leave blank to keep it.': 'Windows Credential Manager에 저장되어 있습니다. 유지하려면 비워 두세요.',
-        'Required for a new target. It is stored in Windows Credential Manager.': '새 대상에는 필수입니다. Windows Credential Manager에 저장됩니다.',
+        'Required for a new target. Guided registration saves a pasted value to Windows Credential Manager when confirmed; immediate save does so when you save.': '새 대상에는 자격 증명이 필요합니다. 붙여 넣은 값은 안내 등록 확정 시, 즉시 저장 시 Windows Credential Manager에 보관합니다.',
         'Required for a new target; stored in Windows Credential Manager.': '새 대상에는 필수이며 Windows Credential Manager에 저장됩니다.',
         'Save GitHub target': 'GitHub 대상 저장',
         'Test connection': '연결 테스트',
@@ -1018,11 +1307,10 @@ gemini mcp list</code></pre>
         'The configured proxy path is kept before the Dashboard API route.': '설정한 프록시 경로는 Dashboard API 경로 앞에 유지됩니다.',
         'Enter an HTTPS address without credentials, query, or fragment.': '자격 증명, 쿼리, 프래그먼트가 없는 HTTPS 주소를 입력하세요.',
         'Dashboard API Bearer token': 'Dashboard API Bearer 토큰',
-        "Use Dashboard's API Bearer from": '다음 경로에서 받은 Dashboard API Bearer를 사용하세요:',
-        '. Token exchange is not performed here; raw Kubernetes/service-account tokens are unsupported.': ' 여기서는 토큰 교환을 하지 않습니다. Kubernetes 또는 서비스 계정의 원본 토큰은 지원하지 않습니다.',
-        'Enter the Dashboard API Bearer from its login flow, up to 4096 characters without line breaks. Raw Kubernetes and service-account tokens are unsupported.': 'Dashboard 로그인 흐름에서 받은 API Bearer를 줄바꿈 없이 4096자 이하로 입력하세요. Kubernetes 및 서비스 계정의 원본 토큰은 지원하지 않습니다.',
+        'Use the value required by your installed Dashboard or proxy; confirm it with your administrator or version documentation. This connector sends the value unchanged as Bearer authentication and does not log in or exchange tokens. The installed version is not detected.': '설치된 Dashboard 또는 proxy에 필요한 값은 관리자나 해당 버전 문서로 확인하세요. 연결은 입력값을 그대로 Bearer 인증으로 보내며 로그인이나 토큰 교환은 하지 않습니다. 설치 버전은 확인하지 않습니다.',
         'Save Dashboard target': 'Dashboard 대상 저장',
         'Connection groups': '연결 그룹',
+        'Saved connection progress': '저장된 연결 진행 상황',
         'Registered Python tasks': '등록된 Python 작업',
         'Add Python task': 'Python 작업 추가',
         'Task name': '작업 이름',
@@ -1097,8 +1385,8 @@ gemini mcp list</code></pre>
         'Harbor target availability and deletion': 'Harbor 대상 활성화 및 삭제',
         'Dashboard target availability and deletion': 'Dashboard 대상 활성화 및 삭제',
         'MCP runs as': 'MCP 실행 명령:',
-        'Connect an MCP client (CLI guide)': 'MCP 클라이언트 연결 안내(CLI)',
-        'These examples use CLI commands to register this executable as a local stdio process. Replace the example path with the absolute path to your built executable. Codex CLI, the ChatGPT desktop app, and the Codex IDE extension share MCP configuration on the same host. This guide covers CLI setup, not separate desktop or IDE setup steps. The client-registration panel checks supported CLI settings when this settings page opens and when you refresh. You must explicitly request review, backup, or registration changes. It cannot verify an AI app connection or tool call.': '아래 예시는 CLI 명령으로 이 실행 파일을 로컬 stdio 프로세스로 등록합니다. 예시 경로를 빌드한 실행 파일의 절대 경로로 바꾸세요. Codex CLI, ChatGPT 데스크톱 앱, Codex IDE 확장은 같은 호스트에서 MCP 설정을 공유합니다. 이 안내는 CLI 설정 절차를 다루며 데스크톱이나 IDE의 별도 설정 절차는 제공하지 않습니다. 이 설정 페이지를 열거나 새로 고칠 때 클라이언트 등록 패널이 지원 CLI 설정을 확인합니다. 검토, 백업, 등록 변경은 사용자가 직접 요청해야 합니다. AI 앱 연결이나 도구 호출은 검증하지 않습니다.',
+        'Connect an MCP client (CLI and desktop)': 'MCP 클라이언트 연결 안내(CLI 및 데스크톱)',
+        'The CLI examples show how to register this executable as a local stdio process. Replace the example path with the absolute path to your built executable. Separate desktop instructions are below and must be completed in the AI app. The client-registration panel can inspect supported CLI settings; review, backup, and registration changes happen only when you request them. It cannot verify a client connection or tool call.': 'CLI 예시는 이 실행 파일을 로컬 stdio 프로세스로 등록하는 명령입니다. 예시 경로를 빌드한 실행 파일의 절대 경로로 바꾸세요. 아래 데스크톱 안내는 AI 앱에서 직접 진행해야 합니다. 클라이언트 등록 패널은 지원하는 CLI 설정을 확인할 수 있으며, 검토·백업·등록 변경은 요청한 경우에만 진행합니다. 연결이나 도구 호출은 검증하지 않습니다.',
         'The ChatGPT desktop app and Codex IDE extension share this same-host configuration. If the server still does not appear, use the Restart control if that client provides one. This app does not detect whether the client reloaded or connected.': 'ChatGPT 데스크톱 앱과 Codex IDE 확장은 같은 호스트의 이 설정을 공유합니다. 서버가 계속 표시되지 않으면 해당 클라이언트가 Restart 제어를 제공하는 경우 사용하세요. 이 앱은 클라이언트가 설정을 다시 불러왔거나 연결됐는지 감지하지 않습니다.',
         'Optional check-ins below record only what you report seeing. They stay in this page until it reloads, are not saved to app settings, and do not mean this app verified a client connection.': '아래 선택 항목은 사용자가 확인한 내용만 기록합니다. 이 페이지를 새로 고칠 때까지 유지되고 앱 설정에는 저장되지 않으며, 앱이 클라이언트 연결을 검증했다는 뜻이 아닙니다.',
         'To check a client tool call without contacting a saved service, start with': '저장된 서비스에 요청하지 않고 클라이언트 도구 호출을 확인하려면',
@@ -2256,7 +2544,7 @@ gemini mcp list</code></pre>
       const userEnvironment = secretsRoot.querySelector('.lah-secrets-environment-grid > section[aria-labelledby="lah-user-environment-heading"]');
       if (!namedSecrets || !userEnvironment) return;
 
-      const navLinks = Array.from(nav.querySelectorAll('[data-pane-link]'));
+      const navLinks = Array.from(nav.querySelectorAll('.lah-nav-link'));
       const panels = paneKeys.map(paneFor);
       const providerCopy = {
         'github-heading': ['GitHub Enterprise', 'GitHub Enterprise'],
@@ -2364,8 +2652,9 @@ gemini mcp list</code></pre>
           panel.hidden = !active;
           panel.inert = !active;
         }
+        const anchorNavLink = target && navLinks.find(link => link.dataset.navAnchor === target.id);
         for (const link of navLinks) {
-          if (link.dataset.paneLink === activeKey) link.setAttribute('aria-current', 'page');
+          if (anchorNavLink ? link === anchorNavLink : link.dataset.paneLink === activeKey) link.setAttribute('aria-current', 'page');
           else link.removeAttribute('aria-current');
         }
 
@@ -2399,6 +2688,1399 @@ gemini mcp list</code></pre>
           summary.textContent = summary.dataset[`message${lang === 'ko' ? 'Ko' : 'En'}`] || summary.textContent;
         }
       });
+    })();
+    </script>
+    <script id="lah-registration-intake-script" nonce="{{.CSPNonce}}">
+    (() => {
+      const form = document.getElementById('lah-registration-preview-form');
+      const serviceSelect = document.getElementById('lah-registration-service');
+      const urlInput = document.getElementById('lah-registration-url');
+      const submitButton = document.getElementById('lah-registration-preview-submit');
+      const status = document.getElementById('lah-registration-preview-status');
+      const candidatePanel = document.getElementById('lah-registration-candidate');
+      const candidateValues = document.getElementById('lah-registration-candidate-values');
+      const missingList = document.getElementById('lah-registration-missing-fields');
+      const reviewList = document.getElementById('lah-registration-review-fields');
+      const noMissing = document.getElementById('lah-registration-no-missing-fields');
+      const noReview = document.getElementById('lah-registration-no-review-fields');
+      const formMissingPanel = document.getElementById('lah-registration-form-missing');
+      const formMissingList = document.getElementById('lah-registration-form-missing-fields');
+      const formComplete = document.getElementById('lah-registration-form-complete');
+      const applyButton = document.getElementById('lah-registration-apply');
+      const checkAnotherButton = document.getElementById('lah-registration-check-another');
+      const switchPanel = document.getElementById('lah-registration-switch');
+      const switchMessage = document.getElementById('lah-registration-switch-message');
+      const switchConfirm = document.getElementById('lah-registration-switch-confirm');
+      const switchCancel = document.getElementById('lah-registration-switch-cancel');
+      if (!form || !serviceSelect || !urlInput || !candidatePanel || !applyButton || !switchPanel) return;
+
+      const fieldLabels = {
+        origin: ['Service address', '서비스 주소'],
+        repository: ['Repository', '저장소'],
+        base_url: ['Base URL', '기본 주소'],
+        job_path: ['Job path', '작업 경로']
+      };
+      const serviceLabels = {
+        github: ['GitHub Enterprise', 'GitHub Enterprise'],
+        jenkins: ['Jenkins', 'Jenkins'],
+        dashboard: ['Kubernetes Dashboard', 'Kubernetes Dashboard']
+      };
+      const targetForms = {
+        github: {
+          form: document.getElementById('github-save-form'),
+          fields: {origin: 'github-origin', repository: 'github-repository'},
+          auth: 'github-token',
+          testAction: '/test'
+        },
+        jenkins: {
+          form: document.getElementById('jenkins-save-form'),
+          fields: {base_url: 'jenkins-url', job_path: 'jenkins-job'},
+          auth: 'jenkins-token',
+          testAction: '/test-jenkins'
+        },
+        dashboard: {
+          form: document.getElementById('dashboard-save-form'),
+          fields: {base_url: 'dashboard-url'},
+          auth: 'dashboard-token',
+          testAction: '/test-dashboard'
+        }
+      };
+      const languageIsKorean = () => document.documentElement.lang === 'ko';
+      const localText = (english, korean) => languageIsKorean() ? korean : english;
+      function setLocalized(element, english, korean) {
+        element.dataset.messageEn = english;
+        element.dataset.messageKo = korean;
+        element.textContent = localText(english, korean);
+      }
+      function labelForField(key) {
+        return fieldLabels[key] || ['Additional field', '추가 항목'];
+      }
+      function updateStatus(english, korean, isError = false) {
+        if (!status) return;
+        status.hidden = false;
+        status.classList.toggle('error', isError);
+        status.setAttribute('role', isError ? 'alert' : 'status');
+        setLocalized(status, english, korean);
+      }
+      function clearList(list) {
+        while (list?.firstChild) list.removeChild(list.firstChild);
+      }
+      function appendFieldList(list, keys) {
+        clearList(list);
+        const unique = Array.isArray(keys) ? [...new Set(keys.filter(key => typeof key === 'string'))] : [];
+        for (const key of unique) {
+          const item = document.createElement('li');
+          const label = document.createElement('span');
+          const [english, korean] = labelForField(key);
+          setLocalized(label, english, korean);
+          item.append(label);
+          list.append(item);
+        }
+        return unique.length;
+      }
+      function renderCandidate(candidate) {
+        clearList(candidateValues);
+        const fields = ['origin', 'repository', 'base_url', 'job_path'];
+        for (const key of fields) {
+          if (typeof candidate[key] !== 'string' || candidate[key] === '') continue;
+          const term = document.createElement('dt');
+          const value = document.createElement('dd');
+          const [english, korean] = labelForField(key);
+          setLocalized(term, english, korean);
+          value.textContent = candidate[key];
+          candidateValues.append(term, value);
+        }
+        const missingCount = appendFieldList(missingList, candidate.missing_fields);
+        noMissing.hidden = missingCount !== 0;
+        const reviewCount = appendFieldList(reviewList, candidate.review_fields);
+        noReview.hidden = reviewCount !== 0;
+        formMissingPanel.hidden = true;
+        candidatePanel.hidden = false;
+        switchPanel.hidden = true;
+        updateStatus(
+          'Address shape checked locally. Review the suggested values before applying them.',
+          '주소 형식을 로컬에서 확인했습니다. 제안 값을 검토한 뒤 적용하세요.'
+        );
+      }
+      function invalidateCandidate() {
+        const hadPreview = Boolean(latestCandidate || pendingSwitch || requestController || !candidatePanel.hidden);
+        requestGeneration++;
+        requestController?.abort();
+        requestController = null;
+        if (submitButton) submitButton.disabled = false;
+        form.removeAttribute('aria-busy');
+        latestCandidate = null;
+        pendingSwitch = null;
+        candidatePanel.hidden = true;
+        switchPanel.hidden = true;
+        formMissingPanel.hidden = true;
+        if (hadPreview) {
+          updateStatus(
+            'The service or address changed. Check it again before applying a candidate.',
+            '서비스 또는 주소가 바뀌었습니다. 후보를 적용하기 전에 다시 확인하세요.'
+          );
+        }
+      }
+      function friendlyError(code) {
+        switch (code) {
+          case 'request_rejected':
+            return ['The local request was rejected. Refresh this page and try again.', '로컬 요청이 거부되었습니다. 페이지를 새로고침한 뒤 다시 시도하세요.'];
+          case 'invalid_request':
+            return ['Choose one of the listed services and enter its HTTPS address.', '목록에서 서비스를 고르고 HTTPS 주소를 입력하세요.'];
+          case 'invalid_url':
+            return ['This address could not be parsed for the selected service. Check the HTTPS host and path; credentials, query strings, and fragments are not accepted.', '선택한 서비스의 주소로 해석하지 못했습니다. HTTPS 호스트와 경로를 확인하세요. 자격 증명, 쿼리 문자열, 프래그먼트는 사용할 수 없습니다.'];
+          default:
+            return ['The address could not be checked. Try again.', '주소를 확인하지 못했습니다. 다시 시도하세요.'];
+        }
+      }
+
+      let latestCandidate = null;
+      let pendingSwitch = null;
+      let requestGeneration = 0;
+      let requestController = null;
+
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const service = serviceSelect.value;
+        const url = urlInput.value;
+        const csrf = form.querySelector('input[name="csrf"]')?.value || '';
+        if (!service || !url || !csrf || !serviceLabels[service]) return;
+        invalidateCandidate();
+        const generation = ++requestGeneration;
+        const controller = new AbortController();
+        requestController = controller;
+        const timeout = window.setTimeout(() => controller.abort(), 8000);
+        const requestService = service;
+        const requestURL = url;
+        form.setAttribute('aria-busy', 'true');
+        submitButton.disabled = true;
+        updateStatus('Checking the address with this local app…', '이 로컬 앱에서 주소를 확인하고 있습니다…');
+        try {
+          const body = new URLSearchParams({csrf, service: requestService, url: requestURL});
+          const response = await fetch('/preview-registration-url', {
+            method: 'POST',
+            mode: 'same-origin',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            redirect: 'error',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: body.toString(),
+            signal: controller.signal
+          });
+          const payload = await response.json();
+          if (generation !== requestGeneration || serviceSelect.value !== requestService || urlInput.value !== requestURL) return;
+          const candidate = payload && typeof payload === 'object' ? payload.candidate : null;
+          if (!response.ok || !candidate || typeof candidate !== 'object') {
+            const [english, korean] = friendlyError(payload?.error_code);
+            updateStatus(english, korean, true);
+            return;
+          }
+          latestCandidate = {service: requestService, url: requestURL, value: candidate};
+          renderCandidate(candidate);
+        } catch (error) {
+          if (generation !== requestGeneration) return;
+          const timedOut = error?.name === 'AbortError';
+          const [english, korean] = timedOut ?
+            ['The local address check timed out. Try again.', '로컬 주소 확인 시간이 초과되었습니다. 다시 시도하세요.'] :
+            ['The local address check failed. Check that this settings page is still open, then try again.', '로컬 주소 확인에 실패했습니다. 설정 페이지가 열린 상태인지 확인한 뒤 다시 시도하세요.'];
+          updateStatus(english, korean, true);
+        } finally {
+          window.clearTimeout(timeout);
+          if (generation === requestGeneration) {
+            requestController = null;
+            form.removeAttribute('aria-busy');
+            submitButton.disabled = false;
+          }
+        }
+      });
+
+      for (const control of [serviceSelect, urlInput]) {
+        control.addEventListener('input', invalidateCandidate);
+        control.addEventListener('change', invalidateCandidate);
+      }
+
+      function createSwitchMessage(optionName) {
+        switchMessage.replaceChildren();
+        const lead = document.createElement('span');
+        setLocalized(lead,
+          'You are editing the saved target ',
+          '저장된 대상을 수정 중입니다: ');
+        const name = document.createElement('strong');
+        name.textContent = optionName;
+        const tail = document.createElement('span');
+        setLocalized(tail,
+          '. Continuing will open a new target and clear unsaved values in this service form. The saved target will stay unchanged.',
+          '. 계속하면 새 대상을 열고 이 서비스 양식의 저장하지 않은 값을 지웁니다. 저장된 대상은 변경하지 않습니다.');
+        switchMessage.append(lead, name, tail);
+      }
+      function serviceSection(service, entry) {
+        return entry.form?.closest('section.panel');
+      }
+      function clearForNewTarget(service, entry, section) {
+        const saveForm = entry.form;
+        const picker = section.querySelector('.picker select');
+        picker.value = 'new';
+        for (const control of saveForm.querySelectorAll('input, select, textarea')) {
+          if (control.name === 'csrf') continue;
+          if (control.type === 'checkbox' || control.type === 'radio') control.checked = false;
+          else control.value = '';
+          control.removeAttribute('aria-invalid');
+          control.removeAttribute('autofocus');
+        }
+        const targetID = saveForm.querySelector('input[name="target_id"]');
+        if (targetID) targetID.value = 'new';
+        saveForm.dataset.selectedSecretId = '';
+        const auth = document.getElementById(entry.auth);
+        if (auth) auth.required = true;
+        const tokenHint = document.getElementById(`${service}-token-hint`);
+        if (tokenHint) {
+          const requiredHint = document.createElement('span');
+          setLocalized(requiredHint,
+            'Required for a new target. Guided registration saves a pasted value to Windows Credential Manager when confirmed; immediate save does so when you save.',
+            '새 대상에는 자격 증명이 필요합니다. 붙여 넣은 값은 안내 등록 확정 시, 즉시 저장 시 Windows Credential Manager에 보관합니다.');
+          if (service === 'dashboard') {
+            const firstHint = tokenHint.querySelector('span');
+            if (firstHint) firstHint.replaceWith(requiredHint);
+          } else {
+            tokenHint.replaceChildren(requiredHint);
+          }
+        }
+        const saveButton = saveForm.querySelector('.lah-manual-save > button[type="submit"]') || saveForm.querySelector('button[type="submit"]');
+        if (saveButton) {
+          const [englishName, koreanName] = serviceLabels[service];
+          setLocalized(saveButton, `Save new ${englishName} target without a check`, `검사 없이 새 ${koreanName} 대상 바로 저장`);
+        }
+        const draftButton = saveForm.querySelector('[data-onboarding-save-draft]');
+        if (draftButton) draftButton.hidden = false;
+        for (const described of saveForm.querySelectorAll('[aria-describedby]')) {
+          const current = described.getAttribute('aria-describedby').split(/\s+/).filter(Boolean);
+          const kept = current.filter(id => !id.endsWith('-error'));
+          if (kept.length) described.setAttribute('aria-describedby', kept.join(' '));
+          else described.removeAttribute('aria-describedby');
+        }
+        for (const error of section.querySelectorAll('[id$="-error"], .status.error')) error.hidden = true;
+
+        const testForm = section.querySelector(`form[action="${entry.testAction}"]`);
+        if (testForm) {
+          const testID = testForm.querySelector('input[name="target_id"]');
+          const testName = testForm.querySelector('input[name="target"]');
+          if (testID) testID.value = 'new';
+          if (testName) testName.value = '';
+          const button = testForm.querySelector('button[type="submit"]');
+          if (button) button.disabled = true;
+          testForm.closest('.actions')?.setAttribute('hidden', '');
+        }
+        section.querySelector('[data-history-result]')?.setAttribute('hidden', '');
+        section.querySelector('.management')?.setAttribute('hidden', '');
+        const newHelp = section.querySelector(`[data-registration-new-help="${service}"]`);
+        const editHelp = section.querySelector(`[data-registration-edit-help="${service}"]`);
+        if (newHelp) newHelp.hidden = false;
+        if (editHelp) editHelp.hidden = true;
+      }
+      function updateRequiredFields(service, entry) {
+        const saveForm = entry.form;
+        if (!saveForm || saveForm.querySelector('input[name="target_id"]')?.value !== 'new') return;
+        clearList(formMissingList);
+        const missing = Array.from(saveForm.querySelectorAll('input[required], select[required], textarea[required]'))
+          .filter(control => !control.disabled && control.type !== 'hidden' && String(control.value || '').trim() === '');
+        formMissingPanel.hidden = false;
+        formComplete.hidden = missing.length !== 0;
+        formMissingList.hidden = missing.length === 0;
+        for (const control of missing) {
+          const item = document.createElement('li');
+          const labels = {
+            'github-name': ['Target name', '대상 이름'],
+            'github-origin': ['GitHub Enterprise HTTPS origin', 'GitHub Enterprise HTTPS 원본 주소'],
+            'github-repository': ['Repository', '저장소'],
+            'github-token': ['Personal access token', '개인 액세스 토큰'],
+            'jenkins-name': ['Target name', '대상 이름'],
+            'jenkins-username': ['Jenkins username', 'Jenkins 사용자 이름'],
+            'jenkins-url': ['Jenkins HTTPS base URL', 'Jenkins HTTPS 기본 URL'],
+            'jenkins-job': ['Fixed job path', '고정 작업 경로'],
+            'jenkins-token': ['Jenkins API token', 'Jenkins API 토큰'],
+            'dashboard-name': ['Target name', '대상 이름'],
+            'dashboard-url': ['HTTPS base address', 'HTTPS 기본 주소'],
+            'dashboard-token': ['Dashboard API Bearer token', 'Dashboard API Bearer 토큰']
+          };
+          const [english, korean] = labels[control.id] || ['Required field', '필수 항목'];
+          setLocalized(item, english, korean);
+          formMissingList.append(item);
+        }
+      }
+      function applyCandidate(candidate, service) {
+        const entry = targetForms[service];
+        const section = serviceSection(service, entry);
+        if (!entry?.form || !section) {
+          updateStatus('The target form is unavailable. Reload the page and check the address again.', '대상 양식을 사용할 수 없습니다. 페이지를 새로고침하고 주소를 다시 확인하세요.', true);
+          return;
+        }
+        const picker = section.querySelector('.picker select');
+        const loadedTargetID = entry.form.querySelector('input[name="target_id"]')?.value || 'new';
+        if (loadedTargetID !== 'new') {
+          if (picker.value !== 'new' && picker.value !== loadedTargetID) {
+            updateStatus(
+              'You selected another target in the list, but its form is not open yet. Choose Open first, then check the address again.',
+              '목록에서 다른 대상을 선택했지만 양식은 아직 열지 않았습니다. 먼저 열기를 누른 뒤 주소를 다시 확인하세요.',
+              true
+            );
+            return;
+          }
+          pendingSwitch = {
+            service,
+            candidate,
+            targetID: loadedTargetID,
+            pickerValue: picker.value,
+            requestURL: latestCandidate?.url || ''
+          };
+          const nameControl = entry.form.querySelector('input[name="name"], input[name="jenkins_name"], input[name="dashboard_name"]');
+          const selectedOption = Array.from(picker.options).find(option => option.value === loadedTargetID);
+          const selectedName = nameControl?.value?.trim() || selectedOption?.textContent?.trim() || localText('current target', '현재 대상');
+          createSwitchMessage(selectedName);
+          switchPanel.hidden = false;
+          switchConfirm.focus();
+          return;
+        }
+        if (picker.value !== 'new') {
+          updateStatus(
+            'You selected a saved target in the list, but its form is not open yet. Choose Open first, then check the address again.',
+            '목록에서 저장된 대상을 선택했지만 양식은 아직 열지 않았습니다. 먼저 열기를 누른 뒤 주소를 다시 확인하세요.',
+            true
+          );
+          return;
+        }
+        applyCandidateToNew(candidate, service, entry, section);
+      }
+      function applyCandidateToNew(candidate, service, entry, section) {
+        window.LAHOnboardingRecovery?.beginNewRegistration?.();
+        const picker = section.querySelector('.picker select');
+        const targetID = entry.form.querySelector('input[name="target_id"]');
+        if (picker.value !== 'new') picker.value = 'new';
+        if (targetID) targetID.value = 'new';
+        for (const [key, id] of Object.entries(entry.fields)) {
+          const control = document.getElementById(id);
+          if (!control) continue;
+          // Empty candidate values must clear stale address-derived values
+          // (for example, a repository from a previous URL with no repo path).
+          // Non-address fields such as name and credentials stay untouched.
+          control.value = typeof candidate[key] === 'string' ? candidate[key] : '';
+          control.removeAttribute('aria-invalid');
+          control.removeAttribute('autofocus');
+          const describedBy = (control.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean).filter(id => !id.endsWith('-error'));
+          if (describedBy.length) control.setAttribute('aria-describedby', describedBy.join(' '));
+          else control.removeAttribute('aria-describedby');
+          document.getElementById(`${id}-error`)?.setAttribute('hidden', '');
+          control.dispatchEvent(new Event('input', {bubbles: true}));
+          control.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+        const details = document.querySelector(`.lah-service-detail[data-connection-section="${service}-heading"]`);
+        if (details) details.open = true;
+        const newHelp = section.querySelector(`[data-registration-new-help="${service}"]`);
+        const editHelp = section.querySelector(`[data-registration-edit-help="${service}"]`);
+        if (newHelp) newHelp.hidden = false;
+        if (editHelp) editHelp.hidden = true;
+        const authHelp = document.getElementById(`${service}-registration-auth-help`);
+        if (authHelp) authHelp.open = true;
+        switchPanel.hidden = true;
+        updateRequiredFields(service, entry);
+        updateStatus(
+          'The suggested values are in the new target form. Nothing has been saved; review the remaining fields and choose Save when ready.',
+          '제안한 값을 새 대상 양식에 적용했습니다. 아직 저장하지 않았습니다. 나머지 항목을 검토하고 준비되면 저장을 누르세요.'
+        );
+        section.scrollIntoView({block: 'start'});
+        const nameField = entry.form.querySelector('input[name="name"], input[name="jenkins_name"], input[name="dashboard_name"]');
+        nameField?.focus({preventScroll: true});
+      }
+
+      applyButton.addEventListener('click', () => {
+        if (!latestCandidate || serviceSelect.value !== latestCandidate.service || urlInput.value !== latestCandidate.url) {
+          invalidateCandidate();
+          return;
+        }
+        applyCandidate(latestCandidate.value, latestCandidate.service);
+      });
+      switchConfirm.addEventListener('click', () => {
+        if (!pendingSwitch || !latestCandidate || serviceSelect.value !== pendingSwitch.service ||
+            urlInput.value !== pendingSwitch.requestURL || latestCandidate.url !== pendingSwitch.requestURL) {
+          invalidateCandidate();
+          return;
+        }
+        const pending = pendingSwitch;
+        const entry = targetForms[pending.service];
+        const section = serviceSection(pending.service, entry);
+        const picker = section?.querySelector('.picker select');
+        const loadedTargetID = entry?.form?.querySelector('input[name="target_id"]')?.value || 'new';
+        if (!section || !picker || loadedTargetID !== pending.targetID || picker.value !== pending.pickerValue) {
+          pendingSwitch = null;
+          switchPanel.hidden = true;
+          updateStatus('The open target changed. Check the address again before applying it.', '열려 있는 대상이 바뀌었습니다. 주소를 다시 확인한 뒤 적용하세요.', true);
+          return;
+        }
+        clearForNewTarget(pending.service, entry, section);
+        pendingSwitch = null;
+        applyCandidateToNew(pending.candidate, pending.service, entry, section);
+      });
+      switchCancel.addEventListener('click', () => {
+        const entry = pendingSwitch && targetForms[pendingSwitch.service];
+        const picker = entry?.form?.closest('section.panel')?.querySelector('.picker select');
+        if (pendingSwitch && picker) picker.value = pendingSwitch.targetID;
+        pendingSwitch = null;
+        switchPanel.hidden = true;
+        applyButton.focus();
+      });
+      checkAnotherButton.addEventListener('click', () => {
+        invalidateCandidate();
+        urlInput.focus();
+      });
+      for (const [service, entry] of Object.entries(targetForms)) {
+        entry.form?.addEventListener('input', () => updateRequiredFields(service, entry));
+        entry.form?.addEventListener('change', () => updateRequiredFields(service, entry));
+      }
+      window.LAHRegistrationIntake = {
+        startNewTarget(service) {
+          const entry = targetForms[service];
+          const section = entry && serviceSection(service, entry);
+          if (!entry?.form || !section) return false;
+          clearForNewTarget(service, entry, section);
+          updateRequiredFields(service, entry);
+          const details = document.querySelector(`.lah-service-detail[data-connection-section="${service}-heading"]`);
+          if (details) details.open = true;
+          return true;
+        }
+      };
+    })();
+    </script>
+    <script id="lah-onboarding-script" nonce="{{.CSPNonce}}">
+    (() => {
+      'use strict';
+      const root = document.getElementById('lah-onboarding');
+      if (!root) return;
+      const byId = id => document.getElementById(id);
+      const statusNode = byId('lah-onboarding-status');
+      const refreshButton = byId('lah-onboarding-refresh');
+      const listNode = byId('lah-onboarding-drafts');
+      const activeNode = byId('lah-onboarding-active');
+      const fieldsNode = byId('lah-onboarding-fields');
+      const historyNode = byId('lah-onboarding-history');
+      const authHelp = byId('lah-onboarding-auth-help');
+      const checkButton = byId('lah-onboarding-check');
+      const reviewButton = byId('lah-onboarding-review');
+      const activateButton = byId('lah-onboarding-activate');
+      const policyConfirmed = byId('lah-onboarding-policy-confirmed');
+      const policyPanel = byId('lah-onboarding-policy');
+      const checkResult = byId('lah-onboarding-check-result');
+      const activationResult = byId('lah-onboarding-activation-result');
+      const recoveryAlert = byId('lah-onboarding-recovery-alert');
+      const resumePanel = byId('lah-onboarding-resume-confirm');
+      const resumeMessage = byId('lah-onboarding-resume-message');
+      const csrf = document.querySelector('#lah-registration-preview-form input[name="csrf"]')?.value || '';
+      const services = {
+        github: {label: ['GitHub Enterprise', 'GitHub Enterprise'], form: 'github-save-form', auth: 'github-token', fields: {name: 'github-name', origin: 'github-origin', repository: 'github-repository'}},
+        jenkins: {label: ['Jenkins', 'Jenkins'], form: 'jenkins-save-form', auth: 'jenkins-token', fields: {name: 'jenkins-name', username: 'jenkins-username', base_url: 'jenkins-url', job_path: 'jenkins-job', environment: 'jenkins-environment'}},
+        dashboard: {label: ['Kubernetes Dashboard', 'Kubernetes Dashboard'], form: 'dashboard-save-form', auth: 'dashboard-token', fields: {name: 'dashboard-name', base_url: 'dashboard-url'}}
+      };
+      const labels = {
+        name: ['Target name', '대상 이름'], origin: ['Service address', '서비스 주소'], repository: ['Repository', '저장소'],
+        base_url: ['Base address', '기본 주소'], username: ['Username', '사용자 이름'], job_path: ['Fixed job path', '고정 작업 경로'], environment: ['Environment label', '환경 이름표']
+      };
+      let drafts = [];
+      let currentDraft = null;
+      let dirty = false;
+      let applyingDraft = false;
+      let permitState = null;
+      let reviewState = null;
+      let permitTimer = 0;
+      let authGeneration = 0;
+      let operationGeneration = 0;
+      let pendingResume = null;
+      let busy = false;
+      let resumeGeneration = 0;
+      let listGeneration = 0;
+      let firstReadPrompt = null;
+      let historyDraft = null;
+      const recoveryCopy = [
+        'Registration is on hold — credential storage or cleanup needs manual review. Inspect this service target in Settings and its Windows Credential Manager entry before taking further action. This draft is read-only here; it cannot be saved, checked, activated, or deleted.',
+        '등록 처리 보류 — 자격 증명 저장·정리 상태를 직접 확인해야 합니다. 설정에서 해당 서비스 대상과 Windows Credential Manager 항목을 확인하세요. 이 초안은 이 화면에서 읽기 전용이며 저장·검사·등록·삭제할 수 없습니다.'
+      ];
+
+      const lang = () => document.documentElement.lang === 'en' ? 'en' : 'ko';
+      const localText = (en, ko) => lang() === 'ko' ? ko : en;
+      function localized(node, en, ko) {
+        node.dataset.messageEn = en;
+        node.dataset.messageKo = ko;
+        node.textContent = localText(en, ko);
+      }
+      function status(en, ko, isError = false) {
+        if (!statusNode) return;
+        localized(statusNode, en, ko);
+        statusNode.classList.toggle('error', isError);
+        statusNode.setAttribute('role', isError ? 'alert' : 'status');
+      }
+      function setDynamic(node, en, ko) {
+        if (!node) return;
+        node.dataset.messageEn = en;
+        node.dataset.messageKo = ko;
+        node.textContent = localText(en, ko);
+      }
+      function serviceName(service) { return services[service]?.label[lang() === 'ko' ? 1 : 0] || service; }
+      function fieldKey(service, fields) {
+        const normalized = {};
+        for (const key of Object.keys(services[service]?.fields || {})) normalized[key] = typeof fields?.[key] === 'string' ? fields[key].trim() : '';
+        return JSON.stringify(normalized);
+      }
+      function readFields(service) {
+        const config = services[service];
+        if (!config) return null;
+        const fields = {};
+        for (const [key, id] of Object.entries(config.fields)) fields[key] = String(byId(id)?.value || '').trim();
+        return fields;
+      }
+      function writeFields(service, fields) {
+        const config = services[service];
+        const form = byId(config?.form);
+        if (!form) return false;
+        applyingDraft = true;
+        for (const [key, id] of Object.entries(config.fields)) {
+          const control = byId(id);
+          if (!control) continue;
+          control.value = typeof fields?.[key] === 'string' ? fields[key] : '';
+          control.removeAttribute('aria-invalid');
+          control.dispatchEvent(new Event('input', {bubbles: true}));
+          control.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+        applyingDraft = false;
+        return true;
+      }
+      function clearCredentialFields(service) {
+        const config = services[service];
+        if (!config) return;
+        const form = byId(config.form);
+        const input = byId(config.auth);
+        if (input) input.value = '';
+        const picker = form?.querySelector('select[name="named_secret_id"]');
+        if (picker) picker.value = '';
+      }
+      function clearServiceCredential(service) {
+        clearCredentialFields(service);
+        authGeneration++;
+      }
+      function clearCredentials() {
+        for (const service of Object.keys(services)) clearCredentialFields(service);
+        authGeneration++;
+      }
+      function clearPermit() {
+        permitState = null;
+        if (permitTimer) window.clearTimeout(permitTimer);
+        permitTimer = 0;
+        checkButton.disabled = false;
+        reviewButton.disabled = true;
+        reviewState = null;
+        policyPanel.hidden = true;
+        policyConfirmed.checked = false;
+        activateButton.disabled = true;
+        checkResult.hidden = true;
+      }
+      function authChoice(service) {
+        const config = services[service];
+        const form = byId(config?.form);
+        const input = byId(config?.auth);
+        const picker = form?.querySelector('select[name="named_secret_id"]');
+        const namedSecretID = String(picker?.value || '').trim();
+        const credential = String(input?.value || '');
+        if (credential && namedSecretID) return {error: 'both'};
+        if (namedSecretID) return {named_secret_id: namedSecretID};
+        if (credential) return {credential};
+        return {error: 'missing', input, picker};
+      }
+      function nativeFormDirty(service) {
+        const config = services[service];
+        const form = byId(config?.form);
+        const targetID = form?.querySelector('input[name="target_id"]')?.value || 'new';
+        const hasFields = Object.values(config.fields).some(id => String(byId(id)?.value || '').trim() !== '');
+        const hasCredential = Boolean(String(byId(config.auth)?.value || '') || form?.querySelector('select[name="named_secret_id"]')?.value);
+        return targetID !== 'new' || hasFields || hasCredential;
+      }
+      function syncRecoveryAlert() {
+        if (recoveryAlert) recoveryAlert.hidden = currentDraft?.activation_recovery_required !== true;
+      }
+      function requireManualRecovery(draft = currentDraft) {
+        let target = draft;
+        if (target?.id) {
+          target.activation_recovery_required = true;
+          const summary = drafts.find(item => item.id === target.id);
+          if (summary) summary.activation_recovery_required = true;
+          if (currentDraft?.id === target.id) {
+            const currentWasBlocked = currentDraft.activation_recovery_required === true;
+            currentDraft.activation_recovery_required = true;
+            if (!currentWasBlocked) clearServiceCredential(currentDraft.service);
+            clearPermit();
+            syncRecoveryAlert();
+          }
+        }
+        renderDrafts();
+        updateDraftButtons();
+        updateAuthorizationButtons();
+        status(recoveryCopy[0], recoveryCopy[1], true);
+        refreshDrafts(true);
+      }
+      function updateDraftButtons() {
+        for (const [service, config] of Object.entries(services)) {
+          const form = byId(config.form);
+          const targetID = form?.querySelector('input[name="target_id"]')?.value || 'new';
+          const save = form?.querySelector(`[data-onboarding-save-draft="${service}"]`);
+          const go = form?.querySelector(`[data-onboarding-go="${service}"]`);
+          const canUpdateCurrentDraft = currentDraft?.service === service && currentDraft.activation_recovery_required !== true;
+          if (save) {
+            save.hidden = targetID !== 'new';
+            save.disabled = busy;
+            setDynamic(save,
+              canUpdateCurrentDraft ? 'Update guided progress' : 'Save guided progress',
+              canUpdateCurrentDraft ? '안내 진행 상황 업데이트' : '안내 진행 상황 저장');
+          }
+          if (go) go.hidden = !canUpdateCurrentDraft || targetID !== 'new';
+          const saveHint = form?.querySelector('.lah-onboarding-save-hint');
+          if (saveHint) {
+            setDynamic(saveHint, 'Only ordinary fields, including the normalized service address, are saved. Credentials are not saved; enter one again at the check step.', '정규화한 서비스 주소를 포함한 일반 설정 필드만 저장합니다. 자격 증명은 저장하지 않으므로 확인 단계에서 다시 입력해야 합니다.');
+          }
+        }
+      }
+      function errorText(code) {
+        const messages = {
+          request_rejected: ['The local request was rejected. Refresh this page and try again.', '로컬 요청이 거부되었습니다. 페이지를 새로고침한 뒤 다시 시도하세요.'],
+          invalid_request: ['Review the fields and try again.', '입력 항목을 확인한 뒤 다시 시도하세요.'],
+          request_too_large: ['This request is too large. Shorten the field values and try again.', '요청이 너무 큽니다. 입력 값을 줄인 뒤 다시 시도하세요.'],
+          method_not_allowed: ['This action is not available. Refresh the page and try again.', '이 동작을 사용할 수 없습니다. 페이지를 새로고침한 뒤 다시 시도하세요.'],
+          not_found: ['This saved progress is no longer available. Refresh the list.', '저장된 진행 상황이 없습니다. 목록을 새로고침하세요.'],
+          stale_revision: ['The saved progress changed elsewhere. Refresh it and review the latest values.', '다른 곳에서 저장된 내용이 바뀌었습니다. 새로고침하고 최신 값을 확인하세요.'],
+          check_required: ['Run a fresh successful connection check before continuing.', '계속하기 전에 연결을 다시 확인해 성공해야 합니다.'],
+          check_permit_required: ['The temporary check expired or changed. Run it again with the same credential.', '임시 확인이 만료되었거나 값이 바뀌었습니다. 같은 자격 증명으로 다시 확인하세요.'],
+          review_changed: ['The candidate, policy, or configuration changed. Review the current scope again.', '후보·정책·설정이 바뀌었습니다. 현재 범위를 다시 확인하세요.'],
+          activation_pending: ['The registration outcome is still being reconciled. Refresh this draft and, if it remains available, run a fresh check before reviewing or activating again.', '등록 결과를 아직 확인 중입니다. 이 초안을 새로고침하고, 목록에 남아 있으면 새로 확인한 뒤 다시 검토·등록하세요.'],
+          activation_recovery_required: recoveryCopy,
+          unavailable: ['The local onboarding service is unavailable. Refresh and try again.', '로컬 등록 기능을 사용할 수 없습니다. 새로고침한 뒤 다시 시도하세요.'],
+          operation_failed: ['The action could not be completed. Review the fields and try again.', '작업을 완료하지 못했습니다. 입력 항목을 확인한 뒤 다시 시도하세요.']
+        };
+        return messages[code] || messages.operation_failed;
+      }
+      async function api(path, method = 'GET', payload = null) {
+        const headers = {Accept: 'application/json'};
+        const options = {method, mode: 'same-origin', credentials: 'same-origin', cache: 'no-store', redirect: 'error', headers};
+        if (payload !== null) {
+          headers['Content-Type'] = 'application/json';
+          headers['X-CSRF-Token'] = csrf;
+          options.body = JSON.stringify(payload);
+        }
+        const response = await fetch(path, options);
+        let value = {};
+        try { value = await response.json(); } catch { /* A fixed generic error is shown below. */ }
+        if (!response.ok) {
+          const error = new Error('onboarding_request_failed');
+          error.code = typeof value?.error_code === 'string' ? value.error_code : 'operation_failed';
+          throw error;
+        }
+        return value;
+      }
+      function formatTime(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return new Intl.DateTimeFormat(lang() === 'ko' ? 'ko-KR' : 'en', {dateStyle: 'medium', timeStyle: 'short'}).format(date);
+      }
+      function clearNode(node) { while (node?.firstChild) node.removeChild(node.firstChild); }
+      function serviceLabel(service) { return serviceName(service); }
+      function renderDrafts() {
+        clearNode(listNode);
+        if (!drafts.length) {
+          const item = document.createElement('li');
+          localized(item, 'No saved setup progress yet. Start from a service address, then choose Save progress in the new-target form.', '저장된 진행 상황이 없습니다. 서비스 주소부터 시작한 뒤 새 대상 양식에서 진행 상황 저장을 선택하세요.');
+          listNode.append(item);
+          updateDraftButtons();
+          return;
+        }
+        for (const item of drafts) {
+          if (!item || typeof item.id !== 'string' || !Number.isInteger(item.revision) || !services[item.service]) continue;
+          const row = document.createElement('li');
+          const description = document.createElement('span');
+          const time = formatTime(item.updated_at);
+          const check = item.check_outcome === 'success' ? localText(' · previous check succeeded', ' · 이전 확인 성공') :
+            item.check_outcome === 'failure' ? localText(' · previous check failed', ' · 이전 확인 실패') : '';
+          description.textContent = `${serviceLabel(item.service)}${time ? ` · ${time}` : ''}${check}`;
+          if (item.activation_recovery_required === true) {
+            const recovery = document.createElement('span');
+            recovery.className = 'lah-onboarding-status error';
+            localized(recovery, recoveryCopy[0], recoveryCopy[1]);
+            const inspect = document.createElement('button');
+            inspect.type = 'button';
+            inspect.className = 'secondary';
+            localized(inspect, 'Open read-only details', '읽기 전용 상세 보기');
+            inspect.addEventListener('click', () => openDraft(item));
+            row.append(description, recovery, inspect);
+            listNode.append(row);
+            continue;
+          }
+          const resume = document.createElement('button');
+          resume.type = 'button';
+          resume.className = 'secondary';
+          localized(resume, 'Open', '열기');
+          resume.addEventListener('click', () => openDraft(item));
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'danger';
+          localized(remove, 'Delete', '삭제');
+          remove.addEventListener('click', () => deleteDraft(item));
+          row.append(description, resume, remove);
+          listNode.append(row);
+        }
+      }
+      async function refreshDrafts(keepStatus = false) {
+        const generation = ++listGeneration;
+        if (!keepStatus) status('Loading saved progress…', '저장된 진행 상황을 불러오는 중…');
+        try {
+          const result = await api('/onboarding/drafts');
+          if (generation !== listGeneration) return;
+          drafts = Array.isArray(result.drafts) ? result.drafts.filter(item => item && typeof item.id === 'string' && services[item.service]) : [];
+          const currentSummary = currentDraft && drafts.find(item => item.id === currentDraft.id);
+          if (currentSummary) {
+            const wasBlocked = currentDraft.activation_recovery_required === true;
+            currentDraft.activation_recovery_required = currentSummary.activation_recovery_required === true;
+            if (currentDraft.activation_recovery_required && !wasBlocked) {
+              clearServiceCredential(currentDraft.service);
+              clearPermit();
+            }
+          }
+          renderDrafts();
+          updateDraftButtons();
+          syncRecoveryAlert();
+          updateAuthorizationButtons();
+          if (!keepStatus) status('Saved progress is up to date. No service was contacted.', '저장된 진행 상황을 새로고침했습니다. 서비스에 접속하지 않았습니다.');
+        } catch (error) {
+          if (generation !== listGeneration) return;
+          const [en, ko] = errorText(error.code);
+          status(en, ko, true);
+        }
+      }
+      function formatFieldKey(key) { return labels[key] || ['Additional field', '추가 항목']; }
+      function renderFields(draft) {
+        clearNode(fieldsNode);
+        const keys = Object.keys(services[draft.service].fields);
+        for (const key of keys) {
+          const term = document.createElement('dt');
+          const value = document.createElement('dd');
+          const [en, ko] = formatFieldKey(key);
+          localized(term, en, ko);
+          value.textContent = String(draft.fields?.[key] || '') || localText('Not provided yet', '아직 입력하지 않음');
+          fieldsNode.append(term, value);
+        }
+      }
+      function renderHistory(draft) {
+        historyDraft = draft;
+        const receipt = draft.check;
+        if (!receipt || typeof receipt !== 'object') {
+          setDynamic(historyNode, 'No previous check. This draft can remain incomplete.', '이전 확인 기록이 없습니다. 필수 항목이 덜 채워져도 초안으로 저장할 수 있습니다.');
+        } else {
+          const outcome = receipt.outcome === 'success' ? localText('succeeded', '성공') : receipt.outcome === 'failure' ? localText('failed', '실패') : localText('unknown', '알 수 없음');
+          const when = formatTime(receipt.checked_at);
+          setDynamic(historyNode,
+            `Previous check ${outcome}${when ? ` at ${when}` : ''}. Run a new check before activation; this history does not authorize saving.`,
+            `이전 확인 ${outcome}${when ? ` · ${when}` : ''}. 등록 전 다시 확인하세요. 과거 기록만으로 저장할 수 없습니다.`);
+        }
+      }
+      function renderActive(draft) {
+        currentDraft = draft;
+        dirty = false;
+        activeNode.hidden = false;
+        const heading = byId('lah-onboarding-active-heading');
+        setDynamic(heading, `${serviceLabel(draft.service)} setup`, `${serviceLabel(draft.service)} 설정`);
+        renderFields(draft);
+        renderHistory(draft);
+        const help = {
+          github: ['Enter a token issued for this Enterprise server, or choose a named credential in the provider form. The selected credential is used for the connection check and activation, but is not saved in the draft. When you confirm registration, a pasted token is stored in Windows Credential Manager; a named credential keeps its existing value.', 'Enterprise 서버용 토큰을 입력하거나 공급자 양식에서 이름 있는 자격 증명을 선택하세요. 선택한 값은 연결 확인과 등록에 사용하며 초안에는 저장하지 않습니다. 등록을 확정하면 붙여 넣은 토큰은 Windows Credential Manager에 저장하고 이름 있는 자격 증명은 기존 값을 사용합니다.'],
+          jenkins: ['Enter the Jenkins username and API token, or choose a named credential in the provider form. The selected credential is used for the connection check and activation, but is not saved in the draft. When you confirm registration, a pasted token is stored in Windows Credential Manager; a named credential keeps its existing value.', '공급자 양식에 Jenkins 사용자 이름과 API 토큰을 입력하거나 이름 있는 자격 증명을 선택하세요. 선택한 자격 증명은 연결 확인과 등록에 사용하며 초안에는 저장하지 않습니다. 등록을 확정하면 붙여 넣은 토큰은 Windows Credential Manager에 저장하고 이름 있는 자격 증명은 기존 값을 사용합니다.'],
+          dashboard: ['Enter the API Bearer value confirmed for your installed Dashboard or proxy, or choose a named credential in the provider form. The selected credential is used for the connection check and activation, but is not saved in the draft. When you confirm registration, a pasted Bearer value is stored in Windows Credential Manager; a named credential keeps its existing value. Login exchange and version detection are not performed.', '설치된 Dashboard 또는 proxy에서 확인한 API Bearer 값을 입력하거나 공급자 양식에서 이름 있는 자격 증명을 선택하세요. 선택한 자격 증명은 연결 확인과 등록에 사용하며 초안에는 저장하지 않습니다. 등록을 확정하면 붙여 넣은 Bearer 값은 Windows Credential Manager에 저장하고 이름 있는 자격 증명은 기존 값을 사용합니다. 로그인 교환이나 버전 확인은 하지 않습니다.']
+        }[draft.service];
+        setDynamic(authHelp, help[0], help[1]);
+        activationResult.hidden = true;
+        checkResult.hidden = true;
+        policyPanel.hidden = true;
+        clearPermit();
+        syncRecoveryAlert();
+        updateDraftButtons();
+        updateAuthorizationButtons();
+      }
+      function formHasConflict(service) {
+        return nativeFormDirty(service);
+      }
+      function hasTypedCredential(service) {
+        const config = services[service];
+        const form = byId(config?.form);
+        return Boolean(String(byId(config?.auth)?.value || '') || form?.querySelector('select[name="named_secret_id"]')?.value);
+      }
+      async function openDraft(summary) {
+        if (busy) return;
+        const requestGeneration = ++resumeGeneration;
+        resumePanel.hidden = true;
+        status('Opening saved progress…', '저장된 진행 상황을 여는 중…');
+        try {
+          const result = await api(`/onboarding/drafts/${encodeURIComponent(summary.id)}`);
+          if (requestGeneration !== resumeGeneration) return;
+          const draft = result?.draft;
+          if (!draft || draft.id !== summary.id || draft.service !== summary.service || !Number.isInteger(draft.revision) || !services[draft.service]) {
+            throw Object.assign(new Error('invalid'), {code: 'stale_revision'});
+          }
+          const same = currentDraft?.id === draft.id;
+          const conflict = same ? dirty || hasTypedCredential(draft.service) : Boolean((currentDraft && (dirty || hasTypedCredential(currentDraft.service))) || formHasConflict(draft.service));
+          if (conflict) {
+            pendingResume = draft;
+            resumePanel.hidden = false;
+            const existingName = serviceName(draft.service);
+            if (same) {
+              setDynamic(resumeMessage,
+                'Reopening this draft clears any typed credential and resets form values to the saved draft.',
+                '초안을 다시 열면 입력한 자격 증명을 지우고 양식 값을 저장된 초안으로 되돌립니다.');
+            } else {
+              setDynamic(resumeMessage,
+                `Opening this draft clears unsaved values in the ${existingName} new-target form and discards edits to another active draft. Saved targets stay unchanged.`,
+                `이 초안을 열면 ${existingName} 새 대상 양식의 저장하지 않은 값과 다른 활성 초안의 미저장 변경을 버립니다. 저장된 대상은 바뀌지 않습니다.`);
+            }
+            resumePanel.scrollIntoView({block: 'center'});
+            byId('lah-onboarding-resume-confirm-button').focus();
+            status('Review the form-switch choice below.', '아래에서 양식 전환 여부를 선택하세요.');
+            return;
+          }
+          resumeThisDraft(draft);
+        } catch (error) {
+          if (error.code === 'activation_recovery_required') {
+            requireManualRecovery(summary);
+            return;
+          }
+          const [en, ko] = errorText(error.code);
+          status(en, ko, true);
+          if (['stale_revision', 'not_found'].includes(error.code)) refreshDrafts(true);
+        }
+      }
+      function resumeThisDraft(draft) {
+        pendingResume = null;
+        resumePanel.hidden = true;
+        if (draft.activation_recovery_required === true) {
+          if (currentDraft && currentDraft.id !== draft.id && dirty) {
+            window.LAHRegistrationIntake?.startNewTarget?.(currentDraft.service);
+          }
+          clearCredentials();
+          clearPermit();
+          const prepared = window.LAHRegistrationIntake?.startNewTarget?.(draft.service);
+          if (!prepared) {
+            status('The new-target form is unavailable. Refresh the page and try again.', '새 대상 양식을 사용할 수 없습니다. 페이지를 새로고침한 뒤 다시 시도하세요.', true);
+            return;
+          }
+          currentDraft = draft;
+          renderActive(draft);
+          requireManualRecovery(draft);
+          root.scrollIntoView({block: 'start'});
+          return;
+        }
+        if (currentDraft && currentDraft.id !== draft.id && dirty) {
+          window.LAHRegistrationIntake?.startNewTarget?.(currentDraft.service);
+        }
+        clearCredentials();
+        clearPermit();
+        const prepared = window.LAHRegistrationIntake?.startNewTarget?.(draft.service);
+        if (!prepared) {
+          status('The new-target form is unavailable. Refresh the page and try again.', '새 대상 양식을 사용할 수 없습니다. 페이지를 새로고침한 뒤 다시 시도하세요.', true);
+          return;
+        }
+        writeFields(draft.service, draft.fields || {});
+        renderActive(draft);
+        status('Draft opened. Credentials were cleared; enter one in the provider form before the temporary check.', '초안을 열었습니다. 자격 증명을 지웠습니다. 임시 확인 전에 공급자 양식에 다시 입력하세요.');
+        const config = services[draft.service];
+        const form = byId(config.form);
+        const missing = Object.values(config.fields).map(id => byId(id)).find(control => control?.required && !String(control.value || '').trim());
+        const focus = missing || byId(config.auth);
+        const help = document.getElementById(`${draft.service}-registration-auth-help`);
+        if (help) help.open = true;
+        form?.closest('section.panel')?.scrollIntoView({block: 'start'});
+        focus?.focus({preventScroll: true});
+      }
+      async function saveDraft(service) {
+        if (busy || !services[service]) return;
+        const form = byId(services[service].form);
+        if (form?.querySelector('input[name="target_id"]')?.value !== 'new') {
+          status('Only a new-target form can be saved as onboarding progress. The selected saved target was left unchanged.', '온보딩 진행 상황은 새 대상 양식에서만 저장할 수 있습니다. 선택한 저장 대상은 변경하지 않았습니다.', true);
+          return;
+        }
+        const fields = readFields(service);
+        const updating = currentDraft?.service === service && currentDraft.activation_recovery_required !== true;
+        if (currentDraft && currentDraft.service !== service && dirty &&
+            !window.confirm(localText('Save this as a separate draft and discard the unsaved edits in the currently open draft?', '별도 초안으로 저장하고 현재 열린 초안의 미저장 변경을 버릴까요?'))) return;
+        if (updating && !dirty) {
+          status('There are no unsaved changes in this draft.', '이 초안에 저장하지 않은 변경 사항이 없습니다.');
+          return;
+        }
+        busy = true;
+        if (currentDraft && currentDraft.service !== service) {
+          if (dirty) window.LAHRegistrationIntake?.startNewTarget?.(currentDraft.service);
+          clearCredentials();
+        }
+        clearPermit();
+        updateAuthorizationButtons();
+        status(updating ? 'Saving progress changes…' : 'Saving setup progress…', updating ? '진행 상황 변경을 저장하는 중…' : '설정 진행 상황을 저장하는 중…');
+        try {
+          const submittedFieldsKey = fieldKey(service, fields);
+          const result = updating
+            ? await api(`/onboarding/drafts/${encodeURIComponent(currentDraft.id)}`, 'PUT', {expected_revision: currentDraft.revision, fields})
+            : await api('/onboarding/drafts', 'POST', {service, fields});
+          if (!result?.draft || !result.draft.id) throw Object.assign(new Error('invalid'), {code: 'operation_failed'});
+          const latestFields = readFields(service);
+          currentDraft = result.draft;
+          dirty = fieldKey(service, latestFields) !== submittedFieldsKey;
+          renderActive(currentDraft);
+          dirty = fieldKey(service, latestFields) !== fieldKey(service, currentDraft.fields || {});
+          await refreshDrafts(true);
+          status(dirty ? 'Saved the submitted values. Newer edits remain unsaved; save them before checking.' : 'Progress saved. The normalized service address is included; the pasted text and credentials are not.', dirty ? '보낸 값은 저장했습니다. 그 뒤 변경한 내용은 아직 저장하지 않았으므로 확인 전에 저장하세요.' : '진행 상황을 저장했습니다. 정규화한 서비스 주소는 포함되며 붙여 넣은 원문과 자격 증명은 저장하지 않았습니다.');
+          root.scrollIntoView({block: 'start'});
+          checkButton.focus({preventScroll: true});
+        } catch (error) {
+          if (error.code === 'activation_recovery_required') {
+            if (updating && currentDraft?.service === service) requireManualRecovery(currentDraft);
+            else { const [en, ko] = errorText(error.code); status(en, ko, true); }
+            return;
+          }
+          const [en, ko] = errorText(error.code);
+          status(en, ko, true);
+          if (error.code === 'stale_revision') refreshDrafts(true);
+        } finally { busy = false; updateDraftButtons(); updateAuthorizationButtons(); }
+      }
+      async function deleteDraft(summary) {
+        if (busy) return;
+        if (summary.activation_recovery_required === true) {
+          requireManualRecovery(summary);
+          return;
+        }
+        if (!window.confirm(localText('Delete this saved connection progress?', '이 연결 진행 상황을 삭제할까요?'))) return;
+        busy = true;
+        updateAuthorizationButtons();
+        try {
+          await api(`/onboarding/drafts/${encodeURIComponent(summary.id)}`, 'DELETE', {expected_revision: summary.revision});
+          if (currentDraft?.id === summary.id) {
+            clearPermit();
+            clearCredentials();
+            currentDraft = null;
+            dirty = false;
+            activeNode.hidden = true;
+            updateDraftButtons();
+          }
+          status('Saved progress deleted. No target was changed.', '저장된 진행 상황을 삭제했습니다. 등록된 대상은 바뀌지 않았습니다.');
+          await refreshDrafts(true);
+        } catch (error) {
+          if (error.code === 'activation_recovery_required') {
+            requireManualRecovery(summary);
+            return;
+          }
+          const [en, ko] = errorText(error.code);
+          status(en, ko, true);
+          if (error.code === 'stale_revision') refreshDrafts(true);
+        } finally { busy = false; updateAuthorizationButtons(); }
+      }
+      function invalidateAuthorization(reason = null) {
+        authGeneration++;
+        clearPermit();
+        if (reason) status(reason[0], reason[1]);
+        if (currentDraft && !dirty) {
+          const config = services[currentDraft.service];
+          dirty = fieldKey(currentDraft.service, readFields(currentDraft.service)) !== fieldKey(currentDraft.service, currentDraft.fields || {});
+        }
+        updateAuthorizationButtons();
+      }
+      function updateAuthorizationButtons() {
+        refreshButton.disabled = busy;
+        const active = Boolean(currentDraft && currentDraft.activation_recovery_required !== true && !dirty && !busy);
+        checkButton.disabled = !active;
+        reviewButton.disabled = !active || !permitIsCurrent();
+        activateButton.disabled = !active || !permitIsCurrent() || !reviewState || !policyConfirmed.checked;
+        const config = currentDraft && services[currentDraft.service];
+        const form = config && byId(config.form);
+        const hasCredential = form && (String(byId(config.auth)?.value || '') || form.querySelector('select[name="named_secret_id"]')?.value);
+        if (!hasCredential) checkButton.disabled = true;
+      }
+      function permitIsCurrent() {
+        if (!permitState || !currentDraft) return false;
+        if (Date.now() >= permitState.expiresAt) {
+          clearPermit();
+          status('The temporary check expired after five minutes. Run it again before activation.', '임시 확인은 5분 뒤 만료됩니다. 등록 전에 다시 확인하세요.');
+          return false;
+        }
+        return permitState.draftID === currentDraft.id && permitState.revision === currentDraft.revision && permitState.authGeneration === authGeneration;
+      }
+      async function runCheck() {
+        if (!currentDraft || currentDraft.activation_recovery_required === true || dirty || busy) return;
+        const selected = authChoice(currentDraft.service);
+        if (selected.error) {
+          const [en, ko] = selected.error === 'both' ? ['Choose either a temporary credential or a named credential, not both.', '임시 자격 증명과 이름 있는 자격 증명 중 하나만 선택하세요.'] : ['Enter a credential or choose a named credential in the provider form.', '공급자 양식에 자격 증명을 입력하거나 이름 있는 자격 증명을 선택하세요.'];
+          status(en, ko, true);
+          (selected.input || selected.picker)?.focus();
+          return;
+        }
+        busy = true;
+        clearPermit();
+        const generation = ++operationGeneration;
+        const captured = {id: currentDraft.id, revision: currentDraft.revision, service: currentDraft.service, authGeneration};
+        status('Running one temporary connection check…', '임시 연결 확인을 한 번 실행합니다…');
+        updateAuthorizationButtons();
+        try {
+          const result = await api(`/onboarding/drafts/${encodeURIComponent(captured.id)}/check`, 'POST', {expected_revision: captured.revision, ...selected});
+          if (generation !== operationGeneration || !currentDraft || currentDraft.id !== captured.id || currentDraft.revision !== captured.revision || captured.authGeneration !== authGeneration || dirty) return;
+          const receipt = result?.receipt;
+          if (!receipt || receipt.draft_id !== captured.id || receipt.draft_revision !== captured.revision || !Number.isSafeInteger(receipt.check_generation) || receipt.check_generation <= 0) throw Object.assign(new Error('invalid'), {code: 'operation_failed'});
+          currentDraft.check = receipt;
+          currentDraft.check_generation = receipt.check_generation;
+          const summary = drafts.find(item => item.id === currentDraft.id);
+          if (summary) summary.check_outcome = receipt.outcome;
+          renderDrafts();
+          renderHistory(currentDraft);
+          clearNode(checkResult);
+          checkResult.hidden = false;
+          if (receipt.outcome === 'success' && typeof result.check_permit === 'string' && result.check_permit) {
+            permitState = {value: result.check_permit, draftID: captured.id, revision: captured.revision, checkGeneration: receipt.check_generation, authGeneration, expiresAt: Date.now() + 5 * 60 * 1000};
+            const when = formatTime(receipt.checked_at);
+            setDynamic(checkResult, `Temporary service check succeeded${when ? ` · ${when}` : ''}. This is not an AI app read.`, `임시 서비스 확인에 성공했습니다${when ? ` · ${when}` : ''}. AI 앱의 읽기를 확인한 것은 아닙니다.`);
+            permitTimer = window.setTimeout(() => { if (permitState) { clearPermit(); status('The temporary check expired after five minutes. Run it again before activation.', '임시 확인은 5분 뒤 만료됩니다. 등록 전에 다시 확인하세요.'); updateAuthorizationButtons(); } }, 5 * 60 * 1000);
+            reviewButton.disabled = false;
+            status('Check succeeded. Next, review the fixed operation scope.', '확인에 성공했습니다. 다음으로 고정 작업 범위를 검토하세요.');
+          } else {
+            clearPermit();
+            const reason = typeof receipt.failure_kind === 'string' ? receipt.failure_kind : '';
+            const failureCopy = {
+              authentication: ['The service rejected this credential. Check its account, token, and access, then try again.', '서비스가 이 자격 증명을 거부했습니다. 계정·토큰·접근 권한을 확인한 뒤 다시 시도하세요.'],
+              access: ['This account is not allowed to read the selected resource. Review its permissions.', '이 계정에는 선택한 리소스를 읽을 권한이 없습니다. 권한을 확인하세요.'],
+              timeout: ['The temporary check timed out. Verify the address and service availability, then retry.', '임시 확인 시간이 초과되었습니다. 주소와 서비스 상태를 확인한 뒤 다시 시도하세요.'],
+              address: ['The service address could not be reached. Verify the HTTPS address and retry.', '서비스 주소에 연결하지 못했습니다. HTTPS 주소를 확인한 뒤 다시 시도하세요.'],
+              endpoint: ['The expected service endpoint was not verified. Review the address and supported service configuration.', '예상한 서비스 경로를 확인하지 못했습니다. 주소와 지원되는 서비스 구성을 확인하세요.'],
+              rate_limit: ['The service limited this check. Wait, then retry once.', '서비스가 확인 요청을 제한했습니다. 잠시 뒤 다시 시도하세요.'],
+              other: ['The temporary check failed. Review the address and credential, then retry.', '임시 확인에 실패했습니다. 주소와 자격 증명을 확인한 뒤 다시 시도하세요.']
+            }[reason] || ['The temporary check failed. Review the service address and credential, then retry.', '임시 확인에 실패했습니다. 서비스 주소와 자격 증명을 확인한 뒤 다시 시도하세요.'];
+            setDynamic(checkResult, failureCopy[0], failureCopy[1]);
+            status(failureCopy[0], failureCopy[1], true);
+          }
+        } catch (error) {
+          if (generation !== operationGeneration) return;
+          if (error.code === 'activation_recovery_required') {
+            requireManualRecovery({id: captured.id, service: captured.service});
+            return;
+          }
+          clearPermit();
+          const [en, ko] = errorText(error.code);
+          status(en, ko, true);
+          if (['stale_revision', 'check_required', 'check_permit_required', 'review_changed'].includes(error.code)) refreshDrafts(true);
+        } finally {
+          if (generation === operationGeneration) { busy = false; updateDraftButtons(); updateAuthorizationButtons(); }
+        }
+      }
+      function renderStringList(id, values, emptyEN, emptyKO) {
+        const list = byId(id);
+        clearNode(list);
+        const safe = Array.isArray(values) ? values.filter(value => typeof value === 'string' && value.trim()) : [];
+        if (!safe.length) {
+          const item = document.createElement('li');
+          localized(item, emptyEN, emptyKO);
+          list.append(item);
+          return;
+        }
+        for (const value of safe) {
+          const item = document.createElement('li');
+          const knownPolicyNotes = {
+            'This review describes the service\'s fixed tool scope. Individual MCP operations cannot be selected or gated here.': ['This review describes the service’s fixed tool scope. Individual MCP operations cannot be selected or gated here.', '이 검토는 서비스의 고정 도구 범위를 설명합니다. 여기서 개별 MCP 작업을 선택하거나 제한할 수는 없습니다.'],
+            'Jenkins job triggering remains available only after per-call approval; this new target is not preapproved.': ['Jenkins job triggering remains available only after per-call approval; this new target is not preapproved.', 'Jenkins 작업 실행은 호출마다 승인한 뒤에만 사용할 수 있습니다. 새 대상에는 사전 승인이 설정되지 않습니다.'],
+            'Dashboard deployment, event, Pod, and log reads require service-bundle environment resource mappings.': ['Dashboard deployment, event, Pod, and log reads require service-bundle environment resource mappings.', 'Dashboard 배포·이벤트·Pod·로그를 읽으려면 서비스 묶음 환경의 리소스 매핑이 필요합니다.']
+          };
+          const note = knownPolicyNotes[value];
+          if (note) localized(item, note[0], note[1]);
+          else item.textContent = value;
+          list.append(item);
+        }
+      }
+      function renderToolList(id, values, emptyEN, emptyKO) {
+        const list = byId(id);
+        clearNode(list);
+        const safe = Array.isArray(values) ? values.filter(value => typeof value === 'string' && value.trim()) : [];
+        if (!safe.length) {
+          const item = document.createElement('li');
+          localized(item, emptyEN, emptyKO);
+          list.append(item);
+          return;
+        }
+        const descriptions = {
+          github_repository: ['Read registered repository basics', '등록된 저장소 기본 정보 읽기'],
+          github_pull_request: ['Read a pull request from the registered repository', '등록된 저장소의 Pull Request 읽기'],
+          jenkins_registered_job: ['Read the registered Jenkins job status', '등록된 Jenkins 작업 상태 읽기'],
+          jenkins_registered_queue_item: ['Read a Jenkins queue item status', 'Jenkins 대기 항목 상태 읽기'],
+          jenkins_registered_build_log: ['Read a bounded Jenkins build log segment', 'Jenkins 빌드 로그 일부 읽기'],
+          dashboard_namespaces: ['List namespaces visible to the registered Dashboard target', '등록된 Dashboard에서 볼 수 있는 Namespace 목록 읽기'],
+          dashboard_deployment_status: ['Read mapped Deployment status', '매핑된 Deployment 상태 읽기'],
+          dashboard_deployment_diagnosis: ['Read a mapped Deployment diagnosis', '매핑된 Deployment 진단 읽기'],
+          dashboard_deployment_events: ['Read events for a mapped Deployment', '매핑된 Deployment 이벤트 읽기'],
+          dashboard_deployment_pods: ['Read Pods for a mapped Deployment', '매핑된 Deployment의 Pod 목록 읽기'],
+          dashboard_deployment_pod_logs: ['Read a bounded log segment for a mapped Pod', '매핑된 Pod의 로그 일부 읽기']
+        };
+        for (const value of safe) {
+          const item = document.createElement('li');
+          const description = document.createElement('span');
+          const labels = descriptions[value];
+          if (labels) localized(description, labels[0], labels[1]);
+          else localized(description, 'Service capability', '서비스 기능');
+          const identifier = document.createElement('code');
+          identifier.textContent = value;
+          item.append(description, document.createTextNode(' '), identifier);
+          list.append(item);
+        }
+      }
+      async function reviewPolicy() {
+        if (!currentDraft || currentDraft.activation_recovery_required === true || !permitIsCurrent() || dirty || busy) return;
+        const checkGeneration = Number(currentDraft.check?.check_generation || 0);
+        if (!Number.isSafeInteger(checkGeneration) || checkGeneration <= 0 || checkGeneration !== permitState?.checkGeneration) {
+          clearPermit();
+          status('The current check could not be matched to this draft. Run a fresh check.', '현재 확인 기록을 이 초안에 연결할 수 없습니다. 다시 확인하세요.', true);
+          updateAuthorizationButtons();
+          return;
+        }
+        busy = true;
+        reviewState = null;
+        policyPanel.hidden = true;
+        policyConfirmed.checked = false;
+        updateAuthorizationButtons();
+        const generation = ++operationGeneration;
+        const captured = {id: currentDraft.id, revision: currentDraft.revision, service: currentDraft.service, checkGeneration};
+        status('Loading the fixed operation scope…', '고정 작업 범위를 불러오는 중…');
+        try {
+          const result = await api(`/onboarding/drafts/${encodeURIComponent(captured.id)}/policy-review`, 'POST', {expected_revision: captured.revision});
+          if (generation !== operationGeneration || !currentDraft || currentDraft.id !== captured.id || currentDraft.revision !== captured.revision || !permitIsCurrent()) return;
+          const review = result?.review;
+          const receipt = currentDraft.check;
+          if (!review || review.draft_id !== captured.id || review.draft_revision !== captured.revision || review.check_generation !== captured.checkGeneration || !review.candidate_digest || !review.policy_digest || !review.config_revision ||
+              !receipt || receipt.check_generation !== captured.checkGeneration || review.candidate_digest !== receipt.candidate_digest || review.policy_digest !== receipt.policy_digest || review.config_revision !== receipt.config_revision) {
+            clearPermit();
+            throw Object.assign(new Error('review_changed'), {code: 'review_changed'});
+          }
+          reviewState = review;
+          renderToolList('lah-onboarding-included', review.included_tools, 'No included tools were reported.', '포함되는 도구가 없습니다.');
+          const excludedTools = Array.isArray(review.excluded_tools) ? review.excluded_tools.filter(value => typeof value === 'string' && value.trim()) : [];
+          byId('lah-onboarding-excluded-section').hidden = excludedTools.length === 0;
+          renderToolList('lah-onboarding-excluded', excludedTools, 'None reported.', '없음');
+          renderToolList('lah-onboarding-mapping', review.mapping_required, 'No additional mapping is reported.', '추가 매핑이 없습니다.');
+          renderStringList('lah-onboarding-policy-notes', review.policy_notes, 'No additional notes.', '추가 안내가 없습니다.');
+          policyPanel.hidden = false;
+          status('Review the included tools, any required mappings, and service notes before activation.', '포함되는 도구와 필요한 매핑, 서비스 안내를 확인한 뒤 등록하세요.');
+        } catch (error) {
+          if (generation !== operationGeneration) return;
+          if (error.code === 'activation_recovery_required') {
+            requireManualRecovery({id: captured.id, service: captured.service});
+            return;
+          }
+          const [en, ko] = errorText(error.code);
+          status(en, ko, true);
+          if (['review_changed', 'stale_revision', 'check_required', 'check_permit_required'].includes(error.code)) { clearPermit(); refreshDrafts(true); }
+        } finally {
+          if (generation === operationGeneration) { busy = false; updateAuthorizationButtons(); }
+        }
+      }
+      async function activateDraft() {
+        if (!currentDraft || currentDraft.activation_recovery_required === true || !reviewState || !policyConfirmed.checked || dirty || busy || !permitIsCurrent()) return;
+        if (!Number.isSafeInteger(reviewState.check_generation) || reviewState.check_generation <= 0 || reviewState.check_generation !== permitState?.checkGeneration || reviewState.check_generation !== currentDraft.check?.check_generation) {
+          clearPermit();
+          status('A newer temporary check replaced the reviewed result. Run and review a fresh check before activation.', '최신 임시 확인이 검토한 결과를 바꿨습니다. 다시 확인하고 범위를 검토하세요.', true);
+          updateAuthorizationButtons();
+          return;
+        }
+        const selected = authChoice(currentDraft.service);
+        if (selected.error) {
+          const [en, ko] = selected.error === 'both' ? ['Choose either a temporary credential or a named credential, not both.', '임시 자격 증명과 이름 있는 자격 증명 중 하나만 선택하세요.'] : ['Enter the same credential used for the successful check.', '성공한 확인에 사용한 것과 같은 자격 증명을 입력하세요.'];
+          status(en, ko, true);
+          (selected.input || selected.picker)?.focus();
+          return;
+        }
+        if (permitState.authGeneration !== authGeneration) { clearPermit(); updateAuthorizationButtons(); status('The credential changed after the check. Run a fresh check.', '확인한 뒤 자격 증명이 바뀌었습니다. 다시 확인하세요.', true); return; }
+        busy = true;
+        const capturedDraft = currentDraft;
+        const capturedReview = reviewState;
+        const capturedPermit = permitState;
+        const generation = ++operationGeneration;
+        status('Saving the target after your confirmation…', '확인에 따라 대상을 저장하는 중…');
+        updateAuthorizationButtons();
+        try {
+          const payload = {
+            expected_revision: capturedDraft.revision,
+            check_generation: capturedReview.check_generation,
+            candidate_digest: capturedReview.candidate_digest,
+            policy_digest: capturedReview.policy_digest,
+            config_revision: capturedReview.config_revision,
+            policy_confirmed: true,
+            check_permit: capturedPermit.value,
+            ...selected
+          };
+          const result = await api(`/onboarding/drafts/${encodeURIComponent(capturedDraft.id)}/activate`, 'POST', payload);
+          if (generation !== operationGeneration) return;
+          const activation = result?.activation;
+          if (!activation || activation.draft_id !== capturedDraft.id || !activation.target_id || activation.service !== capturedDraft.service || activation.check_generation !== capturedReview.check_generation) throw Object.assign(new Error('invalid'), {code: 'operation_failed'});
+          const previewStatus = byId('lah-registration-preview-status');
+          if (previewStatus) previewStatus.hidden = true;
+          byId('lah-no-connections').hidden = true;
+          clearCredentials();
+          clearPermit();
+          currentDraft = null;
+          dirty = false;
+          policyPanel.hidden = true;
+          recoveryAlert.hidden = true;
+          updateDraftButtons();
+          firstReadPrompt = null;
+          clearNode(activationResult);
+          activationResult.hidden = false;
+          const summary = document.createElement('p');
+          const label = serviceName(activation.service);
+          localized(summary, `${label} target saved. No connection test or AI app read was run by this step.`, `${label} 대상을 저장했습니다. 이 단계에서는 연결 테스트나 AI 앱 읽기를 실행하지 않았습니다.`);
+          const testLink = document.createElement('a');
+          testLink.href = `/?${activation.service}_id=${encodeURIComponent(activation.target_id)}#${activation.service}-heading`;
+          localized(testLink, 'Open target and run Test connection separately', '대상을 열고 별도로 연결 테스트 실행');
+          const guideLink = document.createElement('a');
+          guideLink.href = '#lah-pane-clients';
+          localized(guideLink, 'Open AI app setup guide', 'AI 앱 설정 안내 열기');
+          const readinessLink = document.createElement('a');
+          readinessLink.href = '/readiness';
+          localized(readinessLink, 'Check observed first read in Readiness', '준비 상태에서 관측된 첫 읽기 확인');
+          activationResult.append(summary, testLink, document.createTextNode(' · '), guideLink, document.createTextNode(' · '), readinessLink);
+          appendFirstReadPrompt(activationResult, activation.service, capturedDraft.fields || {});
+          activeNode.hidden = false;
+          checkButton.disabled = true;
+          reviewButton.disabled = true;
+          activateButton.disabled = true;
+          await refreshDrafts(true);
+          status('Target saved. Run its separate connection test, then verify an actual first read in your AI app.', '대상을 저장했습니다. 별도의 연결 테스트를 실행한 뒤 AI 앱에서 실제 첫 읽기를 확인하세요.');
+          activationResult.scrollIntoView({block: 'nearest'});
+        } catch (error) {
+          if (generation !== operationGeneration) return;
+          if (error.code === 'activation_recovery_required') {
+            requireManualRecovery(capturedDraft);
+            return;
+          }
+          if (['check_permit_required', 'check_required', 'review_changed', 'stale_revision', 'activation_pending'].includes(error.code)) clearPermit();
+          const [en, ko] = errorText(error.code);
+          status(en, ko, true);
+          if (['stale_revision', 'review_changed', 'activation_pending'].includes(error.code)) refreshDrafts(true);
+        } finally {
+          if (generation === operationGeneration) { busy = false; updateDraftButtons(); updateAuthorizationButtons(); }
+        }
+      }
+      function appendFirstReadPrompt(container, service, fields) {
+        const name = String(fields?.name || '').trim();
+        if (!name) return;
+        const repository = String(fields?.repository || '').trim();
+        const jobPath = String(fields?.job_path || '').trim();
+        const promptCopy = {
+          github: [
+            `Use the registered GitHub target “${name}” to read basic information for repository ${repository}. Return its description, default branch, and visibility only; do not change anything.`,
+            `등록된 GitHub 대상 “${name}”으로 저장소 ${repository}의 기본 정보를 읽어 주세요. 설명, 기본 브랜치, 공개 여부만 알려 주고 어떤 것도 변경하지 마세요.`
+          ],
+          jenkins: [
+            `Use the registered Jenkins target “${name}” to read the latest status for its fixed job ${jobPath}. Do not start a build or change anything.`,
+            `등록된 Jenkins 대상 “${name}”에서 고정 작업 ${jobPath}의 최신 상태를 읽어 주세요. 빌드를 시작하거나 어떤 것도 변경하지 마세요.`
+          ],
+          dashboard: [
+            `Use the registered Dashboard target “${name}” to list the namespaces visible to that target. Return names only and do not create, update, or delete resources.`,
+            `등록된 Dashboard 대상 “${name}”에서 볼 수 있는 Namespace 목록을 읽어 주세요. 이름만 알려 주고 리소스를 만들거나 수정·삭제하지 마세요.`
+          ]
+        }[service];
+        if (!promptCopy) return;
+        const section = document.createElement('section');
+        section.className = 'lah-onboarding-prompt';
+        const heading = document.createElement('h4');
+        localized(heading, 'Try a read-only first request', '읽기 전용 첫 요청 예시');
+        const explanation = document.createElement('p');
+        localized(explanation, 'Copy this request and paste it into your AI app. Copying does not run a service read; verify the observed first read separately in Readiness.', '이 요청을 복사해 AI 앱에 붙여 넣으세요. 복사만으로 서비스 읽기가 실행되지는 않습니다. 실제 첫 읽기는 준비 상태에서 별도로 확인하세요.');
+        const prompt = document.createElement('textarea');
+        prompt.readOnly = true;
+        prompt.rows = 3;
+        prompt.setAttribute('aria-label', localText('Read-only first request example', '읽기 전용 첫 요청 예시'));
+        prompt.value = localText(promptCopy[0], promptCopy[1]);
+        firstReadPrompt = {control: prompt, copy: promptCopy};
+        const copy = document.createElement('button');
+        copy.type = 'button';
+        copy.className = 'secondary';
+        localized(copy, 'Copy request', '요청 복사');
+        copy.addEventListener('click', async () => {
+          try {
+            if (!navigator.clipboard?.writeText) throw new Error('clipboard_unavailable');
+            await navigator.clipboard.writeText(prompt.value);
+            status('Copied the read-only request. Paste it into your AI app to run the read.', '읽기 전용 요청을 복사했습니다. AI 앱에 붙여 넣어 읽기를 실행하세요.');
+          } catch {
+            prompt.focus();
+            prompt.select();
+            status('Clipboard access is unavailable. The request is selected for you to copy manually.', '클립보드를 사용할 수 없어 요청을 선택했습니다. 직접 복사하세요.', true);
+          }
+        });
+        section.append(heading, explanation, prompt, copy);
+        container.append(section);
+      }
+      byId('lah-onboarding-refresh').addEventListener('click', () => refreshDrafts());
+      byId('lah-onboarding-resume-confirm-button').addEventListener('click', () => { if (pendingResume) resumeThisDraft(pendingResume); });
+      byId('lah-onboarding-resume-cancel').addEventListener('click', () => { pendingResume = null; resumePanel.hidden = true; status('The current form was kept.', '현재 양식을 유지했습니다.'); });
+      checkButton.addEventListener('click', runCheck);
+      reviewButton.addEventListener('click', reviewPolicy);
+      activateButton.addEventListener('click', activateDraft);
+      policyConfirmed.addEventListener('change', updateAuthorizationButtons);
+      document.getElementById('connections')?.addEventListener('click', event => {
+        const save = event.target.closest('[data-onboarding-save-draft]');
+        if (save) saveDraft(save.dataset.onboardingSaveDraft);
+        const go = event.target.closest('[data-onboarding-go]');
+        if (go) { root.scrollIntoView({block: 'start'}); checkButton.focus({preventScroll: true}); }
+      });
+      for (const [service, config] of Object.entries(services)) {
+        const form = byId(config.form);
+        for (const id of Object.values(config.fields)) {
+          const control = byId(id);
+          for (const type of ['input', 'change']) control?.addEventListener(type, () => {
+            if (applyingDraft || currentDraft?.service !== service) return;
+            dirty = fieldKey(service, readFields(service)) !== fieldKey(service, currentDraft.fields || {});
+            clearPermit();
+            if (dirty) status('Save the changed fields before checking this draft.', '이 초안을 확인하기 전에 변경한 항목을 저장하세요.');
+            updateAuthorizationButtons();
+          });
+        }
+        for (const type of ['input', 'change']) {
+          byId(config.auth)?.addEventListener(type, () => {
+            authGeneration++;
+            clearPermit();
+            if (currentDraft?.service === service) status('The credential changed. Run a fresh check before reviewing or activating.', '자격 증명이 바뀌었습니다. 검토하거나 등록하기 전에 다시 확인하세요.');
+            updateAuthorizationButtons();
+          });
+          form?.addEventListener(type, event => {
+            if (event.target.matches('select[name="named_secret_id"]')) {
+              authGeneration++;
+              clearPermit();
+              if (currentDraft?.service === service) status('The credential choice changed. Run a fresh check before reviewing or activating.', '자격 증명 선택이 바뀌었습니다. 검토하거나 등록하기 전에 다시 확인하세요.');
+              updateAuthorizationButtons();
+            }
+          });
+        }
+      }
+      byId('language-select')?.addEventListener('change', () => {
+        renderDrafts();
+        if (currentDraft) { renderFields(currentDraft); renderHistory(currentDraft); }
+        else if (historyDraft && !activeNode.hidden) renderHistory(historyDraft);
+        if (firstReadPrompt?.control?.isConnected) {
+          firstReadPrompt.control.value = localText(firstReadPrompt.copy[0], firstReadPrompt.copy[1]);
+          firstReadPrompt.control.setAttribute('aria-label', localText('Read-only first request example', '읽기 전용 첫 요청 예시'));
+        } else {
+          firstReadPrompt = null;
+        }
+      });
+      window.addEventListener('pagehide', () => { clearPermit(); clearCredentials(); });
+      function beginNewRegistration() {
+        if (currentDraft || activeNode.hidden || activationResult.hidden) return;
+        activeNode.hidden = true;
+        activationResult.hidden = true;
+        clearNode(activationResult);
+        historyDraft = null;
+        firstReadPrompt = null;
+      }
+      window.LAHOnboardingRecovery = {beginNewRegistration};
+      updateDraftButtons();
+      updateAuthorizationButtons();
+      refreshDrafts();
     })();
     </script>
   </main>

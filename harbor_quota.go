@@ -28,6 +28,7 @@ func (a *app) registeredHarborProjectQuota(ctx context.Context, requestedName st
 	if err != nil {
 		return harborProjectQuotaResult{}, err
 	}
+	observeFirstReadDefinition(ctx, target)
 	defer clear(secret)
 
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)

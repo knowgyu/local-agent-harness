@@ -191,6 +191,10 @@
       <p class="muted" data-copy-en="The page does not inspect client files on load. With JavaScript enabled, you can explicitly check supported CLI installation and saved registration metadata. A registration is not an active app connection or a tool call." data-copy-ko="페이지를 열 때 클라이언트 파일을 읽지 않습니다. JavaScript를 켜면 지원 CLI의 설치 및 저장된 등록 정보를 명시적으로 확인할 수 있습니다. 등록 상태는 앱 연결이나 도구 호출을 뜻하지 않습니다.">페이지를 열 때 클라이언트 파일을 읽지 않습니다. JavaScript를 켜면 지원 CLI의 설치 및 저장된 등록 정보를 명시적으로 확인할 수 있습니다. 등록 상태는 앱 연결이나 도구 호출을 뜻하지 않습니다.</p>
       <p id="readiness-client-inspection" class="evidence" role="status" aria-live="polite" data-copy-en="Client installation and registration have not been checked." data-copy-ko="클라이언트 설치 및 등록 상태를 확인하지 않았습니다.">클라이언트 설치 및 등록 상태를 확인하지 않았습니다.</p>
       <ul id="readiness-client-list" class="readiness-list" aria-live="polite"></ul>
+      <div class="evidence" aria-live="polite">
+        <h3 data-copy-en="Observed MCP first read" data-copy-ko="관측된 MCP 첫 읽기">관측된 MCP 첫 읽기</h3>
+        <p id="readiness-first-read-state" data-copy-en="No observed first-read receipt is available." data-copy-ko="관측된 첫 읽기 기록이 없습니다.">관측된 첫 읽기 기록이 없습니다.</p>
+      </div>
     </section>
     <section id="readiness-operations" class="panel" aria-labelledby="readiness-operations-heading">
       <h2 id="readiness-operations-heading" data-copy-en="Optional local operations" data-copy-ko="선택 기능: 로컬 작업">선택 기능: 로컬 작업</h2>
@@ -223,6 +227,7 @@
     const snapshotNode = document.getElementById('readiness-observed-at');
     const summary = document.getElementById('readiness-summary');
     const copyStatus = document.getElementById('readiness-copy-status');
+    const firstReadState = document.getElementById('readiness-first-read-state');
     const lists = {
       targets: document.getElementById('readiness-target-list'),
       secrets: document.getElementById('readiness-secret-list'),
@@ -274,6 +279,9 @@
         dashboardNext: 'Add/enable a Dashboard target and finish the namespace and Deployment mapping.',
         noDashboardMaps: 'No eligible Dashboard mapping was reported.',
         clientNotChecked: 'Client installation and registration have not been checked.',
+        firstReadUnavailable: 'An observed first-read status is not available in this response.',
+        firstReadNotObserved: 'No actual MCP tool read has been observed for the current saved targets. Manual check-ins below are separate user reports.',
+        firstReadObserved: 'An actual MCP tool read was observed for {service}: {tool} at {time}. The client application identity is not recorded.',
         clientObservedAt: 'The explicit CLI inspection completed at {time}. Per-client results are listed below.',
         clientInspectionFailed: 'Client status could not be safely inspected. Check the CLI manually using its setup guide.',
         clientUnsupported: 'Not supported by this build',
@@ -370,6 +378,9 @@
         dashboardNext: 'Dashboard 대상을 추가하거나 활성화하고 namespace 및 Deployment 매핑을 완료하세요.',
         noDashboardMaps: '사용 가능한 Dashboard 매핑이 보고되지 않았습니다.',
         clientNotChecked: '클라이언트 설치 및 등록 상태를 확인하지 않았습니다.',
+        firstReadUnavailable: '이 응답에서 관측된 첫 읽기 상태를 확인할 수 없습니다.',
+        firstReadNotObserved: '현재 저장된 대상에서 실제 MCP 도구 읽기를 관측하지 않았습니다. 아래 확인 표시는 별도의 사용자 보고입니다.',
+        firstReadObserved: '{service}에서 실제 MCP 도구 읽기를 관측했습니다: {tool} · {time}. 클라이언트 앱 식별 정보는 기록하지 않습니다.',
         clientObservedAt: '명시적으로 요청한 CLI 확인 시각: {time}. 클라이언트별 결과는 아래와 같습니다.',
         clientInspectionFailed: '클라이언트 상태를 안전하게 확인하지 못했습니다. CLI 안내에 따라 직접 확인하세요.',
         clientUnsupported: '현재 빌드에서 지원하지 않음',
@@ -891,6 +902,37 @@
       }
       if (!rendered) lists.features.append(element('p', 'notice', text('noFeatures')));
     }
+    function renderFirstRead(value) {
+      firstReadState.textContent = '';
+      if (!value || typeof value !== 'object' || !['observed', 'not_observed'].includes(value.state)) {
+        firstReadState.textContent = text('firstReadUnavailable');
+        return;
+      }
+      if (value.state === 'not_observed') {
+        firstReadState.textContent = text('firstReadNotObserved');
+        return;
+      }
+      const serviceNames = {
+        github: language === 'ko' ? 'GitHub Enterprise' : 'GitHub Enterprise',
+        jenkins: 'Jenkins',
+        dashboard: 'Kubernetes Dashboard',
+        harbor: 'Harbor'
+      };
+      if (value.source !== 'mcp_observed' || !serviceNames[value.service] || typeof value.tool !== 'string' || !value.tool.trim()) {
+        firstReadState.textContent = text('firstReadUnavailable');
+        return;
+      }
+      const observedAt = timeLabel(value.observed_at);
+      if (!observedAt) {
+        firstReadState.textContent = text('firstReadUnavailable');
+        return;
+      }
+      firstReadState.textContent = text('firstReadObserved', {
+        service: serviceNames[value.service],
+        tool: value.tool,
+        time: observedAt
+      });
+    }
     function render(data) {
       currentData = data;
       const responseState = data.state;
@@ -904,6 +946,7 @@
       renderBundles(data);
       renderRuntime(data);
       renderFeatures(data);
+      renderFirstRead(data.first_read);
       if (lastClientInspection) renderClients(data, lastClientInspection);
       else renderClients(data, data);
       if (resetMessagePending) {

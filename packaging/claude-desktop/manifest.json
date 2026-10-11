@@ -1,0 +1,113 @@
+{
+  "manifest_version": "0.3",
+  "name": "local-agent-harness",
+  "display_name": "Local Agent Harness",
+  "version": "0.1.0-rc.3",
+  "description": "Local Windows MCP server for targets and operations saved by the user.",
+  "long_description": "Runs Local Agent Harness as a local stdio MCP server on Windows. Available tools depend on the current Windows user's saved Local Agent Harness settings and action policies. Some tools contact configured external services, run saved local tasks, or perform saved operations. Review the saved scope and approval policy before use.",
+  "author": {
+    "name": "Local Agent Harness"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "server/local-agent-harness",
+    "mcp_config": {
+      "command": "server/local-agent-harness",
+      "args": ["--mcp"],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "submit_setup_draft",
+      "description": "Submit a proposed setup for review in the local UI; it does not apply settings."
+    },
+    {
+      "name": "registered_ssh_targets",
+      "description": "List saved SSH targets and their fixed permitted operations."
+    },
+    {
+      "name": "run_ssh_operation",
+      "description": "Run a saved SSH operation under its saved approval policy."
+    },
+    {
+      "name": "registered_targets",
+      "description": "List enabled service targets and their available actions."
+    },
+    {
+      "name": "registered_service_bundles",
+      "description": "List saved service bundles and their available actions."
+    },
+    {
+      "name": "registered_target_connection_test",
+      "description": "Send a bounded read-only request to a selected saved target and record the result locally."
+    },
+    {
+      "name": "registered_python_tasks",
+      "description": "List enabled saved Python tasks."
+    },
+    {
+      "name": "python_run_registered_task",
+      "description": "Run a saved Python task under its saved execution policy."
+    },
+    {
+      "name": "github_repository",
+      "description": "Read the repository saved on a registered GitHub target."
+    },
+    {
+      "name": "github_pull_request",
+      "description": "Read a pull request from a registered GitHub repository."
+    },
+    {
+      "name": "harbor_repository_artifacts",
+      "description": "Read artifacts from the repository saved on a registered Harbor target."
+    },
+    {
+      "name": "harbor_project_quota",
+      "description": "Read quota for the project saved on a registered Harbor target."
+    },
+    {
+      "name": "dashboard_namespaces",
+      "description": "List namespaces visible to a registered Kubernetes Dashboard target."
+    },
+    {
+      "name": "dashboard_deployment_status",
+      "description": "Read Deployment status for a registered service-bundle environment."
+    },
+    {
+      "name": "dashboard_deployment_diagnosis",
+      "description": "Read Deployment status, related events, and Pod inventory for a registered environment."
+    },
+    {
+      "name": "dashboard_deployment_events",
+      "description": "Read events for a Deployment mapped to a registered environment."
+    },
+    {
+      "name": "dashboard_deployment_pods",
+      "description": "Read Pod status for a Deployment mapped to a registered environment."
+    },
+    {
+      "name": "dashboard_deployment_pod_logs",
+      "description": "Read a bounded log window for a Pod and container in a registered Deployment."
+    },
+    {
+      "name": "jenkins_registered_job",
+      "description": "Read the Jenkins job saved on a registered target."
+    },
+    {
+      "name": "jenkins_registered_queue_item",
+      "description": "Read queue status for a registered Jenkins target."
+    },
+    {
+      "name": "jenkins_registered_build_log",
+      "description": "Read a bounded build-log segment from a registered Jenkins target."
+    },
+    {
+      "name": "jenkins_run_registered_job",
+      "description": "Run a Jenkins job saved on a registered target under its approval policy."
+    }
+  ],
+  "compatibility": {
+    "platforms": ["win32"]
+  }
+}

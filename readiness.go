@@ -34,6 +34,7 @@ type readinessStatusHandler struct {
 	configPath    string
 	registrations MCPClientRegistrationController
 	observer      ResidentEndpointObservationProvider
+	onboarding    onboardingController
 }
 
 type readinessStatusDTO struct {
@@ -49,6 +50,7 @@ type readinessStatusDTO struct {
 	UserEnvironment  readinessUnobservedCount   `json:"user_environment"`
 	SSH              readinessSSHCounts         `json:"ssh"`
 	PythonTasks      readinessPythonTaskCounts  `json:"python_tasks"`
+	FirstRead        firstReadReadinessDTO      `json:"first_read"`
 	ErrorCode        string                     `json:"error_code,omitempty"`
 }
 
@@ -132,10 +134,20 @@ func newReadinessStatusHandler(
 	registrations MCPClientRegistrationController,
 	observer ResidentEndpointObservationProvider,
 ) http.Handler {
+	return newReadinessStatusHandlerWithOnboarding(configPath, registrations, observer, nil)
+}
+
+func newReadinessStatusHandlerWithOnboarding(
+	configPath string,
+	registrations MCPClientRegistrationController,
+	observer ResidentEndpointObservationProvider,
+	onboarding onboardingController,
+) http.Handler {
 	handler := &readinessStatusHandler{
 		configPath:    configPath,
 		registrations: registrations,
 		observer:      observer,
+		onboarding:    onboarding,
 	}
 	return http.HandlerFunc(handler.serveHTTP)
 }
@@ -159,6 +171,18 @@ func (h *readinessStatusHandler) serveHTTP(w http.ResponseWriter, r *http.Reques
 
 	response := readinessStatusFromConfig(cfg)
 	response.ResidentEndpoint = h.observeResidentEndpoint(r.Context())
+	if h.onboarding != nil {
+		receiptCtx, cancel := context.WithTimeout(r.Context(), readinessConfigTimeout)
+		receipts, receiptErr := h.onboarding.ListFirstReads(receiptCtx)
+		cancel()
+		if receiptErr == nil {
+			response.FirstRead = firstReadReadinessFromConfig(cfg, receipts)
+		} else {
+			response.FirstRead = firstReadReadinessDTO{State: firstReadStateUnavailable}
+		}
+	} else {
+		response.FirstRead = firstReadReadinessDTO{State: firstReadStateUnavailable}
+	}
 	if readinessClientInspectionRequested(r) {
 		response.Clients = h.inspectClients(r.Context())
 	}
@@ -208,6 +232,7 @@ func readinessStatusFromConfig(cfg config) readinessStatusDTO {
 		UserEnvironment:  readinessUnobservedCount{State: "not_checked"},
 		SSH:              readinessSSHCounts{TargetCount: len(cfg.SSHTargets)},
 		PythonTasks:      readinessPythonTaskCounts{Total: len(cfg.PythonTasks)},
+		FirstRead:        firstReadReadinessFromConfig(cfg, nil),
 	}
 	for _, target := range cfg.SSHTargets {
 		response.SSH.OperationCount += len(target.Operations)
@@ -505,6 +530,7 @@ func writeReadinessUnavailable(w http.ResponseWriter) {
 		UserEnvironment:  readinessUnobservedCount{State: "not_checked"},
 		SSH:              readinessSSHCounts{},
 		PythonTasks:      readinessPythonTaskCounts{},
+		FirstRead:        firstReadReadinessDTO{State: firstReadStateUnavailable},
 		ErrorCode:        "settings_unavailable",
 	}
 	encoded, _ := json.Marshal(response)

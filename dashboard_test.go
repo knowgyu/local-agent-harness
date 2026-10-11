@@ -862,7 +862,10 @@ func TestDashboardUIFieldsAndPOSTRegistrationTest(t *testing.T) {
 	for _, want := range []string{
 		`id="dashboard-selection"`, `action="/save-dashboard"`, `action="/test-dashboard"`,
 		`for="dashboard-token"`, `aria-describedby="dashboard-token-hint`,
-		`Dashboard's API Bearer from`, `raw Kubernetes/service-account tokens are unsupported`, `kind" value="dashboard"`,
+		`The selected credential is used for the connection check and activation, but is not saved in the draft.`,
+		`When you confirm registration, a pasted Bearer value is stored in Windows Credential Manager; a named credential keeps its existing value.`,
+		`This connector sends the value unchanged as Bearer authentication and does not log in or exchange tokens.`,
+		`kind" value="dashboard"`,
 	} {
 		if !strings.Contains(root.Body.String(), want) {
 			t.Errorf("rendered Dashboard UI missing %q", want)

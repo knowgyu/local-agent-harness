@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidatePattern('^v0\.1\.0-rc\.2$')]
-    [string]$Version = 'v0.1.0-rc.2',
+    [ValidatePattern('^v0\.1\.0-rc\.[1-9][0-9]{0,2}$')]
+    [string]$Version = 'v0.1.0-rc.3',
     [string]$OutputRoot = 'output/privacy-release/package'
 )
 

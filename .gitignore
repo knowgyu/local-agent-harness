@@ -1,5 +1,6 @@
 /output/
 /.playwright-cli/
+/.impeccable/review/
 
 # Local Go build and test outputs
 *.exe

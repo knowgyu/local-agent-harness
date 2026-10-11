@@ -291,6 +291,8 @@ type app struct {
 	userEnvironment       UserEnvironmentController
 	ssh                   *sshOperationController
 	setupDrafts           SetupDraftController
+	onboardingMu          sync.Mutex
+	onboarding            onboardingController
 	clientRegistration    MCPClientRegistrationController
 	runtime               MCPRuntimeController
 	executable            string
@@ -973,6 +975,17 @@ func (a *app) saveTarget(targetID, name, origin, repo, secret string) (string, e
 }
 
 func (a *app) saveTargetWithNamedSecret(targetID, name, origin, repo, secret, namedSecretID string) (string, error) {
+	return a.saveTargetWithNamedSecretMode(targetID, name, origin, repo, secret, namedSecretID, false)
+}
+
+func (a *app) saveOnboardingGitHubTargetWithNamedSecret(stableTargetID, name, origin, repo, secret, namedSecretID string) (string, error) {
+	if !githubIDPattern.MatchString(stableTargetID) {
+		return "", errors.New("The onboarding GitHub target ID is invalid.")
+	}
+	return a.saveTargetWithNamedSecretMode(stableTargetID, name, origin, repo, secret, namedSecretID, true)
+}
+
+func (a *app) saveTargetWithNamedSecretMode(targetID, name, origin, repo, secret, namedSecretID string, allowReservedCreate bool) (string, error) {
 	current, err := readConfig(a.configPath)
 	if err != nil {
 		return "", errors.New("Could not read current settings. They were not changed.")
@@ -980,9 +993,15 @@ func (a *app) saveTargetWithNamedSecret(targetID, name, origin, repo, secret, na
 	index := -1
 	if targetID != "" {
 		index = findGitHubTargetIndex(current.GitHubTargets, targetID)
-		if index < 0 {
+		if index < 0 && !allowReservedCreate {
 			return "", errors.New("The selected GitHub target is not registered.")
 		}
+	}
+	if allowReservedCreate && targetID == "" {
+		return "", errors.New("The onboarding GitHub target ID is invalid.")
+	}
+	if allowReservedCreate && index >= 0 {
+		return "", errors.New("The onboarding GitHub target ID is already registered.")
 	}
 	for i, existing := range current.GitHubTargets {
 		if existing.Name == name && i != index {
@@ -1008,9 +1027,13 @@ func (a *app) saveTargetWithNamedSecret(targetID, name, origin, repo, secret, na
 		}
 		updated.ID, updated.SecretRef, updated.Disabled = old.ID, old.SecretRef, old.Disabled
 	} else {
-		updated.ID, err = newTargetID("github")
-		if err != nil {
-			return "", errors.New("Could not create target ID. Settings were not changed.")
+		if allowReservedCreate {
+			updated.ID = targetID
+		} else {
+			updated.ID, err = newTargetID("github")
+			if err != nil {
+				return "", errors.New("Could not create target ID. Settings were not changed.")
+			}
 		}
 	}
 	if _, err := validateOrigin(origin); err != nil || !validRepository(repo) || name == "" || len(name) > 80 || strings.ContainsAny(name, "\r\n\x00") {
@@ -1609,91 +1632,143 @@ func (a *app) mcpServer() *mcp.Server {
 		Name:        "github_repository",
 		Description: "Read the repository registered under the exact GitHub target name. No URL or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in githubTargetInput) (*mcp.CallToolResult, repository, error) {
-		result, err := a.registeredRepository(ctx, in.Target)
+		readCtx, observer := withFirstReadCallObserver(ctx, "github", "github_repository")
+		result, err := a.registeredRepository(readCtx, in.Target)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[githubPullRequestInput, githubPullRequest](server, &mcp.Tool{
 		Name:        "github_pull_request",
 		Description: "Read a pull request from the repository stored on an exact registered GitHub target. The positive pull request number is the only resource selector; URL, repository, and credentials cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in githubPullRequestInput) (*mcp.CallToolResult, githubPullRequest, error) {
-		result, err := a.registeredGitHubPullRequest(ctx, in.Target, in.Number)
+		readCtx, observer := withFirstReadCallObserver(ctx, "github", "github_pull_request")
+		result, err := a.registeredGitHubPullRequest(readCtx, in.Target, in.Number)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[harborArtifactsInput, harborArtifactsResult](server, &mcp.Tool{
 		Name:        "harbor_repository_artifacts",
 		Description: "Read a bounded artifact page for the repository fixed to the exact registered Harbor target name. No URL, project, repository, or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in harborArtifactsInput) (*mcp.CallToolResult, harborArtifactsResult, error) {
-		result, err := a.registeredHarborArtifacts(ctx, in.Target)
+		readCtx, observer := withFirstReadCallObserver(ctx, "harbor", "harbor_repository_artifacts")
+		result, err := a.registeredHarborArtifacts(readCtx, in.Target)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[harborArtifactsInput, harborProjectQuotaResult](server, &mcp.Tool{
 		Name:        "harbor_project_quota",
 		Description: "Read quota for the project fixed to the exact registered Harbor target name. No URL, project, repository, or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in harborArtifactsInput) (*mcp.CallToolResult, harborProjectQuotaResult, error) {
-		result, err := a.registeredHarborProjectQuota(ctx, in.Target)
+		readCtx, observer := withFirstReadCallObserver(ctx, "harbor", "harbor_project_quota")
+		result, err := a.registeredHarborProjectQuota(readCtx, in.Target)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[dashboardTargetInput, dashboardNamespacesResult](server, &mcp.Tool{
 		Name:        "dashboard_namespaces",
 		Description: "List at most 100 namespace names visible to the exact registered Kubernetes Dashboard target. No URL, path, or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardTargetInput) (*mcp.CallToolResult, dashboardNamespacesResult, error) {
-		result, err := a.registeredDashboardNamespaces(ctx, in.Target)
+		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_namespaces")
+		result, err := a.registeredDashboardNamespaces(readCtx, in.Target)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[dashboardDeploymentStatusInput, dashboardDeploymentStatusResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_status",
 		Description: "Read Deployment replica status from the exact Dashboard target, namespace, and Deployment mapped to a registered service bundle environment. Only the service bundle and environment names are inputs; URL and resource names cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentStatusInput) (*mcp.CallToolResult, dashboardDeploymentStatusResult, error) {
-		result, err := a.registeredDashboardDeploymentStatus(ctx, in.ServiceBundle, in.Environment)
+		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_status")
+		result, err := a.registeredDashboardDeploymentStatus(readCtx, in.ServiceBundle, in.Environment)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[dashboardDeploymentStatusInput, dashboardDeploymentDiagnosisResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_diagnosis",
 		Description: "Read Deployment status, bounded related events, and Pod inventory concurrently for the exact Dashboard target and resources mapped to a registered service bundle environment. These reads may reflect nearby but different observation times; they are not an atomic snapshot. Only service bundle and environment names are inputs. Use dashboard_deployment_pod_logs separately for a selected Pod/container.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentStatusInput) (*mcp.CallToolResult, dashboardDeploymentDiagnosisResult, error) {
-		result, err := a.registeredDashboardDeploymentDiagnosis(ctx, in.ServiceBundle, in.Environment)
+		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_diagnosis")
+		result, err := a.registeredDashboardDeploymentDiagnosis(readCtx, in.ServiceBundle, in.Environment)
+		if err == nil && dashboardDiagnosisHasSuccessfulRead(result) && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[dashboardDeploymentStatusInput, dashboardDeploymentEventsResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_events",
 		Description: "Read bounded events for the Deployment mapped to a registered service bundle environment. Only service bundle and environment names are inputs; URL and resource names cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentStatusInput) (*mcp.CallToolResult, dashboardDeploymentEventsResult, error) {
-		result, err := a.registeredDashboardDeploymentEvents(ctx, in.ServiceBundle, in.Environment)
+		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_events")
+		result, err := a.registeredDashboardDeploymentEvents(readCtx, in.ServiceBundle, in.Environment)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[dashboardDeploymentStatusInput, dashboardDeploymentPodsResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_pods",
 		Description: "Read bounded Pod status for the Deployment mapped to a registered service bundle environment. Only service bundle and environment names are inputs; URLs, namespaces, Deployment names, selectors, and credentials cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentStatusInput) (*mcp.CallToolResult, dashboardDeploymentPodsResult, error) {
-		result, err := a.registeredDashboardDeploymentPods(ctx, in.ServiceBundle, in.Environment)
+		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_pods")
+		result, err := a.registeredDashboardDeploymentPods(readCtx, in.ServiceBundle, in.Environment)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[dashboardDeploymentLogsInput, dashboardDeploymentLogsResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_pod_logs",
 		Description: "Read the latest fixed window of up to 100 log lines (up to 4 KiB each) for a Pod and container currently present in the mapped registered Deployment inventory. The full MCP response is capped at 64 KiB and marked truncated if shortened. Pod and container are candidate selectors only; namespace, Deployment, URL, log offsets, and credentials cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentLogsInput) (*mcp.CallToolResult, dashboardDeploymentLogsResult, error) {
-		result, err := a.registeredDashboardDeploymentLogs(ctx, in.ServiceBundle, in.Environment, in.Pod, in.Container)
+		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_pod_logs")
+		result, err := a.registeredDashboardDeploymentLogs(readCtx, in.ServiceBundle, in.Environment, in.Pod, in.Container)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[jenkinsTargetInput, jenkinsJobInfo](server, &mcp.Tool{
 		Name:        "jenkins_registered_job",
 		Description: "Read the Jenkins job registered under the exact target name. No URL, job path, or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in jenkinsTargetInput) (*mcp.CallToolResult, jenkinsJobInfo, error) {
-		result, err := a.registeredJenkinsJob(ctx, in.Target)
+		readCtx, observer := withFirstReadCallObserver(ctx, "jenkins", "jenkins_registered_job")
+		result, err := a.registeredJenkinsJob(readCtx, in.Target)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[jenkinsQueueInput, jenkinsQueueInfo](server, &mcp.Tool{
 		Name:        "jenkins_registered_queue_item",
 		Description: "Read Jenkins queue status for the exact registered target name and a positive numeric queue ID.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in jenkinsQueueInput) (*mcp.CallToolResult, jenkinsQueueInfo, error) {
-		result, err := a.registeredJenkinsQueue(ctx, in.Target, in.QueueID)
+		readCtx, observer := withFirstReadCallObserver(ctx, "jenkins", "jenkins_registered_queue_item")
+		result, err := a.registeredJenkinsQueue(readCtx, in.Target, in.QueueID)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[jenkinsLogInput, jenkinsLogSegmentResult](server, &mcp.Tool{
 		Name:        "jenkins_registered_build_log",
 		Description: "Read one bounded progressive log segment for the exact registered target name, positive build number, and nonnegative offset.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in jenkinsLogInput) (*mcp.CallToolResult, jenkinsLogSegmentResult, error) {
-		result, err := a.registeredJenkinsLog(ctx, in.Target, in.BuildNumber, in.StartOffset)
+		readCtx, observer := withFirstReadCallObserver(ctx, "jenkins", "jenkins_registered_build_log")
+		result, err := a.registeredJenkinsLog(readCtx, in.Target, in.BuildNumber, in.StartOffset)
+		if err == nil && observer.Digest() != "" {
+			a.recordCapturedMCPRead(ctx, observer)
+		}
 		return nil, result, err
 	})
 	mcp.AddTool[jenkinsTargetInput, jenkinsRunResult](server, &mcp.Tool{
@@ -1753,6 +1828,7 @@ func (a *app) registeredRepository(ctx context.Context, requestedName string) (r
 	if err != nil {
 		return repository{}, err
 	}
+	observeFirstReadDefinition(ctx, t)
 	defer clear(token)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()
@@ -1767,6 +1843,7 @@ func (a *app) registeredGitHubPullRequest(ctx context.Context, requestedName str
 	if err != nil {
 		return githubPullRequest{}, err
 	}
+	observeFirstReadDefinition(ctx, t)
 	defer clear(token)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()

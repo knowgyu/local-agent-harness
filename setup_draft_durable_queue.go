@@ -92,14 +92,15 @@ func (s *setupDraftFileQueueStore) Load(now time.Time) ([]SetupDraftReview, erro
 	}
 	var reviews []SetupDraftReview
 	err := withSetupDraftQueueLock(s.path, func() error {
-		entries, err := s.readLocked(now)
+		lockedNow := setupDraftQueueTimeAfterLock(now, s.currentTime())
+		entries, err := s.readLocked(lockedNow)
 		if err != nil {
 			return err
 		}
 		kept := make([]setupDraftQueueEntry, 0, len(entries))
 		reviews = make([]SetupDraftReview, 0, len(entries))
 		for _, entry := range entries {
-			if !now.Before(entry.Review.ExpiresAt) {
+			if !lockedNow.Before(entry.Review.ExpiresAt) {
 				continue
 			}
 			kept = append(kept, entry)
@@ -125,13 +126,17 @@ func (s *setupDraftFileQueueStore) Put(review SetupDraftReview) error {
 		return errSetupDraftQueueInvalid
 	}
 	return withSetupDraftQueueLock(s.path, func() error {
-		entries, err := s.readLocked(now)
+		lockedNow := setupDraftQueueTimeAfterLock(now, s.currentTime())
+		if !validSetupDraftQueueReview(review, lockedNow, lockedNow, true) {
+			return errSetupDraftQueueInvalid
+		}
+		entries, err := s.readLocked(lockedNow)
 		if err != nil {
 			return err
 		}
 		kept := make([]setupDraftQueueEntry, 0, len(entries)+1)
 		for _, entry := range entries {
-			if !now.Before(entry.Review.ExpiresAt) {
+			if !lockedNow.Before(entry.Review.ExpiresAt) {
 				continue
 			}
 			if entry.Review.ID == review.ID {
@@ -142,7 +147,7 @@ func (s *setupDraftFileQueueStore) Put(review SetupDraftReview) error {
 		if len(kept) >= setupDraftMaximumPending {
 			return errSetupDraftQueueCapacity
 		}
-		kept = append(kept, setupDraftQueueEntry{CreatedAt: now.UTC(), Review: cloneSetupDraftReview(review)})
+		kept = append(kept, setupDraftQueueEntry{CreatedAt: lockedNow.UTC(), Review: cloneSetupDraftReview(review)})
 		return s.writeLocked(kept)
 	})
 }
@@ -151,18 +156,19 @@ func (s *setupDraftFileQueueStore) Delete(id string) error {
 	if s == nil || !validSetupDraftID(id) {
 		return errSetupDraftQueueInvalid
 	}
-	now := s.currentTime()
-	if !validQueueTime(now) {
+	requestedNow := s.currentTime()
+	if !validQueueTime(requestedNow) {
 		return errSetupDraftQueueUnavailable
 	}
 	return withSetupDraftQueueLock(s.path, func() error {
-		entries, err := s.readLocked(now)
+		lockedNow := setupDraftQueueTimeAfterLock(requestedNow, s.currentTime())
+		entries, err := s.readLocked(lockedNow)
 		if err != nil {
 			return err
 		}
 		kept := make([]setupDraftQueueEntry, 0, len(entries))
 		for _, entry := range entries {
-			if entry.Review.ID != id && now.Before(entry.Review.ExpiresAt) {
+			if entry.Review.ID != id && lockedNow.Before(entry.Review.ExpiresAt) {
 				kept = append(kept, entry)
 			}
 		}
@@ -183,7 +189,8 @@ func (s *setupDraftFileQueueStore) WithReview(
 		return errSetupDraftQueueInvalid
 	}
 	return withSetupDraftQueueLock(s.path, func() error {
-		entries, err := s.readLocked(now)
+		lockedNow := setupDraftQueueTimeAfterLock(now, s.currentTime())
+		entries, err := s.readLocked(lockedNow)
 		if err != nil {
 			return err
 		}
@@ -198,7 +205,7 @@ func (s *setupDraftFileQueueStore) WithReview(
 			return errSetupDraftQueueReviewMissing
 		}
 		entry := entries[index]
-		if !now.Before(entry.Review.ExpiresAt) {
+		if !lockedNow.Before(entry.Review.ExpiresAt) {
 			return errSetupDraftQueueReviewExpired
 		}
 		consume, err := fn(cloneSetupDraftReview(entry.Review))
@@ -237,7 +244,8 @@ func (s *setupDraftFileQueueStore) ClaimReview(
 
 	var claimed SetupDraftReview
 	err := withSetupDraftQueueLock(s.path, func() error {
-		entries, err := s.readLocked(now)
+		lockedNow := setupDraftQueueTimeAfterLock(now, s.currentTime())
+		entries, err := s.readLocked(lockedNow)
 		if err != nil {
 			return err
 		}
@@ -252,7 +260,7 @@ func (s *setupDraftFileQueueStore) ClaimReview(
 			return errSetupDraftQueueReviewMissing
 		}
 		entry := entries[index]
-		if !now.Before(entry.Review.ExpiresAt) {
+		if !lockedNow.Before(entry.Review.ExpiresAt) {
 			return errSetupDraftQueueReviewExpired
 		}
 		if entry.Review.BaseRevision != baseRevision || entry.Review.Digest != digest {
@@ -341,6 +349,16 @@ func (s *setupDraftFileQueueStore) currentTime() time.Time {
 		return s.now().UTC()
 	}
 	return time.Now().UTC()
+}
+
+// setupDraftQueueTimeAfterLock ensures records written while this operation
+// waited for the cross-process lock are not treated as future-dated. Preserve
+// an explicitly later caller time for deterministic expiration checks.
+func setupDraftQueueTimeAfterLock(requested, acquired time.Time) time.Time {
+	if requested.After(acquired) {
+		return requested
+	}
+	return acquired
 }
 
 func validSetupDraftQueueReview(review SetupDraftReview, createdAt, now time.Time, requireLive bool) bool {

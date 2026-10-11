@@ -1,0 +1,23 @@
+# Registration UI system notes
+
+**Scope:** the archived A/B comparison for adding a new connection. This note records how that preview relates to the incumbent UI; it does not define a global design system.
+
+The durable prototype copy is [`prototypes/registration-options.html`](prototypes/registration-options.html). It is byte-identical to the reviewed preview at `output/ux-preview/registration-options.html` (SHA-256 `635FDFBC546E679C625EAB4CA77717CC13C1700211F0C5D2BEB32D974B878362`). Keep the preview as a reference to two matched **new connection** flows. The separate production decision is a guided URL-first flow for adding a new connection and progressive review when editing an existing target. The archived A/B options remain matched new-connection flows; prototype B is not the production edit screen. The current production first URL-intake wave and its scoped **SHIP** review are documented in [`REGISTRATION_PRODUCTION_UI_SYSTEM_NOTES.md`](REGISTRATION_PRODUCTION_UI_SYSTEM_NOTES.md).
+
+## Incumbent comparison
+
+The comparison baseline is the committed `ui.html` at `64b4ad3` (`64b4ad30ac328110aeba4d5b9b3c87f02cdd17c4`). The modified working copy of `ui.html` was excluded so concurrent production work would not change the baseline.
+
+The preview carries forward the incumbent’s light page ground (`#f1f4f7`), dark text (`#17212b`), muted text (`#465568`), neutral border (`#c7d0d9`), white surfaces, navy chrome (`#1e293b`), and system UI stack (`system-ui, "Segoe UI", sans-serif`). It also uses familiar HTML fields and buttons, 44px minimum control heights, gently rounded field and button corners (5px), larger section corners (8px), and a visible 3px keyboard focus outline using the incumbent focus blue (`#125da8`). These repeated cues support the brief’s restrained light-surface direction.
+
+The preview keeps its layout choices local to this comparison: a 1120px reading-width cap, sections with 18px inner padding, and responsive field and option grids that collapse at the prototype’s breakpoints. It uses a brighter blue (`#1f5b8e`) for its own primary actions and selected option, with darker hover and active states. The incumbent’s general buttons use navy; the registration blue is therefore a surface-level choice, not a newly established global token. No global palette, typography scale, or component contract is inferred from this single preview.
+
+## Prototype boundary and review
+
+The standalone, code-led page uses synthetic fixtures and in-page state; no generated comp or new visual world was approved for this flow-structure comparison. It does not call the example services, collect a real token, change app configuration, or provide durable draft persistence; its general draft state is lost on refresh or tab close. The examples and results are a comparison fixture, not compatibility evidence or user-study results.
+
+The finish review at [`output/ux-preview/review/finish-review.md`](../../output/ux-preview/review/finish-review.md) records **ship** for the two scored preview fixes only. Fix 2 was resolved by keeping concise primary recovery guidance visible and placing vendor-specific GitHub Enterprise/Jenkins help under the collapsed “발급·권한 안내” disclosure in both variants. Fix 3 was resolved in the source by preserving white text on the selected tab’s darker hover (`#184a75`) and active (`#123d64`) blues; the more-specific selected-tab rules override the generic light hover, and the recaptures show the selected tabs at rest. The reviewer reports no visible regressions from this fix batch. This is not a whole-product certification and does not certify the separate production integration.
+
+The verdict references six recaptures: [`a-auth-desktop.jpg`](../../output/ux-preview/review/a-auth-desktop.jpg), [`a-auth-mobile.jpg`](../../output/ux-preview/review/a-auth-mobile.jpg), [`a-auth-user.jpg`](../../output/ux-preview/review/a-auth-user.jpg), [`b-failure-desktop.jpg`](../../output/ux-preview/review/b-failure-desktop.jpg), [`b-failure-mobile.jpg`](../../output/ux-preview/review/b-failure-mobile.jpg), and [`b-failure-user.jpg`](../../output/ux-preview/review/b-failure-user.jpg). They cover the 1440px desktop, 390px mobile, and 595px user viewport captures for the two reviewed states.
+
+There is no committed or working-tree `DESIGN.md` or `.impeccable/design.json` at this baseline. The incumbent keeps its core CSS variables inside `ui.html`; there is no separate token file to reconcile. That absence is recorded as context; this ordinary extension does not create or revise global design artifacts. The comparison does identify its scoped blue-action and narrower-container choices above so a later system review can decide whether either should be reused.

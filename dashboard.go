@@ -122,6 +122,15 @@ type dashboardDeploymentDiagnosisResult struct {
 	Checks          []dashboardDeploymentDiagnosisCheck `json:"checks"`
 }
 
+func dashboardDiagnosisHasSuccessfulRead(result dashboardDeploymentDiagnosisResult) bool {
+	for _, check := range result.Checks {
+		if check.Status == "succeeded" {
+			return true
+		}
+	}
+	return false
+}
+
 type dashboardDeploymentLogsInput struct {
 	ServiceBundle string `json:"service_bundle"`
 	Environment   string `json:"environment"`
@@ -166,6 +175,17 @@ func (a *app) saveDashboardTarget(targetID, name, baseURL, token string) (string
 }
 
 func (a *app) saveDashboardTargetWithNamedSecret(targetID, name, baseURL, token, namedSecretID string) (string, error) {
+	return a.saveDashboardTargetWithNamedSecretMode(targetID, name, baseURL, token, namedSecretID, false)
+}
+
+func (a *app) saveOnboardingDashboardTargetWithNamedSecret(stableTargetID, name, baseURL, token, namedSecretID string) (string, error) {
+	if !dashboardIDPattern.MatchString(stableTargetID) {
+		return "", errors.New("The onboarding Dashboard target ID is invalid.")
+	}
+	return a.saveDashboardTargetWithNamedSecretMode(stableTargetID, name, baseURL, token, namedSecretID, true)
+}
+
+func (a *app) saveDashboardTargetWithNamedSecretMode(targetID, name, baseURL, token, namedSecretID string, allowReservedCreate bool) (string, error) {
 	current, err := readConfig(a.configPath)
 	if err != nil {
 		return "", errors.New("Could not read current settings. They were not changed.")
@@ -173,9 +193,15 @@ func (a *app) saveDashboardTargetWithNamedSecret(targetID, name, baseURL, token,
 	index := -1
 	if targetID != "" {
 		index = findDashboardTargetIndex(current.DashboardTargets, targetID)
-		if index < 0 {
+		if index < 0 && !allowReservedCreate {
 			return "", errors.New("The selected Dashboard target is not registered.")
 		}
+	}
+	if allowReservedCreate && targetID == "" {
+		return "", errors.New("The onboarding Dashboard target ID is invalid.")
+	}
+	if allowReservedCreate && index >= 0 {
+		return "", errors.New("The onboarding Dashboard target ID is already registered.")
 	}
 	for i, existing := range current.DashboardTargets {
 		if existing.Name == name && i != index {
@@ -207,9 +233,13 @@ func (a *app) saveDashboardTargetWithNamedSecret(targetID, name, baseURL, token,
 		}
 		updated.ID, updated.SecretRef, updated.Disabled = old.ID, old.SecretRef, old.Disabled
 	} else {
-		updated.ID, err = newTargetID("dashboard")
-		if err != nil {
-			return "", errors.New("Could not create target ID. Settings were not changed.")
+		if allowReservedCreate {
+			updated.ID = targetID
+		} else {
+			updated.ID, err = newTargetID("dashboard")
+			if err != nil {
+				return "", errors.New("Could not create target ID. Settings were not changed.")
+			}
 		}
 	}
 	if name == "" || strings.TrimSpace(name) != name || len(name) > 80 || strings.ContainsAny(name, "\r\n\x00") || len(token) > maxSecretSize || strings.TrimSpace(token) != token || strings.ContainsAny(token, "\r\n\x00") {
@@ -504,6 +534,7 @@ func (a *app) registeredDashboardNamespaces(ctx context.Context, requestedName s
 	if err != nil {
 		return dashboardNamespacesResult{}, err
 	}
+	observeFirstReadDefinition(ctx, target)
 	defer clear(token)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()
@@ -515,6 +546,7 @@ func (a *app) registeredDashboardDeploymentStatus(ctx context.Context, serviceBu
 	if err != nil {
 		return dashboardDeploymentStatusResult{}, err
 	}
+	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
 
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
@@ -527,6 +559,7 @@ func (a *app) registeredDashboardDeploymentEvents(ctx context.Context, serviceBu
 	if err != nil {
 		return dashboardDeploymentEventsResult{}, err
 	}
+	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
 
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
@@ -539,6 +572,7 @@ func (a *app) registeredDashboardDeploymentPods(ctx context.Context, serviceBund
 	if err != nil {
 		return dashboardDeploymentPodsResult{}, err
 	}
+	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()
@@ -555,6 +589,7 @@ func (a *app) registeredDashboardDeploymentDiagnosis(ctx context.Context, servic
 			Checks: []dashboardDeploymentDiagnosisCheck{dashboardDeploymentDiagnosisFailure("binding", err, nil)},
 		}, nil
 	}
+	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
 	bearer := string(token)
 
@@ -847,6 +882,7 @@ func (a *app) registeredDashboardDeploymentLogs(ctx context.Context, serviceBund
 	if err != nil {
 		return dashboardDeploymentLogsResult{}, err
 	}
+	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()
