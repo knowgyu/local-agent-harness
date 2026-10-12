@@ -10,12 +10,12 @@ The build requires a Windows amd64 executable produced with Go's `-trimpath` bui
 npm install -g @anthropic-ai/mcpb@2.1.2
 .\scripts\build-claude-desktop-extension.ps1 `
   -ExecutablePath .\path\to\local-agent-harness.exe `
-  -Version 0.1.0-rc.3
+  -Version 0.1.0-rc.4
 ```
 
-The default package version is `0.1.0-rc.3`. The builder pins MCPB CLI `2.1.2` and checks the installed CLI version. Use the exact Windows executable whose build and source have been reviewed. The output file is `output/claude-desktop/local-agent-harness-0.1.0-rc.3-windows-amd64.mcpb`. The package is unsigned; the script does not install it or change Claude Desktop settings.
+The default package version is `0.1.0-rc.4`. The builder pins MCPB CLI `2.1.2` and checks the installed CLI version. Use the exact Windows executable whose build and source have been reviewed. The output file is `output/claude-desktop/local-agent-harness-0.1.0-rc.4-windows-amd64.mcpb`. The package is unsigned; the script does not install it or change Claude Desktop settings.
 
-Build the RC.3 package from the exact reviewed Windows release executable. The script verifies the MCPB manifest, the two expected archive members, and byte-for-byte executable hash parity. These checks establish package structure and bytes only; they do not establish Claude Desktop installation, launch, tool visibility, or an MCP call.
+Build the RC.4 package from the exact reviewed Windows release executable. The script verifies the MCPB manifest, the two expected archive members, and byte-for-byte executable hash parity. These checks establish package structure and bytes only; they do not establish Claude Desktop installation, launch, tool visibility, or an MCP call.
 
 The manifest uses MCPB binary-server support and launches `server/local-agent-harness` with `--mcp`. MCPB hosts append `.exe` to a binary command on Windows. The package contains only `manifest.json` and `server/local-agent-harness.exe`. This repository currently has no `LICENSE`, `COPYING`, or `NOTICE` file, so the manifest does not claim a license or include an invented license file. Resolve licensing metadata before any wider distribution.
 
@@ -35,7 +35,7 @@ These are Anthropic's published steps for privately installing a custom desktop 
 
 ## Settings, credentials, and scope
 
-The extension starts the executable under the same Windows account as Claude Desktop. In MCP mode, the app reads the normal Local Agent Harness settings location from `os.UserConfigDir()`—on Windows, `%AppData%\LocalAgentHarness\config.json`—and uses that account's Windows Credential Manager for secrets. The package does not select another profile or provide an override: the executable has no `--config` argument. Configure Local Agent Harness through its normal local UI as the same Windows user before expecting service targets to be available. The launcher and config behavior are implemented in [main.go](../main.go); the Windows secret store is implemented in [credential_windows.go](../credential_windows.go).
+The extension starts the executable under the same Windows account as Claude Desktop. In MCP mode, the app reads the normal Local Agent Harness settings location from `os.UserConfigDir()`—on Windows, `%AppData%\LocalAgentHarness\config.json`—and uses that account's Windows Credential Manager for secrets. The package does not select another profile or provide an override: the executable has no `--config` argument. Configure Local Agent Harness through its normal local UI as the same Windows user before expecting service targets to be available. The launcher and config behavior are implemented in `main.go`; the Windows secret store is implemented in `credential_windows.go`. These implementation files are available in the source repository or source archive.
 
 The manifest lists the MCP tool names, but configured targets and saved action policies determine what those tools can do. A listed tool is not proof that a target is configured, that a credential exists, or that a service call succeeds. Some tools can contact a saved service, run a saved Python task, trigger a saved Jenkins job, or execute a saved SSH operation subject to the application's stored rules and confirmation policy. Review the target and operation scope before enabling or invoking such tools.
 
@@ -51,4 +51,4 @@ The build script's checks can establish that the MCPB CLI accepted the manifest,
 - MCPB project, [Manifest specification](https://github.com/modelcontextprotocol/mcpb/blob/main/MANIFEST.md): manifest version `0.3`, binary entry points, Windows `.exe` handling, supported platforms, and tool declarations.
 - MCPB project, [CLI documentation](https://github.com/modelcontextprotocol/mcpb/blob/main/CLI.md): `mcpb validate`, `mcpb pack`, and `mcpb info`.
 
-The manifest tool list mirrors the production registrations in [main.go](../main.go) and [setup_draft_mcp.go](../setup_draft_mcp.go). The repository's [`claude` client adapter](../client_claude.go) targets Claude Code CLI configuration (`~/.claude.json`). It is not the Claude Desktop extension integration described here.
+The manifest tool list mirrors the production registrations in `main.go` and `setup_draft_mcp.go`. The repository's `client_claude.go` adapter targets Claude Code CLI configuration (`~/.claude.json`). It is not the Claude Desktop extension integration described here. These implementation files are available in the source repository or source archive.

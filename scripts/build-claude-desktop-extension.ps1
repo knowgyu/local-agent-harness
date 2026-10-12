@@ -5,7 +5,7 @@ param(
     [string]$ExecutablePath,
 
     [ValidatePattern('^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$')]
-    [string]$Version = '0.1.0-rc.3',
+    [string]$Version = '0.1.0-rc.4',
 
     [ValidatePattern('^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$')]
     [string]$McpbVersion = '2.1.2',

@@ -7,6 +7,8 @@ $script:LAHPayloadNames = @(
     'local-agent-harness.exe',
     'README.md',
     'CLIENT_SETUP.md',
+    'USER_GUIDE.ko.md',
+    'CLAUDE_DESKTOP.md',
     'Install-LocalAgentHarness.ps1',
     'Update-LocalAgentHarness.ps1',
     'Uninstall-LocalAgentHarness.ps1',
@@ -428,6 +430,31 @@ function ConvertTo-LAHRecordMap {
     return $map
 }
 
+function Test-LAHSupportedApplyRecordSet {
+    param([Parameter(Mandatory)][hashtable]$RecordMap)
+
+    # Recovery may encounter an interrupted RC3 transaction after an RC4 update.
+    # Keep this historical set explicit so later payload additions do not silently
+    # broaden the legacy journal format accepted by recovery.
+    $rc3InstallNames = @(
+        'local-agent-harness.exe',
+        'README.md',
+        'CLIENT_SETUP.md',
+        'Install-LocalAgentHarness.ps1',
+        'Update-LocalAgentHarness.ps1',
+        'Uninstall-LocalAgentHarness.ps1',
+        'LocalAgentHarness.Lifecycle.psm1',
+        'manifest.json',
+        'SHA256SUMS.txt'
+    )
+
+    if ($RecordMap.Count -eq $rc3InstallNames.Count -and
+        @($rc3InstallNames | Where-Object { -not $RecordMap.ContainsKey($_) }).Count -eq 0) { return $true }
+    if ($RecordMap.Count -eq $script:LAHInstallNames.Count -and
+        @($script:LAHInstallNames | Where-Object { -not $RecordMap.ContainsKey($_) }).Count -eq 0) { return $true }
+    return $false
+}
+
 function Read-LAHTransactionJournal {
     param([Parameter(Mandatory)][string]$TransactionRoot, [Parameter(Mandatory)][string]$InstallRoot)
     $leaf = [IO.Path]::GetFileName($TransactionRoot)
@@ -540,15 +567,13 @@ function Assert-LAHTransactionLayout {
         'install' {
             if (($null -eq $Journal.old_receipt -and ($oldMap.Count -ne 0 -or $oldPresent.Count -ne 0)) -or
                 ($null -ne $Journal.old_receipt -and $oldMap.Count -eq 0) -or
-                $newMap.Count -ne $script:LAHInstallNames.Count -or
-                @($script:LAHInstallNames | Where-Object { -not $newMap.ContainsKey($_) }).Count -ne 0 -or
+                -not (Test-LAHSupportedApplyRecordSet -RecordMap $newMap) -or
                 @('staging','ready','applying') -cnotcontains $phase) {
                 throw 'Lifecycle recovery is required; no unverified files were changed.'
             }
         }
         'update' {
-            if ($oldMap.Count -eq 0 -or $newMap.Count -ne $script:LAHInstallNames.Count -or
-                @($script:LAHInstallNames | Where-Object { -not $newMap.ContainsKey($_) }).Count -ne 0 -or
+            if ($oldMap.Count -eq 0 -or -not (Test-LAHSupportedApplyRecordSet -RecordMap $newMap) -or
                 @('staging','ready','applying') -cnotcontains $phase) {
                 throw 'Lifecycle recovery is required; no unverified files were changed.'
             }

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^v0\.1\.0-rc\.[1-9][0-9]{0,2}$')]
-    [string]$Version = 'v0.1.0-rc.3',
+    [string]$Version = 'v0.1.0-rc.4',
     [string]$OutputRoot = 'output/privacy-release/package'
 )
 
@@ -32,6 +32,8 @@ $payloadNames = @(
     'local-agent-harness.exe',
     'README.md',
     'CLIENT_SETUP.md',
+    'USER_GUIDE.ko.md',
+    'CLAUDE_DESKTOP.md',
     'Install-LocalAgentHarness.ps1',
     'Update-LocalAgentHarness.ps1',
     'Uninstall-LocalAgentHarness.ps1',
@@ -247,6 +249,8 @@ if ($buildInfoText -notmatch '(?m)^\s*build\s+-trimpath=true\s*$' -or
 
 Copy-Item -LiteralPath $buildPaths[0] -Destination (Join-Path $packageRoot 'local-agent-harness.exe')
 Copy-Item -LiteralPath (Join-Path $repoRoot 'docs/CLIENT_SETUP.md') -Destination (Join-Path $packageRoot 'CLIENT_SETUP.md')
+Copy-Item -LiteralPath (Join-Path $repoRoot 'docs/USER_GUIDE.ko.md') -Destination (Join-Path $packageRoot 'USER_GUIDE.ko.md')
+Copy-Item -LiteralPath (Join-Path $repoRoot 'docs/CLAUDE_DESKTOP.md') -Destination (Join-Path $packageRoot 'CLAUDE_DESKTOP.md')
 foreach ($name in $lifecycleNames) {
     Copy-Item -LiteralPath (Join-Path $repoRoot (Join-Path 'packaging/windows' $name)) -Destination (Join-Path $packageRoot $name)
 }
@@ -270,6 +274,7 @@ $readme = @(
     '',
     '설치 스크립트는 관리자 권한을 요구하지 않으며 시작 항목, Run 키, 클라이언트 CLI 설정, 영구 환경변수, Credential Manager를 변경하지 않습니다. SHA-256은 파일 손상을 확인하는 값이며 배포자를 인증하지 않습니다. 이 패키지는 서명되지 않았습니다.',
     '',
+    '제품 사용 가이드는 USER_GUIDE.ko.md에서 시작하세요. 오프라인 패키지에는 관련 설정 및 Claude Desktop 안내도 함께 들어 있습니다.',
     '수동 클라이언트 설정과 확인된 로컬 인터페이스는 CLIENT_SETUP.md를 참고하세요.'
 ) -join "`n"
 Write-Utf8NoBom (Join-Path $packageRoot 'README.md') ($readme + "`n")

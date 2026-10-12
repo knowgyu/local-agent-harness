@@ -35,6 +35,8 @@ $allowedNames = @(
     'local-agent-harness.exe',
     'README.md',
     'CLIENT_SETUP.md',
+    'USER_GUIDE.ko.md',
+    'CLAUDE_DESKTOP.md',
     'Install-LocalAgentHarness.ps1',
     'Update-LocalAgentHarness.ps1',
     'Uninstall-LocalAgentHarness.ps1',
@@ -43,8 +45,8 @@ $allowedNames = @(
     'SHA256SUMS.txt'
 )
 $members = @(Get-ChildItem -LiteralPath $package -Force -File)
-if ($members.Count -ne 9 -or @(Get-ChildItem -LiteralPath $package -Force -Directory).Count -ne 0) {
-    throw 'PackageRoot must be the exact flat nine-file package.'
+if ($members.Count -ne 11 -or @(Get-ChildItem -LiteralPath $package -Force -Directory).Count -ne 0) {
+    throw 'PackageRoot must be the exact flat eleven-file package.'
 }
 foreach ($member in $members) {
     if ($allowedNames -cnotcontains $member.Name) { throw 'PackageRoot contains an unexpected member.' }

@@ -28,7 +28,9 @@ codex mcp add local-agent-harness -- "C:\path\to\local-agent-harness.exe" --mcp
 codex mcp list
 ```
 
-`codex mcp list`는 저장된 서버 구성을 보여준다. Codex CLI 세션을 새로 열고 `/mcp`에서 활성 MCP 서버와 도구를 확인한다. Codex CLI, ChatGPT 데스크톱 앱, Codex IDE 확장은 같은 호스트에서 MCP 설정을 공유하므로 이 CLI 명령은 공유 설정을 갱신한다. 서버가 계속 표시되지 않으면 해당 클라이언트가 Restart 제어를 제공하는 경우 사용할 수 있다. 이 문서는 CLI 설치·확인 절차를 설명하며 별도의 데스크톱·IDE 설정 화면은 다루지 않는다. 등록 명령·공유 범위는 [공식 Codex MCP 안내](https://developers.openai.com/codex/mcp)를 참조한다.
+`codex mcp list`는 저장된 서버 구성을 보여준다. Codex CLI 세션을 새로 열고 `/mcp`에서 활성 MCP 서버와 도구를 확인한다. [공식 Codex MCP 안내](https://developers.openai.com/codex/mcp)는 ChatGPT desktop app의 Codex 기능, Codex CLI, IDE extension이 같은 Codex host의 MCP 설정을 공유하고 STDIO 서버를 지원한다고 설명한다. 따라서 이 CLI 명령은 그 Codex host의 설정을 갱신한다. 이 문서는 Codex CLI 설치·확인 절차를 설명하며 별도의 데스크톱·IDE 설정 화면은 다루지 않는다.
+
+공식 문서에서 말하는 Codex는 일반 ChatGPT 대화나 Work 대화와 구분되는 Codex 기능이다. 이 CLI 설정이 일반 대화에 연결된다는 뜻은 아니다. 이 저장소에서 Local Agent Harness를 실제 클라이언트에 설치·호출해 확인하지는 않았다. Codex 데스크톱 UI 설정은 공식 안내를 따르고, 실제 앱에서 서버와 도구가 보이는지 별도로 확인한다.
 
 ## Claude Code CLI
 

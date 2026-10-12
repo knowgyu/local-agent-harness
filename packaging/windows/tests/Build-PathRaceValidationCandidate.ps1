@@ -50,7 +50,7 @@ try {
         }
     })
 } finally { $zip.Dispose() }
-if ($members.Count -ne 9) { throw 'Candidate package does not contain the expected nine flat members.' }
+if ($members.Count -ne 11) { throw 'Candidate package does not contain the expected eleven flat members.' }
 $zipHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
 $receipt = [ordered]@{
     schema='lah-lifecycle-path-race-validation-receipt-v1'

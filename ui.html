@@ -264,6 +264,7 @@
     <span class="brand">LOCAL AGENT HARNESS</span>
     <div class="topbar-right">
       <a class="topbar-readiness" href="/readiness" data-message-en="Readiness checklist" data-message-ko="준비 상태 점검">Readiness checklist</a>
+      <a class="topbar-readiness" href="/guide" data-message-en="User guide" data-message-ko="사용 가이드">User guide</a>
       <span class="local">{{if .StorageReady}}Windows · loopback{{else}}Loopback · secret storage unavailable{{end}}</span>
       <div class="language-control">
         <label for="language-select">{{if eq .Language "ko"}}언어{{else}}Language{{end}}</label>
@@ -321,6 +322,7 @@
               <h3 data-message-en="No connection targets yet" data-message-ko="연결 대상이 없습니다">No connection targets yet</h3>
               <p data-message-en="Add a target, then save only the permissions and credentials it needs." data-message-ko="대상을 추가하고 필요한 권한과 자격 증명만 저장하세요.">Add a target, then save only the permissions and credentials it needs.</p>
               <a class="lah-route-card-link" href="#lah-registration-start" data-message-en="Start with a service address" data-message-ko="서비스 주소부터 시작">Start with a service address</a>
+              <a class="lah-route-card-link" href="/guide" data-message-en="Follow the guide to your first read" data-message-ko="사용 안내를 따라 첫 조회하기">Follow the guide to your first read</a>
             </div>
             <section id="lah-registration-start" class="lah-registration-start" aria-labelledby="lah-registration-start-heading">
               <h3 id="lah-registration-start-heading" data-message-en="1 · Add a connection from its address" data-message-ko="1 · 서비스 주소로 연결 대상 추가">1 · Add a connection from its address</h3>

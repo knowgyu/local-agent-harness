@@ -51,6 +51,7 @@ func newLocalUIHandlerWithResidentObserver(a *app, observer ResidentEndpointObse
 		mux.Handle(route, runtimeClientsHandler)
 	}
 	mux.HandleFunc("/readiness", a.handleReadiness)
+	mux.HandleFunc("/guide", a.handleUserGuide)
 	mux.HandleFunc("/", a.handleRoot)
 	mux.HandleFunc("/set-login-startup", a.handleLoginStartup)
 	namedSecretHandler := newNamedSecretUIHandler(a.host, a.csrf, a.namedSecrets)

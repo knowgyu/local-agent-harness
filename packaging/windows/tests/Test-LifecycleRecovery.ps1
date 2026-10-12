@@ -20,10 +20,10 @@ function Assert-PackageArchiveBinding([string]$ArchivePath, [string]$ExpectedSha
     $archiveHash = Get-Hash $ArchivePath
     if ($archiveHash -cne $ExpectedSha256.ToLowerInvariant()) { throw 'The exact package archive hash does not match the supplied pin.' }
 
-    $allowedNames = @('local-agent-harness.exe','README.md','CLIENT_SETUP.md','Install-LocalAgentHarness.ps1','Update-LocalAgentHarness.ps1','Uninstall-LocalAgentHarness.ps1','LocalAgentHarness.Lifecycle.psm1','manifest.json','SHA256SUMS.txt')
+    $allowedNames = @('local-agent-harness.exe','README.md','CLIENT_SETUP.md','USER_GUIDE.ko.md','CLAUDE_DESKTOP.md','Install-LocalAgentHarness.ps1','Update-LocalAgentHarness.ps1','Uninstall-LocalAgentHarness.ps1','LocalAgentHarness.Lifecycle.psm1','manifest.json','SHA256SUMS.txt')
     $rootFiles = @(Get-ChildItem -LiteralPath $ExtractedRoot -Force -File)
     if ($rootFiles.Count -ne $allowedNames.Count -or @(Get-ChildItem -LiteralPath $ExtractedRoot -Force -Directory).Count -ne 0) {
-        throw 'The extracted package root is not the exact flat nine-member package.'
+        throw 'The extracted package root is not the exact flat eleven-member package.'
     }
     foreach ($file in $rootFiles) { if ($allowedNames -cnotcontains $file.Name) { throw 'The extracted package root contains an unexpected member.' } }
 
@@ -32,7 +32,7 @@ function Assert-PackageArchiveBinding([string]$ArchivePath, [string]$ExpectedSha
     $archiveMap = @{}
     try {
         $entries = @($archive.Entries)
-        if ($entries.Count -ne $allowedNames.Count) { throw 'The pinned package archive does not contain nine members.' }
+        if ($entries.Count -ne $allowedNames.Count) { throw 'The pinned package archive does not contain eleven members.' }
         foreach ($entry in $entries) {
             $name = [string]$entry.FullName
             if ($allowedNames -cnotcontains $name -or $name.Contains('/') -or $name.Contains([char]92) -or $archiveMap.ContainsKey($name)) {
