@@ -7,7 +7,7 @@
 ## 1. 다운로드와 데스크톱 UI
 
 - [ ] Releases의 실제 asset 이름이 `release-manifest.json`에 있다.
-- [ ] 받은 파일 각각의 SHA-256이 함께 제공된 `SHA256SUMS.txt`와 일치한다. 값이 다르면 실행하지 않는다.
+- [ ] `release-manifest.json`에 나열된 payload 파일의 SHA-256이 `SHA256SUMS.txt`의 해당 항목과 일치한다. `SHA256SUMS.txt`는 자신을 해시하지 않는다. 값이 다르면 실행하지 않는다.
 - [ ] 패키지가 unsigned prerelease임을 확인했다. Checksum은 파일 무결성 확인이지 게시자 인증이 아니다.
 - [ ] 새 폴더에 ZIP 전체를 압축 해제하고 설치/실행했다.
 - [ ] Local UI는 loopback desktop window에서 열린다. 이 주소를 MCP 서버 URL로 사용하지 않는다.

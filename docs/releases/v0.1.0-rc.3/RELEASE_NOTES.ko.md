@@ -14,7 +14,7 @@ Windows x64 사전 공개 후보입니다. 설치 패키지는 서명되지 않�
 
 ## 데스크톱 UI 범위
 
-2026-10-12 사용자 결정에 따라 UI 사용·수용 범위는 데스크톱입니다. 모바일은 사용하지 않으며 모바일 뷰포트는 지원 목표나 릴리스 게이트가 아닙니다. 폭이 좁아진 데스크톱 창도 데스크톱 사용입니다. 최종 등록·정책·활성화 화면의 자연스러운 1888px 데스크톱 캡처에는 overflow가 없었습니다. 두 작은 cosmetic follow-up은 한 번의 bounded fix/recheck로 처리 중입니다.
+2026-10-12 사용자 결정에 따라 UI 사용·수용 범위는 데스크톱입니다. 모바일은 사용하지 않으며 모바일 뷰포트는 지원 목표나 릴리스 게이트가 아닙니다. 폭이 좁아진 데스크톱 창도 데스크톱 사용입니다. 두 scored desktop cosmetic fixes의 bounded visual review는 SHIP 판정을 받았고, 상단·operation-card 영역은 자연스러운 1888px 너비에서 overflow나 console warning/error 없이 확인됐습니다. 이 제한된 판정은 전체 expanded flow를 다시 시각 평가한 결과가 아닙니다.
 
 ## 설치와 AI 클라이언트
 
