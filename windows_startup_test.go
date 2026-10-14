@@ -187,8 +187,8 @@ func TestLoginStartupUIRequiresSameOriginCSRFAndUsesFixedActions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if response.StatusCode != http.StatusOK || !strings.Contains(string(page), `action="/set-login-startup"`) || !strings.Contains(string(page), a.csrf) {
-		t.Fatalf("root page did not render the protected login startup form: status=%d", response.StatusCode)
+	if response.StatusCode != http.StatusOK || strings.Contains(string(page), `action="/set-login-startup"`) || !strings.Contains(string(page), "Current client setup uses stdio") {
+		t.Fatalf("root page offered unsupported resident startup: status=%d", response.StatusCode)
 	}
 	post := func(action, csrf, origin string) *http.Response {
 		t.Helper()

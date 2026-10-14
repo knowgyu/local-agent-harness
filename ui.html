@@ -486,6 +486,7 @@
 
     <section class="panel startup-panel" aria-labelledby="login-startup-heading">
       <h2 id="login-startup-heading" data-i18n-static>Background MCP at Windows sign-in</h2>
+      <p class="hint" data-message-en="Current client setup uses stdio. A resident server is not required. This screen does not offer new automatic-start registration until HTTP client provisioning is supported." data-message-ko="현재 클라이언트 연결은 stdio를 사용하므로 상주 서버가 필요하지 않습니다. HTTP 클라이언트 연결 설정을 지원하기 전까지 이 화면에서는 새 자동 시작 등록을 제공하지 않습니다.">Current client setup uses stdio. A resident server is not required. This screen does not offer new automatic-start registration until HTTP client provisioning is supported.</p>
       <p class="hint" data-i18n-static>This controls automatic start for the current Windows user. It launches the fixed resident HTTP MCP mode without opening the settings UI. The status below reports the saved sign-in setting, not whether the MCP endpoint is currently running.</p>
       {{if not .LoginStartupAvailable}}
         <p class="notice" role="status" data-i18n-static>Windows login startup is unavailable on this platform or could not be read.</p>
@@ -498,11 +499,6 @@
         </form>
       {{else if eq .LoginStartupState "disabled"}}
         <p class="status" role="status" data-i18n-static>Resident MCP is not configured to start at sign-in.</p>
-        <form class="actions" action="/set-login-startup" method="post">
-          <input type="hidden" name="csrf" value="{{.CSRF}}">
-          <input type="hidden" name="action" value="enable">
-          <button type="submit" data-i18n-static>Start automatically at sign-in</button>
-        </form>
       {{else}}
         <p class="notice" role="status" data-i18n-static>A different value uses the reserved startup name. It was left unchanged.</p>
       {{end}}

@@ -55,12 +55,14 @@ type readinessStatusDTO struct {
 }
 
 type readinessTargetDTO struct {
+	ID              string                     `json:"id"`
 	Type            string                     `json:"type"`
 	Name            string                     `json:"name"`
 	Enabled         bool                       `json:"enabled"`
 	CredentialState string                     `json:"credential_state"`
 	Actions         []string                   `json:"actions"`
 	ConnectionTest  readinessConnectionTestDTO `json:"connection_test"`
+	FirstRead       firstReadReadinessDTO      `json:"first_read"`
 }
 
 type readinessConnectionTestDTO struct {
@@ -163,38 +165,96 @@ func (h *readinessStatusHandler) serveHTTP(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
-	cfg, err := h.readConfigSnapshot(r.Context())
-	if err != nil {
+	response, ok := h.snapshot(r.Context(), readinessSnapshotOptions{
+		inspectClients: readinessClientInspectionRequested(r), observeResidentEndpoint: true,
+	})
+	if !ok {
 		writeReadinessUnavailable(w)
 		return
 	}
-
-	response := readinessStatusFromConfig(cfg)
-	response.ResidentEndpoint = h.observeResidentEndpoint(r.Context())
-	if h.onboarding != nil {
-		receiptCtx, cancel := context.WithTimeout(r.Context(), readinessConfigTimeout)
-		receipts, receiptErr := h.onboarding.ListFirstReads(receiptCtx)
-		cancel()
-		if receiptErr == nil {
-			response.FirstRead = firstReadReadinessFromConfig(cfg, receipts)
-		} else {
-			response.FirstRead = firstReadReadinessDTO{State: firstReadStateUnavailable}
-		}
-	} else {
-		response.FirstRead = firstReadReadinessDTO{State: firstReadStateUnavailable}
-	}
-	if readinessClientInspectionRequested(r) {
-		response.Clients = h.inspectClients(r.Context())
-	}
-	response.ObservedAt = time.Now().UTC()
-
-	encoded, err := json.Marshal(response)
-	if err != nil || len(encoded) > readinessMaximumResponseSize {
+	encoded, err := marshalReadinessStatus(response)
+	if err != nil {
 		writeReadinessUnavailable(w)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(encoded)
+}
+
+type readinessSnapshotOptions struct {
+	inspectClients          bool
+	observeResidentEndpoint bool
+}
+
+func (h *readinessStatusHandler) snapshot(ctx context.Context, options readinessSnapshotOptions) (readinessStatusDTO, bool) {
+	if h == nil || ctx == nil {
+		return readinessUnavailableStatus(), false
+	}
+	cfg, err := h.readConfigSnapshot(ctx)
+	if err != nil {
+		return readinessUnavailableStatus(), false
+	}
+	response := readinessStatusFromConfig(cfg)
+	if options.observeResidentEndpoint {
+		response.ResidentEndpoint = h.observeResidentEndpoint(ctx)
+	}
+	if h.onboarding == nil {
+		setReadinessFirstReadUnavailable(&response)
+	} else {
+		receiptCtx, cancel := context.WithTimeout(ctx, readinessConfigTimeout)
+		receipts, receiptErr := h.onboarding.ListFirstReads(receiptCtx)
+		cancel()
+		if receiptErr != nil {
+			setReadinessFirstReadUnavailable(&response)
+		} else {
+			response.FirstRead = firstReadReadinessFromConfig(cfg, receipts)
+			targetIndexes := make(map[string]int, len(response.Targets))
+			for index := range response.Targets {
+				targetIndexes[response.Targets[index].ID] = index
+			}
+			for targetID, read := range firstReadReadinessByTarget(cfg, receipts) {
+				if targetIndex, ok := targetIndexes[targetID]; ok {
+					response.Targets[targetIndex].FirstRead = read
+				}
+			}
+			if len(receipts) >= onboardingStoreMaxFirstReads {
+				if response.FirstRead.State == firstReadStateNotObserved {
+					response.FirstRead.State = firstReadStateUnavailable
+				}
+				for index := range response.Targets {
+					if response.Targets[index].FirstRead.State == firstReadStateNotObserved {
+						response.Targets[index].FirstRead.State = firstReadStateUnavailable
+					}
+				}
+			}
+		}
+	}
+	if options.inspectClients {
+		response.Clients = h.inspectClients(ctx)
+	}
+	response.ObservedAt = time.Now().UTC()
+	if _, err := marshalReadinessStatus(response); err != nil {
+		return readinessUnavailableStatus(), false
+	}
+	return response, true
+}
+
+func setReadinessFirstReadUnavailable(response *readinessStatusDTO) {
+	if response == nil {
+		return
+	}
+	response.FirstRead = firstReadReadinessDTO{State: firstReadStateUnavailable}
+	for index := range response.Targets {
+		response.Targets[index].FirstRead = firstReadReadinessDTO{State: firstReadStateUnavailable}
+	}
+}
+
+func marshalReadinessStatus(response readinessStatusDTO) ([]byte, error) {
+	encoded, err := json.Marshal(response)
+	if err != nil || len(encoded) > readinessMaximumResponseSize {
+		return nil, errors.New("readiness response unavailable")
+	}
+	return encoded, nil
 }
 
 func (h *readinessStatusHandler) readConfigSnapshot(ctx context.Context) (config, error) {
@@ -243,12 +303,14 @@ func readinessStatusFromConfig(cfg config) readinessStatusDTO {
 			response.State = "configured"
 		}
 		response.Targets = append(response.Targets, readinessTargetDTO{
+			ID:              targetID,
 			Type:            kind,
 			Name:            readinessSafeName(name),
 			Enabled:         enabled,
 			CredentialState: readinessCredentialReferenceState(secretRef),
 			Actions:         append([]string{}, actions...),
 			ConnectionTest:  readinessHistoricalConnectionTest(cfg, targetID),
+			FirstRead:       firstReadReadinessDTO{State: firstReadStateNotObserved},
 		})
 	}
 
@@ -507,7 +569,7 @@ func safeReadinessClient(status MCPClientStatus) readinessClientDTO {
 func readinessFeatureCatalog() []readinessFeatureDTO {
 	return []readinessFeatureDTO{
 		{Key: "inventory", Tools: []string{"registered_targets", "registered_service_bundles", "registered_target_connection_test"}},
-		{Key: "setup", Tools: []string{mcpToolSubmitSetupDraft}},
+		{Key: "setup", Tools: []string{mcpToolSubmitSetupDraft, "setup_status"}},
 		{Key: "github", Tools: []string{"github_repository", "github_pull_request"}},
 		{Key: "jenkins", Tools: []string{"jenkins_registered_job", "jenkins_registered_queue_item", "jenkins_registered_build_log", "jenkins_run_registered_job"}},
 		{Key: "harbor", Tools: []string{"harbor_repository_artifacts", "harbor_project_quota"}},
@@ -517,8 +579,8 @@ func readinessFeatureCatalog() []readinessFeatureDTO {
 	}
 }
 
-func writeReadinessUnavailable(w http.ResponseWriter) {
-	response := readinessStatusDTO{
+func readinessUnavailableStatus() readinessStatusDTO {
+	return readinessStatusDTO{
 		State:            "unavailable",
 		ObservedAt:       time.Now().UTC(),
 		Targets:          []readinessTargetDTO{},
@@ -533,7 +595,10 @@ func writeReadinessUnavailable(w http.ResponseWriter) {
 		FirstRead:        firstReadReadinessDTO{State: firstReadStateUnavailable},
 		ErrorCode:        "settings_unavailable",
 	}
-	encoded, _ := json.Marshal(response)
+}
+
+func writeReadinessUnavailable(w http.ResponseWriter) {
+	encoded, _ := marshalReadinessStatus(readinessUnavailableStatus())
 	w.WriteHeader(http.StatusServiceUnavailable)
 	_, _ = w.Write(encoded)
 }
@@ -549,13 +614,4 @@ func readinessFeatureToolNames() []string {
 
 func readinessClientIDs() []string {
 	return []string{mcpClientIDCodex, mcpClientIDClaude, mcpClientIDGemini}
-}
-
-func readinessNormalizeTargetActions(actions []string) []string {
-	if actions == nil {
-		return []string{}
-	}
-	result := append([]string{}, actions...)
-	sort.Strings(result)
-	return result
 }

@@ -1,5 +1,7 @@
 # MCP 클라이언트 설치·연결 안내
 
+Codex CLI 및 Claude Code CLI의 에이전트 지원 Windows 후보 흐름은 저장소의 `docs/AGENT_SETUP.md` 또는 릴리스 별도 첨부 파일 `AGENT_SETUP.md`를 참고하세요. 이 문서의 CLI 명령은 그대로 사용할 수 있는 기준 명령입니다.
+
 이 문서는 Windows에서 MCP stdio 프로세스를 수동 등록하는 예시를 제공합니다. 실제 클라이언트 설치·연결·도구 호출이나 서비스 호환성을 보증하지 않습니다. 공급자의 현재 문서를 확인한 뒤 각 클라이언트 버전에 맞게 사용하세요.
 
 ## 먼저 확인할 것
@@ -30,7 +32,7 @@ codex mcp list
 
 `codex mcp list`는 저장된 서버 구성을 보여준다. Codex CLI 세션을 새로 열고 `/mcp`에서 활성 MCP 서버와 도구를 확인한다. [공식 Codex MCP 안내](https://developers.openai.com/codex/mcp)는 ChatGPT desktop app의 Codex 기능, Codex CLI, IDE extension이 같은 Codex host의 MCP 설정을 공유하고 STDIO 서버를 지원한다고 설명한다. 따라서 이 CLI 명령은 그 Codex host의 설정을 갱신한다. 이 문서는 Codex CLI 설치·확인 절차를 설명하며 별도의 데스크톱·IDE 설정 화면은 다루지 않는다.
 
-공식 문서에서 말하는 Codex는 일반 ChatGPT 대화나 Work 대화와 구분되는 Codex 기능이다. 이 CLI 설정이 일반 대화에 연결된다는 뜻은 아니다. 이 저장소에서 Local Agent Harness를 실제 클라이언트에 설치·호출해 확인하지는 않았다. Codex 데스크톱 UI 설정은 공식 안내를 따르고, 실제 앱에서 서버와 도구가 보이는지 별도로 확인한다.
+공식 문서에서 말하는 Codex는 일반 ChatGPT 대화나 Work 대화와 구분되는 Codex 기능이다. 이 CLI 설정이 일반 대화에 연결된다는 뜻은 아니다. 이 RC5에서는 WSL의 Codex CLI로 모의 서비스 읽기와 상태 조회를 확인했다. 이는 Windows 클라이언트 등록이나 실제 서비스 연결 검증이 아니다. Claude Code 실호출은 OAuth 만료로 확인하지 못했다. 상세 범위는 RC5 릴리스 첨부 파일 `VALIDATION_SUMMARY.ko.md`을 참고한다. Codex 데스크톱 UI 설정은 공식 안내를 따르고, 실제 앱에서 서버와 도구가 보이는지 별도로 확인한다.
 
 ## Claude Code CLI
 
@@ -94,3 +96,7 @@ gemini mcp list
 연결 직후에는 `registered_targets` 또는 `registered_service_bundles`처럼 로컬 설정을 나열하는 catalog 도구만 확인한다. catalog 조회는 대상 서비스에 접속하지 않는다. 세 번째 페이지 체크인은 사용자가 이 CLI 세션에서 catalog 응답을 봤다고 보고하는 용도다. MCP 대상 연결 시험이 필요하면 `registered_target_connection_test`에 adapter와 정확한 등록 대상 이름만 지정한다. 유효하고 활성화된 대상과 credential이 있으면 저장된 주소로 제한된 GET 요청을 보내고 로컬 이력을 갱신할 수 있다. 요청이 시작되지 않으면 `not_tested`를 반환하고 `completed_at`은 이력 저장에 성공했을 때만 포함한다. 이 도구는 Codex/Claude/Gemini client process나 stdio 연결 상태를 확인하지 않는다. 다른 GitHub·Jenkins·Harbor·Dashboard 작업 도구도 등록된 실제 주소로 요청을 보낼 수 있으므로, 사용할 대상과 권한을 먼저 확인한다.
 
 등록 해제는 각 클라이언트가 제공하는 MCP 서버 관리 명령이나 설정 화면을 이용한다. Gemini 설정을 수정할 때는 `settings.json`의 다른 사용자 값을 보존한다. 제품은 클라이언트 설정 파일을 자동으로 생성·수정·삭제하지 않는다.
+
+## 승인 또는 로그인 때문에 조회가 막힐 때
+
+서버와 도구가 보이는 상태도 실제 조회 성공은 아닙니다. 클라이언트가 승인을 요구하면 요청한 대상의 읽기 도구만 검토해 허용하세요. 모든 도구의 승인을 끄거나 앱의 권한 검사를 우회하지 마세요. 로그인 만료·401은 해당 CLI의 공식 로그인 절차로 해결한 뒤 조회를 다시 확인합니다.

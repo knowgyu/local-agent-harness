@@ -230,6 +230,82 @@ func firstReadReadinessFromConfig(cfg config, receipts []onboardingFirstReadRece
 	}
 }
 
+// firstReadReadinessByTarget attributes each receipt only while its opaque
+// definition digest still matches an active target or Dashboard mapping.
+func firstReadReadinessByTarget(cfg config, receipts []onboardingFirstReadReceipt) map[string]firstReadReadinessDTO {
+	result := make(map[string]firstReadReadinessDTO)
+	definitions := make(map[string]map[string][]string)
+	add := func(service, tool string, selector firstReadDefinitionSelector, targetID string) {
+		digest := firstReadDefinitionDigestForCall(cfg, service, tool, selector)
+		if digest == "" || targetID == "" {
+			return
+		}
+		key := service + "\x00" + tool
+		if definitions[key] == nil {
+			definitions[key] = make(map[string][]string)
+		}
+		definitions[key][digest] = append(definitions[key][digest], targetID)
+	}
+	addTarget := func(service, targetID, targetName string, tools ...string) {
+		selector := firstReadDefinitionSelector{TargetName: targetName}
+		for _, tool := range tools {
+			add(service, tool, selector, targetID)
+		}
+	}
+	for _, target := range cfg.GitHubTargets {
+		addTarget("github", target.ID, target.Name, "github_repository", "github_pull_request")
+	}
+	for _, target := range cfg.JenkinsTargets {
+		addTarget("jenkins", target.ID, target.Name, "jenkins_registered_job", "jenkins_registered_queue_item", "jenkins_registered_build_log")
+	}
+	for _, target := range cfg.HarborTargets {
+		addTarget("harbor", target.ID, target.Name, "harbor_repository_artifacts", "harbor_project_quota")
+	}
+	for _, target := range cfg.DashboardTargets {
+		addTarget("dashboard", target.ID, target.Name, "dashboard_namespaces")
+	}
+	for _, bundle := range cfg.ServiceBundles {
+		for _, environment := range bundle.Environments {
+			if environment.DashboardTargetID == "" {
+				continue
+			}
+			selector := firstReadDefinitionSelector{ServiceBundleName: bundle.Name, EnvironmentName: environment.Name}
+			for _, tool := range []string{"dashboard_deployment_status", "dashboard_deployment_diagnosis", "dashboard_deployment_events", "dashboard_deployment_pods", "dashboard_deployment_pod_logs"} {
+				add("dashboard", tool, selector, environment.DashboardTargetID)
+			}
+		}
+	}
+
+	type observedRead struct {
+		receipt onboardingFirstReadReceipt
+	}
+	observed := make(map[string]observedRead)
+	for _, receipt := range receipts {
+		service := string(receipt.Service)
+		if receipt.Source != onboardingFirstReadSource || !validFirstReadServiceTool(service, receipt.Tool) ||
+			!validFirstReadDefinitionDigest(receipt.DefinitionDigest) || !validFirstReadReceiptTime(receipt.ObservedAt) {
+			continue
+		}
+		targetIDs := definitions[service+"\x00"+receipt.Tool][receipt.DefinitionDigest]
+		for _, targetID := range targetIDs {
+			current, exists := observed[targetID]
+			if !exists || receipt.ObservedAt.Before(current.receipt.ObservedAt) ||
+				receipt.ObservedAt.Equal(current.receipt.ObservedAt) && (service < string(current.receipt.Service) ||
+					service == string(current.receipt.Service) && receipt.Tool < current.receipt.Tool) {
+				observed[targetID] = observedRead{receipt: receipt}
+			}
+		}
+	}
+	for targetID, read := range observed {
+		observedAt := read.receipt.ObservedAt.UTC()
+		result[targetID] = firstReadReadinessDTO{
+			State: firstReadStateObserved, Source: onboardingFirstReadSource,
+			Service: string(read.receipt.Service), Tool: read.receipt.Tool, ObservedAt: &observedAt,
+		}
+	}
+	return result
+}
+
 func validFirstReadReceiptTime(value time.Time) bool {
 	return !value.IsZero() && value.Location() == time.UTC && !value.After(time.Now().UTC())
 }

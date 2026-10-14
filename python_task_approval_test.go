@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -835,4 +836,17 @@ func submitPythonTaskApproval(t testing.TB, address, decision string, beforeSubm
 		return fmt.Errorf("approval submit status=%d read err=%v", response.StatusCode, readErr)
 	}
 	return nil
+}
+
+func pythonTaskApprovalRoute(address string) (host, route string, ok bool) {
+	parsed, err := url.Parse(address)
+	if err != nil || parsed.Scheme != "http" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" ||
+		parsed.Host == "" || parsed.Path == "" || !strings.HasPrefix(parsed.Path, "/approve-python-task/") {
+		return "", "", false
+	}
+	hostname, _, err := net.SplitHostPort(parsed.Host)
+	if err != nil || net.ParseIP(hostname) == nil || !net.ParseIP(hostname).IsLoopback() {
+		return "", "", false
+	}
+	return parsed.Host, parsed.Path, true
 }

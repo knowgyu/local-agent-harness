@@ -33,7 +33,7 @@ CLI 설치 안내는 사용자가 직접 실행할 수 있는 stdio 등록·상�
 
 ## 구성과 데이터 흐름
 
-아래는 목표 구성을 함께 그린 설계도다. HTTP handler와 server lifecycle 기반 코드는 있으나 app startup과 연결되지 않았으며, HTTP MCP endpoint와 등록 작업 실행기 경로는 제품 동작으로 제공되지 않는다.
+아래는 목표 구성을 함께 그린 설계도다. 현재 `--resident`와 로그인 시작 경로는 loopback HTTP MCP 런타임을 실행한다. 다만 사용자용 클라이언트 연결 안내와 이번 수용 기준은 stdio(`--mcp`)이며, 내부 HTTP 런타임의 존재를 클라이언트별 연결 검증으로 해석하지 않는다.
 
 ```mermaid
 flowchart LR

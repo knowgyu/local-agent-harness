@@ -40,13 +40,6 @@ func newSetupDraftControllerWithQueue(store setupDraftStore, queue setupDraftQue
 	}
 }
 
-func newSetupDraftResourceID(kind string) (string, error) {
-	if kind == "ssh_target" {
-		return newSSHDefinitionID("target")
-	}
-	return newTargetID(kind)
-}
-
 func (c *setupDraftController) SubmitSetupDraft(ctx context.Context, submission SetupDraftSubmission) (SetupDraftReview, error) {
 	if ctx == nil || ctx.Err() != nil || c == nil || c.store == nil || c.queue == nil {
 		return SetupDraftReview{}, errSetupDraftInvalid

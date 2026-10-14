@@ -43,7 +43,7 @@ const (
 
 const localUIReferrerPolicy = "same-origin"
 
-//go:embed ui.html ui_fragments/*.html
+//go:embed ui.html ui_fragments/*.html docs/AGENT_SETUP.md
 var uiFiles embed.FS
 
 var page = mustParseUIPage(uiFiles)
@@ -1570,10 +1570,13 @@ func (a *app) setStatus(message string, failed bool) {
 
 func (a *app) mcpServer() *mcp.Server {
 	server := mcp.NewServer(&mcp.Implementation{Name: "local-agent-harness", Version: "0.1.0"}, nil)
+	registerAgentSetupGuide(server)
+	registerSetupStatusMCPTool(server, a)
 	registerSetupDraftMCPTool(server, a.setupDrafts)
 	if a.ssh != nil {
 		mcp.AddTool[struct{}, []SSHOperationCatalogTarget](server, &mcp.Tool{
 			Name:        mcpToolRegisteredSSHTargets,
+			Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 			Description: "List named SSH targets and the fixed operations the user saved for each target. This passive catalog does not contact a host and omits aliases, commands, and credentials.",
 		}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, []SSHOperationCatalogTarget, error) {
 			targets, err := a.ssh.ListSSHOperationCatalog(ctx)
@@ -1595,6 +1598,7 @@ func (a *app) mcpServer() *mcp.Server {
 	}
 	mcp.AddTool[struct{}, registeredTargetsResult](server, &mcp.Tool{
 		Name:        "registered_targets",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "List enabled registered targets and callable tools by adapter display name. Connection test status is historical and reports success, failure, or not_tested. Completed tests include their UTC completion time. This listing does not contact targets. It is inventory, not approval; calls are checked against saved target, resource, and action policy. Stored credential values and references are omitted.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, registeredTargetsResult, error) {
 		result, err := a.registeredTargets()
@@ -1602,6 +1606,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[struct{}, registeredServiceBundlesResult](server, &mcp.Tool{
 		Name:        "registered_service_bundles",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "List registered service bundles, environments, linked target display names, and callable tools. Connection test status is historical and reports success, failure, or not_tested. Completed tests include their UTC completion time. This listing does not contact targets. It is inventory, not approval; calls are checked against saved policy. Stored credential values and references are omitted.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, registeredServiceBundlesResult, error) {
 		result, err := a.registeredServiceBundles()
@@ -1616,6 +1621,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[struct{}, pythonTasksResult](server, &mcp.Tool{
 		Name:        "registered_python_tasks",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "List enabled registered Python task names and the run tool they permit. This passive catalog reads settings only, does not check file availability or contact a network, and never returns executable or script paths.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, pythonTasksResult, error) {
 		result, err := a.registeredPythonTasks()
@@ -1630,6 +1636,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[githubTargetInput, repository](server, &mcp.Tool{
 		Name:        "github_repository",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read the repository registered under the exact GitHub target name. No URL or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in githubTargetInput) (*mcp.CallToolResult, repository, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "github", "github_repository")
@@ -1641,6 +1648,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[githubPullRequestInput, githubPullRequest](server, &mcp.Tool{
 		Name:        "github_pull_request",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read a pull request from the repository stored on an exact registered GitHub target. The positive pull request number is the only resource selector; URL, repository, and credentials cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in githubPullRequestInput) (*mcp.CallToolResult, githubPullRequest, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "github", "github_pull_request")
@@ -1652,6 +1660,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[harborArtifactsInput, harborArtifactsResult](server, &mcp.Tool{
 		Name:        "harbor_repository_artifacts",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read a bounded artifact page for the repository fixed to the exact registered Harbor target name. No URL, project, repository, or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in harborArtifactsInput) (*mcp.CallToolResult, harborArtifactsResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "harbor", "harbor_repository_artifacts")
@@ -1663,6 +1672,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[harborArtifactsInput, harborProjectQuotaResult](server, &mcp.Tool{
 		Name:        "harbor_project_quota",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read quota for the project fixed to the exact registered Harbor target name. No URL, project, repository, or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in harborArtifactsInput) (*mcp.CallToolResult, harborProjectQuotaResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "harbor", "harbor_project_quota")
@@ -1674,6 +1684,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[dashboardTargetInput, dashboardNamespacesResult](server, &mcp.Tool{
 		Name:        "dashboard_namespaces",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "List at most 100 namespace names visible to the exact registered Kubernetes Dashboard target. No URL, path, or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardTargetInput) (*mcp.CallToolResult, dashboardNamespacesResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_namespaces")
@@ -1685,6 +1696,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[dashboardDeploymentStatusInput, dashboardDeploymentStatusResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_status",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read Deployment replica status from the exact Dashboard target, namespace, and Deployment mapped to a registered service bundle environment. Only the service bundle and environment names are inputs; URL and resource names cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentStatusInput) (*mcp.CallToolResult, dashboardDeploymentStatusResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_status")
@@ -1696,6 +1708,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[dashboardDeploymentStatusInput, dashboardDeploymentDiagnosisResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_diagnosis",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read Deployment status, bounded related events, and Pod inventory concurrently for the exact Dashboard target and resources mapped to a registered service bundle environment. These reads may reflect nearby but different observation times; they are not an atomic snapshot. Only service bundle and environment names are inputs. Use dashboard_deployment_pod_logs separately for a selected Pod/container.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentStatusInput) (*mcp.CallToolResult, dashboardDeploymentDiagnosisResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_diagnosis")
@@ -1707,6 +1720,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[dashboardDeploymentStatusInput, dashboardDeploymentEventsResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_events",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read bounded events for the Deployment mapped to a registered service bundle environment. Only service bundle and environment names are inputs; URL and resource names cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentStatusInput) (*mcp.CallToolResult, dashboardDeploymentEventsResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_events")
@@ -1718,6 +1732,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[dashboardDeploymentStatusInput, dashboardDeploymentPodsResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_pods",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read bounded Pod status for the Deployment mapped to a registered service bundle environment. Only service bundle and environment names are inputs; URLs, namespaces, Deployment names, selectors, and credentials cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentStatusInput) (*mcp.CallToolResult, dashboardDeploymentPodsResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_pods")
@@ -1729,6 +1744,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[dashboardDeploymentLogsInput, dashboardDeploymentLogsResult](server, &mcp.Tool{
 		Name:        "dashboard_deployment_pod_logs",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read the latest fixed window of up to 100 log lines (up to 4 KiB each) for a Pod and container currently present in the mapped registered Deployment inventory. The full MCP response is capped at 64 KiB and marked truncated if shortened. Pod and container are candidate selectors only; namespace, Deployment, URL, log offsets, and credentials cannot be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in dashboardDeploymentLogsInput) (*mcp.CallToolResult, dashboardDeploymentLogsResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "dashboard", "dashboard_deployment_pod_logs")
@@ -1740,6 +1756,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[jenkinsTargetInput, jenkinsJobInfo](server, &mcp.Tool{
 		Name:        "jenkins_registered_job",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read the Jenkins job registered under the exact target name. No URL, job path, or credential can be supplied.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in jenkinsTargetInput) (*mcp.CallToolResult, jenkinsJobInfo, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "jenkins", "jenkins_registered_job")
@@ -1751,6 +1768,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[jenkinsQueueInput, jenkinsQueueInfo](server, &mcp.Tool{
 		Name:        "jenkins_registered_queue_item",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read Jenkins queue status for the exact registered target name and a positive numeric queue ID.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in jenkinsQueueInput) (*mcp.CallToolResult, jenkinsQueueInfo, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "jenkins", "jenkins_registered_queue_item")
@@ -1762,6 +1780,7 @@ func (a *app) mcpServer() *mcp.Server {
 	})
 	mcp.AddTool[jenkinsLogInput, jenkinsLogSegmentResult](server, &mcp.Tool{
 		Name:        "jenkins_registered_build_log",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Description: "Read one bounded progressive log segment for the exact registered target name, positive build number, and nonnegative offset.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in jenkinsLogInput) (*mcp.CallToolResult, jenkinsLogSegmentResult, error) {
 		readCtx, observer := withFirstReadCallObserver(ctx, "jenkins", "jenkins_registered_build_log")

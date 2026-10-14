@@ -11,9 +11,7 @@ import (
 	"mime"
 	"net"
 	"net/http"
-	"net/url"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 )
@@ -225,17 +223,4 @@ func waitForSSHOperationApproval(ctx context.Context, timeout time.Duration, dec
 			return false, context.DeadlineExceeded
 		}
 	}
-}
-
-func sshApprovalRoute(address string) (host, route string, ok bool) {
-	parsed, err := url.Parse(address)
-	if err != nil || parsed.Scheme != "http" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" ||
-		parsed.Host == "" || parsed.Path == "" || !strings.HasPrefix(parsed.Path, "/approve-ssh-operation/") {
-		return "", "", false
-	}
-	hostname, _, err := net.SplitHostPort(parsed.Host)
-	if err != nil || net.ParseIP(hostname) == nil || !net.ParseIP(hostname).IsLoopback() {
-		return "", "", false
-	}
-	return parsed.Host, parsed.Path, true
 }

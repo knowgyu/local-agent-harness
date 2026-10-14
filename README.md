@@ -1,32 +1,57 @@
 # Local Agent Harness
 
-Local Agent Harness는 이름 있는 개발 서비스 대상을 등록하고, loopback 웹 UI에서 관리하며, 등록된 대상과 허용된 작업만 MCP로 제공하는 Windows 앱입니다.
+Local Agent Harness는 GitHub, Jenkins, Harbor, Kubernetes Dashboard처럼 이름을 붙인 개발 서비스와 허용된 읽기 작업을 Windows 로컬 UI에서 관리하고, 승인한 범위만 MCP로 제공하는 앱입니다. 외부 서비스 비밀값은 Windows Credential Manager에 저장합니다.
 
-## v0.1.0-rc.4
+## Windows 설치
 
-[빠른 시작](docs/releases/v0.1.0-rc.4/START_HERE.ko.md), [릴리스 노트](docs/releases/v0.1.0-rc.4/RELEASE_NOTES.ko.md), [검증 요약](docs/releases/v0.1.0-rc.4/VALIDATION_SUMMARY.ko.md), [수용 체크리스트](docs/releases/v0.1.0-rc.4/USER_ACCEPTANCE_CHECKLIST.md), [등록부터 첫 읽기까지 사용 안내](docs/USER_GUIDE.ko.md)를 확인하세요. Windows x64 압축 파일은 Releases 페이지에서 받고 `SHA256SUMS.txt`와 `release-manifest.json`에서 자산 이름과 해시를 대조하세요. RC4는 서명되지 않은 사전 공개 후보입니다.
+[GitHub Releases](https://github.com/knowgyu/local-agent-harness/releases/tag/v0.1.0-rc.5)에서 `v0.1.0-rc.5` Windows x64 ZIP, `release-manifest.json`, `SHA256SUMS.txt`를 받습니다. manifest의 파일명·크기·SHA-256과 ZIP을 대조한 뒤 새 폴더에 압축을 풉니다.
 
-## 기능과 경계
+```powershell
+Get-FileHash .\local-agent-harness-v0.1.0-rc.5-windows-amd64.zip -Algorithm SHA256
+Get-Content .\SHA256SUMS.txt | Select-String 'local-agent-harness-v0.1.0-rc.5-windows-amd64.zip'
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-LocalAgentHarness.ps1
+Set-Location "$env:LOCALAPPDATA\Programs\Local Agent Harness"
+.\local-agent-harness.exe
+```
 
-- 이름이 지정된 서비스 대상과 허용 작업을 로컬에 저장하며, MCP 요청마다 저장된 범위를 확인합니다.
-- 외부 서비스 비밀값은 Windows Credential Manager에 저장하고, 설정에는 참조만 둡니다.
-- Windows 현재 사용자 환경변수를 별도 기능으로 관리할 수 있습니다. 같은 Windows 계정으로 실행 중인 프로세스는 해당 값을 읽을 수 있습니다.
-- 로컬 UI와 HTTP listener는 loopback에만 바인딩됩니다. 제공되는 MCP 진입점은 stdio입니다 (local-agent-harness.exe --mcp).
-- 반환 데이터의 크기와 개수를 제한하고 알려진 민감 필드를 best-effort 방식으로 필터링합니다. 모든 비밀을 찾아낸다고 보장하지 않습니다.
-- RC4는 앱 안에서 열 수 있는 한국어·영어 읽기 전용 사용 안내(`/guide`)와 ZIP에서 오프라인으로 볼 수 있는 한국어 안내서를 제공합니다. 예시를 복사해도 연결이나 MCP 호출은 실행되지 않습니다.
+RC4 기준 소스는 커밋 `80fed06`입니다. 공개 RC4 실행 파일에는 `setup_status`가 없으므로 RC5 설치본을 사용하세요. 설치 후 UI의 **사용 가이드**에서 `/guide`를 열 수 있습니다.
 
-제품은 GitHub Enterprise, Jenkins, Harbor, Kubernetes Dashboard REST, SSH 및 등록된 로컬 작업 흐름을 포함합니다. 정확한 범위와 제한은 릴리스 문서에 설명되어 있습니다. 실제 서비스와 클라이언트의 호환성은 사용 환경에서 확인해야 합니다. 합성 검사는 실제 환경 호환성을 입증하지 않습니다.
+## Codex CLI 또는 Claude Code CLI 에이전트 설정
 
-현재 UI 사용·검증 범위는 데스크톱입니다. 모바일은 사용하지 않으며 모바일 뷰포트는 현재 지원 목표나 수용 기준이 아닙니다. 좁은 데스크톱 창은 데스크톱 사용 범위에 포함됩니다.
+설치된 CLI 에이전트에 다음처럼 요청하세요.
 
-## 프로젝트 문서
+> 이 저장소의 `docs/AGENT_SETUP.md`를 읽고 Local Agent Harness 설치와 Codex CLI·Claude Code 등록을 진행해 줘. 내가 지정한 자료에서만 연결 후보를 찾고, 빠진 정보는 한 번에 물어봐. 비밀값은 채팅에 쓰지 말고 로컬 UI 입력과 승인까지 안내해 줘. 실제 MCP 조회 결과와 남은 문제까지 확인해 줘.
 
-- [제품 요구사항](docs/PRD.md)
-- [아키텍처](docs/ARCHITECTURE.md)
-- [보안 경계](docs/SECURITY.md)
-- [UX 원칙](docs/UX.md)
-- [이럴 때 이렇게 쓰세요: 등록부터 첫 MCP 읽기까지](docs/USER_GUIDE.ko.md)
-- [MCP 클라이언트 수동 설정 예시](docs/CLIENT_SETUP.md)
-- [RC3 이전 릴리스 문서](docs/releases/v0.1.0-rc.3/RELEASE_NOTES.ko.md)
+서버가 이미 연결돼 있다면 `lah://guides/agent-setup` 리소스로 같은 안내를 읽을 수 있습니다. 저장소가 없으면 RC5의 별도 첨부 파일 `AGENT_SETUP.md`를 사용하세요. 안내 파일은 ZIP 외부에 있습니다. 별도 스킬 설치를 전제하지 않습니다. 클라이언트 등록은 UI의 **Clients** 계획·백업·적용·확인 절차를 사용하고, 직접 명령을 쓸 때는 [Codex CLI 설정](docs/CLIENT_SETUP.md#codex-cli) 또는 [Claude Code CLI 설정](docs/CLIENT_SETUP.md#claude-code-cli)을 따르세요. 공식 문서: [Codex MCP](https://developers.openai.com/codex/mcp), [Claude Code MCP](https://code.claude.com/docs/en/mcp).
 
-설계 문서는 요구사항과 제안 사항을 담고 있습니다. 현재 동작과 이번 릴리스에서 확보한 근거는 릴리스 문서에서 확인하세요.
+## 완료 확인과 복구
+
+| 확인 결과 | 의미 |
+|---|---|
+| `setup_status.schema_version`이 `1` | RC5 설정 상태 도구를 사용할 수 있습니다. |
+| `configuration_state` | 저장된 설정 상태입니다. 설치·실제 조회 전체의 성공 판정은 아닙니다. |
+| `clients`의 등록/설정 상태 | 클라이언트 설정을 확인했습니다. 실제 도구 호출이나 서비스 읽기를 증명하지는 않습니다. |
+| 각 활성 대상의 `targets[].first_read.state=observed` | 해당 대상에서 성공한 MCP 읽기가 기록됐습니다. 카탈로그 조회와 연결 시험은 포함되지 않습니다. |
+| `targets[].first_read.source=mcp_observed`, `client_attribution=not_observed` | MCP 읽기는 관찰했지만 호출한 CLI는 식별하지 못했습니다. |
+| `targets[].first_read.state=not_observed` | 현재 대상 정의와 일치하는 보관 증거가 없습니다. 과거 읽기가 없었다는 뜻은 아닙니다. |
+| `unavailable` | 읽을 수 없거나 보존 한도 때문에 부재를 판단할 수 없습니다. |
+
+Dashboard 읽기는 대상만 등록해서는 부족합니다. 서비스 묶음의 환경에 Dashboard 대상과 namespace/deployment가 연결되어 있어야 합니다. 첫 읽기 이력은 서로 다른 최신 대상 정의 256개까지만 보관합니다. `not_observed`는 현재 정의와 일치하는 보관 증거가 없다는 뜻이지, 과거 읽기가 없었다는 증거는 아닙니다. 보존 한도에 닿아 부재를 판단할 수 없으면 `unavailable`로 표시합니다. 설정이 끝나도 대상별 읽기가 관찰되지 않았다면 미완료로 표시하세요.
+
+도구가 없다면 설치된 바이너리 버전을 확인하고 RC5를 설치한 뒤 클라이언트가 지원하는 reload를 쓰거나 새 세션을 여세요. 초안 흐름이 끊기거나 만료되면 UI에서 기존 제안을 먼저 찾아 이어서 검토하세요. 이전 제안이 없는지 확인하기 전에는 다시 제출하거나 승인을 반복하지 마세요.
+
+## 검증 범위
+
+RC5 검증은 모의 서비스 기준입니다. WSL의 Codex CLI에서 모의 GitHub 읽기와 상태 조회를 실행했고, Claude Code는 OAuth 만료(401)로 실제 호출을 확인하지 못했습니다. 두 클라이언트의 프로토콜 모의 시험은 통과했습니다. 실제 사내 서비스·Windows 자격 증명·클라이언트별 설치 결과는 별도 확인이 필요합니다. 상세 범위는 [RC5 검증 요약](docs/releases/v0.1.0-rc.5/VALIDATION_SUMMARY.ko.md)을 참고하세요.
+
+## 저장소 안내
+
+| 위치 | 내용 |
+|---|---|
+| 저장소 루트의 Go 파일 | 앱 구현과 테스트. Go 패키지는 현재 구조대로 루트에 둡니다. |
+| `docs/` | 현재 제품·사용자·에이전트 안내 |
+| `docs/research/` | 설계, 리뷰, 검증 근거 |
+| `docs/releases/<version>/` | 버전별로 보관하는 릴리스 안내와 검증 기록 |
+| `packaging/` | Windows 패키징과 설치기 구성 |
+| `scripts/` | 빌드·개발·릴리스 보조 스크립트 |
+| `testdata/` | 자동화 테스트와 모의 환경 fixture |

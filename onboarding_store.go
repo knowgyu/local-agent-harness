@@ -28,7 +28,8 @@ const (
 	onboardingStoreMaxFileBytes   = 256 << 10
 	onboardingStoreMaxDrafts      = 50
 	onboardingStoreMaxActivations = 256
-	onboardingStoreMaxFirstReads  = 256
+	// A rolling window keeps stale definition history from crowding out recent reads.
+	onboardingStoreMaxFirstReads = 256
 )
 
 var errOnboardingCapacity = errors.New("registration onboarding capacity is full")
@@ -552,10 +553,33 @@ func (s *onboardingFileDraftStore) RecordFirstRead(ctx context.Context, receipt 
 				return nil
 			}
 		}
-		if len(envelope.FirstReads) >= onboardingStoreMaxFirstReads {
-			return errOnboardingCapacity
-		}
 		envelope.FirstReads = append(envelope.FirstReads, receipt)
+		sort.Slice(envelope.FirstReads, func(i, j int) bool {
+			a, b := envelope.FirstReads[i], envelope.FirstReads[j]
+			if !a.ObservedAt.Equal(b.ObservedAt) {
+				return a.ObservedAt.Before(b.ObservedAt)
+			}
+			if a.Service != b.Service {
+				return a.Service < b.Service
+			}
+			if a.Tool != b.Tool {
+				return a.Tool < b.Tool
+			}
+			return a.DefinitionDigest < b.DefinitionDigest
+		})
+		if len(envelope.FirstReads) > onboardingStoreMaxFirstReads {
+			envelope.FirstReads = envelope.FirstReads[len(envelope.FirstReads)-onboardingStoreMaxFirstReads:]
+		}
+		retained := false
+		for _, current := range envelope.FirstReads {
+			if sameOnboardingFirstRead(current, receipt) {
+				retained = true
+				break
+			}
+		}
+		if !retained {
+			return nil
+		}
 		if err := s.writeLocked(envelope); err != nil {
 			return err
 		}

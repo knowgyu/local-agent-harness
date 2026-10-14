@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -426,6 +428,77 @@ func TestOnboardingStoreFirstReadReceiptPersistsAndDeduplicates(t *testing.T) {
 		if strings.Contains(string(data), forbidden) {
 			t.Fatalf("sidecar contains forbidden first-read field %q: %s", forbidden, data)
 		}
+	}
+}
+
+func TestOnboardingStoreFirstReadRetentionKeepsNewestDistinctReceipts(t *testing.T) {
+	base := time.Date(2026, 10, 11, 12, 30, 0, 0, time.UTC)
+	now := base.Add(time.Hour)
+	store := newOnboardingStoreForTest(t, onboardingTestStorePath(t), now)
+	envelope := emptyOnboardingStoreEnvelope()
+	for i := 0; i < onboardingStoreMaxFirstReads; i++ {
+		envelope.FirstReads = append(envelope.FirstReads, onboardingStoreTestFirstReadReceipt(i, base.Add(time.Duration(i)*time.Second)))
+	}
+	if err := withOnboardingStoreLock(store.path, func() error { return store.writeLocked(envelope) }); err != nil {
+		t.Fatalf("write full valid receipt history: %v", err)
+	}
+
+	latest := onboardingStoreTestFirstReadReceipt(onboardingStoreMaxFirstReads, base.Add(time.Duration(onboardingStoreMaxFirstReads)*time.Second))
+	if added, err := store.RecordFirstRead(context.Background(), latest); err != nil || !added {
+		t.Fatalf("RecordFirstRead() at capacity = %v, %v; want new receipt retained", added, err)
+	}
+	receipts, err := store.ListFirstReads(context.Background())
+	if err != nil || len(receipts) != onboardingStoreMaxFirstReads {
+		t.Fatalf("ListFirstReads() = %d receipts, %v; want bounded size %d", len(receipts), err, onboardingStoreMaxFirstReads)
+	}
+	oldestRetained := onboardingStoreTestFirstReadReceipt(1, base.Add(time.Second))
+	if receipts[0] != oldestRetained || receipts[len(receipts)-1] != latest {
+		t.Fatalf("retained receipts range = [%+v, %+v]; want oldest %+v and newest %+v", receipts[0], receipts[len(receipts)-1], oldestRetained, latest)
+	}
+
+	duplicate := oldestRetained
+	duplicate.ObservedAt = now.Add(-time.Second)
+	if added, err := store.RecordFirstRead(context.Background(), duplicate); err != nil || added {
+		t.Fatalf("duplicate RecordFirstRead() = %v, %v; want no insertion or refresh", added, err)
+	}
+	receipts, err = store.ListFirstReads(context.Background())
+	if err != nil || len(receipts) != onboardingStoreMaxFirstReads {
+		t.Fatalf("duplicate changed retained history size: len=%d err=%v", len(receipts), err)
+	}
+	if receipts[0] != oldestRetained || receipts[len(receipts)-1] != latest {
+		t.Fatalf("duplicate changed retained history: len=%d first=%+v last=%+v err=%v", len(receipts), receipts[0], receipts[len(receipts)-1], err)
+	}
+}
+
+func TestOnboardingStoreRejectsOverLimitExistingFirstReadHistory(t *testing.T) {
+	base := time.Date(2026, 10, 11, 12, 30, 0, 0, time.UTC)
+	store := newOnboardingStoreForTest(t, onboardingTestStorePath(t), base.Add(time.Hour))
+	envelope := emptyOnboardingStoreEnvelope()
+	for i := 0; i <= onboardingStoreMaxFirstReads; i++ {
+		envelope.FirstReads = append(envelope.FirstReads, onboardingStoreTestFirstReadReceipt(i, base.Add(time.Duration(i)*time.Second)))
+	}
+	data, err := json.Marshal(envelope)
+	if err != nil {
+		t.Fatalf("marshal over-limit sidecar: %v", err)
+	}
+	if err := withOnboardingStoreLock(store.path, func() error {
+		return writeOnboardingStoreFileAtomically(store.path, data)
+	}); err != nil {
+		t.Fatalf("write over-limit sidecar: %v", err)
+	}
+	if receipts, err := store.ListFirstReads(context.Background()); err == nil || receipts != nil {
+		t.Fatalf("ListFirstReads() on over-limit sidecar = %#v, %v; want unavailable", receipts, err)
+	}
+	after, err := os.ReadFile(store.path)
+	if err != nil || string(after) != string(data) {
+		t.Fatalf("over-limit sidecar was changed: read error=%v", err)
+	}
+}
+
+func onboardingStoreTestFirstReadReceipt(index int, observedAt time.Time) onboardingFirstReadReceipt {
+	return onboardingFirstReadReceipt{
+		Source: onboardingFirstReadSource, Service: onboardingServiceGitHub, Tool: "github_repository",
+		ObservedAt: observedAt, DefinitionDigest: fmt.Sprintf("sha256:%064x", index),
 	}
 }
 

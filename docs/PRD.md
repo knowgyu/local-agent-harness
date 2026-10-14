@@ -282,3 +282,9 @@ MCP Dashboard 로그 도구는 `text content`와 `structuredContent`를 포함�
 ## 9. 문서와 구현의 관계
 
 이 PRD는 구현 단계의 요구사항 기준 초안이다. 모든 기능은 코드와 실제 실행 증거가 생기기 전까지 미구현·미검증이다. 예전 `devops-mcps` 저장소는 과거 프로토타입이며 새 제품의 코드, 고정 `dev`/`prod` 구조, Kubernetes API 직접 연결의 기본 근거가 아니다. SCP 문서와 MCP는 저장소 범위 밖이다.
+
+## 에이전트 지원 설정: 후보 구현 상태
+
+의도한 흐름은 사용자가 선택한 출처에서 후보를 찾고, 누락된 비밀이 아닌 정보를 함께 질문한 뒤, 검토할 제안 하나를 제출하는 것입니다. 현재 소스 후보는 읽기 전용 MCP `setup_status`(스키마 버전 1, 클라이언트 검사 선택, 대상별 첫 읽기 상태)를 추가하고, 기존 `submit_setup_draft`, 클라이언트 설정 계획·백업·적용·확인, 명시적 UI 승인을 재사용합니다. 별도 클라이언트 설정 작성기는 두지 않습니다.
+
+`targets[].first_read.state=observed`는 성공한 MCP 서비스 읽기만 기록합니다. 카탈로그 조회, 연결 시험, 클라이언트 등록은 해당되지 않습니다. 기록의 출처는 `mcp_observed`이며 `client_attribution`은 `not_observed`로 남습니다. Dashboard 첫 읽기는 서비스 묶음의 환경에 대상과 namespace/deployment 매핑이 있어야 합니다. 공개 RC4 실행 파일에는 `setup_status`가 없습니다. 이 후보의 수용 검증은 모의 서비스에 한정되며 실제 서비스 및 Codex/Claude 호출 호환성은 미검증입니다. 절차는 [에이전트 설정 안내](AGENT_SETUP.md)를 따릅니다.

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^v0\.1\.0-rc\.[1-9][0-9]{0,2}$')]
-    [string]$Version = 'v0.1.0-rc.4',
+    [string]$Version = 'v0.1.0-rc.5',
     [string]$OutputRoot = 'output/privacy-release/package'
 )
 
@@ -225,7 +225,7 @@ $buildPaths = @(
 for ($index = 0; $index -lt $buildPaths.Count; $index++) {
     Push-Location $repoRoot
     try {
-        & $go.Source build -mod=readonly -trimpath -buildvcs=false -o $buildPaths[$index] . 2>$null
+        & $go.Source build -mod=readonly -trimpath -buildvcs=false '-ldflags=-s -w' -o $buildPaths[$index] . 2>$null
         if ($LASTEXITCODE -ne 0) { throw 'A native Windows amd64 release build failed.' }
     } finally {
         Pop-Location
@@ -306,7 +306,7 @@ $manifest = [ordered]@{
         go_version = $goVersion.Split(' ')[2]
         goos = 'windows'
         goarch = 'amd64'
-        flags = @('-mod=readonly', '-trimpath', '-buildvcs=false')
+        flags = @('-mod=readonly', '-trimpath', '-buildvcs=false', '-ldflags=-s -w')
         reproducible_binary = $true
         executable_sha256 = $binaryHash
         validation = @('native Windows amd64 build pass 1', 'native Windows amd64 build pass 2', 'executable build metadata privacy check')
@@ -379,7 +379,7 @@ $receipt = [ordered]@{
     build = [ordered]@{
         go_version = $goVersion.Split(' ')[2]
         target = 'windows/amd64'
-        flags = @('-mod=readonly', '-trimpath', '-buildvcs=false')
+        flags = @('-mod=readonly', '-trimpath', '-buildvcs=false', '-ldflags=-s -w')
         reproducible_binary = $true
     }
     privacy_scan = [ordered]@{

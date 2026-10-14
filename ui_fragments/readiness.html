@@ -262,6 +262,14 @@
         connectionUnknown: 'Connection test history is unavailable',
         historicalAt: 'Saved test completed at {time}. A historical result is not a live check.',
         testNext: 'Choose this target in Settings, then run Test connection explicitly.',
+        setupNeedsTest: 'Registered; connection test not confirmed',
+        setupConnectionFailed: 'Registered; last connection test failed',
+        setupNeedsRead: 'Connection test saved; MCP read not observed',
+        setupReadSucceeded: 'Successful MCP read observed for this target',
+        setupReadUnavailable: 'MCP read evidence unavailable',
+        setupReadNext: 'In your connected AI app, request an allowed read for this target. Registration and connection tests do not prove an AI-app read.',
+        setupReadDoneNext: 'The server observed this target read. Confirm the result in your AI app; the server does not identify which client issued it.',
+        setupReadAt: 'MCP read observed at {time}. Client identity is not verified.',
         noReferenceNext: 'If this service requires a credential, add/select a named credential, then save and test it.',
         disabledNext: 'Enable the target before using it.',
         actionTools: 'Allowed MCP tool names from saved policy:',
@@ -361,6 +369,14 @@
         connectionUnknown: '연결 테스트 이력을 확인할 수 없음',
         historicalAt: '테스트 저장 시각: {time}. 과거 결과는 현재 상태 확인이 아닙니다.',
         testNext: '설정 페이지에서 이 대상을 선택한 뒤 연결 테스트를 직접 실행하세요.',
+        setupNeedsTest: '등록됨 · 연결 테스트 미확인',
+        setupConnectionFailed: '등록됨 · 마지막 연결 테스트 실패',
+        setupNeedsRead: '연결 테스트 저장됨 · MCP 조회 미확인',
+        setupReadSucceeded: '이 대상의 MCP 조회 성공 기록 있음',
+        setupReadUnavailable: 'MCP 조회 기록을 확인할 수 없음',
+        setupReadNext: '연결한 AI 앱에서 이 대상의 허용된 조회를 요청하세요. 등록이나 연결 테스트만으로 AI 앱 조회 성공을 판단하지 않습니다.',
+        setupReadDoneNext: '서버에서 이 대상의 조회를 확인했습니다. AI 앱에서 결과를 확인하세요. 어느 클라이언트가 호출했는지는 서버에서 식별하지 않습니다.',
+        setupReadAt: 'MCP 조회 확인 시각: {time}. 클라이언트 식별은 미확인입니다.',
         noReferenceNext: '서비스에서 자격 증명이 필요하면 이름 있는 자격 증명을 추가하거나 선택한 뒤 저장하고 테스트하세요.',
         disabledNext: '대상을 사용하기 전에 활성화하세요.',
         actionTools: '저장된 권한에 따라 허용된 MCP 도구 이름:',
@@ -608,6 +624,20 @@
       if (state === 'not_tested') return text('connectionNotTested');
       return text('connectionUnknown');
     }
+    function targetSetupProgress(target) {
+      if (target.enabled !== true) return {state: 'disabled', next: 'disabledNext', tone: 'attention'};
+      if (target.credential_state !== 'reference_saved') return {state: 'noCredentialRef', next: 'noReferenceNext', tone: 'attention'};
+      const read = target.first_read || {};
+      const observedAt = typeof read.observed_at === 'string' ? Date.parse(read.observed_at) : NaN;
+      if (read.state === 'observed' && read.source === 'mcp_observed' && read.service === target.type && typeof read.tool === 'string' && read.tool.trim() && Number.isFinite(observedAt) && observedAt <= Date.now()) {
+        return {state: 'setupReadSucceeded', next: 'setupReadDoneNext', tone: '', readAt: read.observed_at};
+      }
+      if (read.state !== 'not_observed') return {state: 'setupReadUnavailable', next: 'setupReadNext', tone: 'attention'};
+      const test = target.connection_test || {};
+      if (test.source === 'saved_history' && test.state === 'failure') return {state: 'setupConnectionFailed', next: 'testNext', tone: 'attention'};
+      if (test.source === 'saved_history' && test.state === 'success') return {state: 'setupNeedsRead', next: 'setupReadNext', tone: 'attention'};
+      return {state: 'setupNeedsTest', next: 'testNext', tone: 'attention'};
+    }
     function renderTargets(data) {
       clearList(lists.targets);
       const targets = safeArray(data.targets);
@@ -621,20 +651,20 @@
       }
       targets.forEach((target, index) => {
         const kind = typeof target.type === 'string' ? target.type : '';
-        const disabled = target.enabled !== true;
         const referenceSaved = target.credential_state === 'reference_saved';
         const test = target.connection_test || {};
         const historyTime = test.source === 'saved_history' ? timeLabel(test.completed_at) : '';
         const href = externalTargetLinks[kind] || '/#lah-pane-connections';
-        const next = disabled ? text('disabledNext') : !referenceSaved ? text('noReferenceNext') : text('testNext');
-        const evidence = historyTime ? text('historicalAt', {time: historyTime}) : '';
+        const progress = targetSetupProgress(target);
+        const next = text(progress.next);
+        const evidence = [historyTime ? text('historicalAt', {time: historyTime}) : '', progress.readAt ? text('setupReadAt', {time: timeLabel(progress.readAt)}) : ''].filter(Boolean).join(' ');
         const tools = safeArray(target.actions).filter(name => typeof name === 'string');
         const title = targetLabel(kind) + (target.name ? ' · ' + String(target.name) : '');
         const connectionState = connectionText(test);
         addRow(lists.targets, {
           title,
-          state: disabled ? text('disabled') : text('enabled'),
-          tone: disabled ? 'attention' : '',
+          state: text(progress.state),
+          tone: progress.tone,
           observation: (referenceSaved ? text('credentialRef') : text('noCredentialRef')) + ' ' + connectionState,
           evidence,
           next,

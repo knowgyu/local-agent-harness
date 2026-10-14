@@ -328,7 +328,11 @@ func TestReadinessFeatureCatalogMatchesRegisteredToolsAndOmitsUnsupportedPodExec
 	if err != nil {
 		t.Fatal(err)
 	}
-	registeredSource := string(mainSource) + string(parallelSource) + string(setupSource)
+	statusSource, err := os.ReadFile("setup_status.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	registeredSource := string(mainSource) + string(parallelSource) + string(setupSource) + string(statusSource)
 	for _, tool := range readinessFeatureToolNames() {
 		if !strings.Contains(registeredSource, tool) {
 			t.Errorf("readiness feature %q is absent from MCP registration source", tool)
