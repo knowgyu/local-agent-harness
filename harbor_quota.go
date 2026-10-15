@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 type harborProjectQuota struct {
@@ -31,7 +30,7 @@ func (a *app) registeredHarborProjectQuota(ctx context.Context, requestedName st
 	observeFirstReadDefinition(ctx, target)
 	defer clear(secret)
 
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchHarborProjectQuota(ctx, target, string(secret), a.client)
 }

@@ -28,7 +28,7 @@ type registrationURLCandidate struct {
 }
 
 func parseRegistrationURL(service registrationService, raw string) (registrationURLCandidate, error) {
-	if len(raw) == 0 || len(raw) > 2048 || strings.TrimSpace(raw) != raw || strings.ContainsAny(raw, "?#\\\r\n\t ") {
+	if len(raw) == 0 || len(raw) > 2048 || strings.TrimSpace(raw) != raw || strings.ContainsAny(raw, "?#\\\r\n\t") {
 		return registrationURLCandidate{}, errors.New("invalid registration URL")
 	}
 

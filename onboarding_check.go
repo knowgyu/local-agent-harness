@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	onboardingCheckTimeout = 12 * time.Second
+	onboardingCheckTimeout = serviceRequestTimeout
 	onboardingCheckMaxBody = maxAPIBytes
 )
 
@@ -412,7 +412,7 @@ func checkOnboardingGitHub(ctx context.Context, client *http.Client, fields onbo
 	req.Header.Set("User-Agent", "local-agent-harness")
 	resp, err := client.Do(req)
 	if err != nil {
-		return connectionTransportFailure(err, "Could not reach the registered GitHub Enterprise origin.")
+		return connectionTransportFailure(err, "Could not reach the registered GitHub API.")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 300 && resp.StatusCode < 400 {
@@ -454,7 +454,7 @@ func onboardingGitHubRepositoryURL(fields onboardingDraftFields) (string, error)
 	if err != nil || origin != fields.Origin || !validRepository(fields.Repository) {
 		return "", errOnboardingInvalid
 	}
-	return origin + "/api/v3/repos/" + fields.Repository, nil
+	return repositoryURL(target{Origin: origin, Repository: fields.Repository})
 }
 
 func checkOnboardingJenkins(ctx context.Context, client *http.Client, fields onboardingDraftFields, credential string) error {
@@ -488,19 +488,7 @@ func onboardingJenkinsJobURL(fields onboardingDraftFields) (*url.URL, error) {
 	if err != nil || baseURL != fields.BaseURL || !validJenkinsJobPath(fields.JobPath) {
 		return nil, errOnboardingInvalid
 	}
-	endpoint, err := url.Parse(baseURL)
-	if err != nil {
-		return nil, errOnboardingInvalid
-	}
-	path := strings.TrimRight(endpoint.Path, "/")
-	for _, segment := range strings.Split(fields.JobPath, "/") {
-		path += "/job/" + url.PathEscape(segment)
-	}
-	endpoint.Path = path + "/api/json"
-	endpoint.RawPath = ""
-	endpoint.RawQuery = ""
-	endpoint.Fragment = ""
-	return endpoint, nil
+	return jenkinsJobURL(jenkinsTarget{BaseURL: baseURL, JobPath: fields.JobPath}, "api", "json")
 }
 
 func checkOnboardingDashboard(ctx context.Context, client *http.Client, fields onboardingDraftFields, credential string) error {

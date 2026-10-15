@@ -1,6 +1,6 @@
 # Agent-assisted setup
 
-Use this guide with the v0.1.0-rc.6 Windows x64 package. The app and its MCP server are Windows programs; no Go installation or source build is required for the packaged release.
+Use this guide with the v0.1.0-rc.7 Windows x64 package. The app and its MCP server are Windows programs; no Go installation or source build is required for the packaged release.
 
 ## Install and register a client
 
@@ -26,13 +26,19 @@ Use the app's **Clients** page to inspect a registration plan, create a local ba
 6. Submit only confirmed fields, a source label and confidence for each candidate, and any required `credential_name`. Submission creates a short-lived proposal but does not change settings. Copy the returned MCP `id` into the local UI's `draft_id` field, and enter the returned `base_revision` and `digest` at `/ssh-settings#setup-draft-review-heading` to open that specific proposal; the page has no automatic proposal list, credential selector, or proposal editor. If approval is blocked, resolve the missing information in the local UI or candidate data, refresh `setup_status`, and submit one complete replacement proposal. Keep the returned values while reviewing; if they are lost, ask the user before creating another draft because the review page cannot find proposals automatically.
 7. Add new targets before proposing a bundle that refers to them. Approve the target proposal, call `setup_status` again, and use the returned target IDs and fresh revision in a separate bundle proposal. A bundle can be proposed with targets that already exist, but IDs for new targets are not available to the same submission that creates them. Do not guess IDs or promise a single approval for new targets and their bundle mapping.
 
+## Match the installed environment
+
+Use the confirmed target host, port and context path. Public `github.com` (also `api.github.com`) uses `api.github.com/repos/...`; Enterprise Server uses the saved host and `/api/v3/repos/...`. Nonstandard public-host ports are not rewritten. GitHub's origin field is host-only. Jenkins keeps its saved base path; job paths contain decoded folder/job names separated by `/`, not URL `/job/` markers. Spaces, Unicode letters, parentheses and `+` in job names are supported.
+
+Service requests allow up to 30 seconds, bounded by caller cancellation. On failure, keep other saved targets and diagnose the affected target. Confirm Windows-side VPN/DNS, process proxy environment, trusted certificates, API credentials and SSO authorization; see `USER_GUIDE.ko.md`. Browser PAC and integrated proxy authentication are not automatic. Never disable TLS verification, follow login redirects with credentials, change hosts, or resend a Jenkins trigger with unknown outcome to make a test pass. Report unsupported API prefixes or authentication flows explicitly.
+
 ## Verify actual reads
 
 After approval, ask the user to confirm the exact targets and reads. Through the connected client, make one safe read for each enabled target: `github_repository`, `jenkins_registered_job`, `harbor_repository_artifacts`, or `dashboard_deployment_status` only after its bundle/environment mapping exists. Catalog calls and connection tests do not count as service reads.
 
 Call `setup_status` again. `targets[].first_read.state=observed` means a successful MCP read receipt matching the current target definition was retained. `not_observed` means no matching receipt is currently retained; it does not prove that no read ever occurred. The store retains the newest 256 distinct target definitions. If the retention limit prevents determining absence, the state is `unavailable`. A Dashboard first read requires its service-bundle environment mapping. `first_read.source=mcp_observed` confirms an MCP read; `client_attribution=not_observed` means the server did not identify which client made it. Do not attribute a read to Codex or Claude unless the client independently proves that identity.
 
-RC6 release evidence is version-specific; consult the separately attached `VALIDATION_SUMMARY.ko.md` for the checks actually completed on RC6. RC5's WSL Codex CLI mock-service call is historical RC5 evidence only. Its Claude Code attempt stopped before a tool call because OAuth had expired, so Claude Code success remains unverified. Do not carry RC5 timings, case counts, or client outcomes forward as RC6 results. Mock-service and protocol-fixture results do not establish real-provider connectivity or client-host acceptance.
+RC7 release evidence is version-specific; consult the separately attached `VALIDATION_SUMMARY.ko.md` for the checks actually completed on RC7. RC5's WSL Codex CLI mock-service call is historical RC5 evidence only. Its Claude Code attempt stopped before a tool call because OAuth had expired, so Claude Code success remains unverified. Do not carry RC5 timings, case counts, or client outcomes forward as RC7 results. Mock-service and protocol-fixture results do not establish real-provider connectivity or client-host acceptance.
 
 For real targets, request explicit confirmation for the exact read and scope before invoking it. Report only evidence the host actually observed. If a client blocks a tool pending approval, report the block and request permission for that exact read. Do not disable approvals globally. An expired client login is not a service-target failure; ask the user to sign in through the client's normal flow. Do not read or copy authentication files.
 

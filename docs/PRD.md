@@ -25,7 +25,7 @@ Windows에서 AI 에이전트가 개발 시스템과 등록된 작업을 제한�
 
 ## 3. 대표 사용자 작업
 
-1. GitHub Enterprise의 정확한 API origin, Jenkins, Harbor, Dashboard 기본 주소를 이름 붙은 연결 대상으로 등록하고 연결 테스트를 한다.
+1. GitHub 또는 GitHub Enterprise Server의 정확한 HTTPS origin, Jenkins, Harbor, Dashboard 기본 주소를 이름 붙은 연결 대상으로 등록하고 연결 테스트를 한다.
 2. 여러 저장소와 임의 이름의 환경을 가진 서비스 묶음을 만들고, Jenkins 작업·Harbor 이미지·Dashboard 네임스페이스와 Deployment를 해당 묶음에 연결한다.
 3. GitHub 변경 또는 PR 뒤 Jenkins 배포 작업을 실행하고 queue·build·실패 로그의 필요한 구간을 조회한다. 배포 실패 시 Harbor 이미지와 용량, Dashboard의 Deployment·Pod·이벤트·리소스 부족·로그를 이어서 확인한다. 필요하면 사전 허용된 Pod exec 또는 등록 SSH 작업을 실행한다.
 4. 로그는 대상·시간·구간을 좁혀 조회하고 필드 축소, 크기·개수 제한, 중복 축소, 등록된 알려진 비밀값 마스킹을 적용한다. 전체 원문을 한 번에 반환하거나 모든 변형 비밀값을 완벽히 찾는다고 약속하지 않는다.
@@ -270,7 +270,7 @@ MCP Dashboard 로그 도구는 `text content`와 `structuredContent`를 포함�
 | 항목 | 현재 근거 | 확정이 필요한 내용 |
 |---|---|---|
 | Kubernetes Dashboard | 공식 chart release 7.14.0 (appVersion 없음; auth 1.4.0, API 1.14.0, web 1.7.0, metrics-scraper 1.2.2), tag `4940626339ee16a5261acc28ad814190636b3ba9`의 auth/interceptor/API/gateway/ingress source | 회사 chart/component 버전, base URL/subpath, proxy rewrite, SSO, 인증·권한. 공식 tag만으로 회사 호환성을 입증하지 않음 |
-| GitHub Enterprise 인증 | 현재 REST 경로는 저장된 HTTPS origin과 UI에 직접 등록한 PAT를 사용하며, token scope/permission과 실제 회사 Enterprise 연결은 검사·검증하지 않음 | v0.x의 유일 구현 경로는 사용자가 발급해 등록하는 최소권한 Bearer PAT. `gh auth token --hostname HOSTNAME`은 안전한 일회성 가져오기, stdout·오류·로그 비밀 경계, host 일치를 검증하기 전까지 미구현 확장. `gh auth setup-git`와 SSH는 Git 전송으로 한정 |
+| GitHub Enterprise 인증 | 현재 REST 경로는 저장된 HTTPS origin과 UI에 직접 등록한 PAT를 사용하며 일반 github.com은 공식 api.github.com으로 매핑하고, Enterprise Server는 등록 origin의 /api/v3를 사용한다. token scope/permission과 실제 회사 Enterprise 연결은 검사·검증하지 않음 | v0.x의 유일 구현 경로는 사용자가 발급해 등록하는 최소권한 Bearer PAT. `gh auth token --hostname HOSTNAME`은 안전한 일회성 가져오기, stdout·오류·로그 비밀 경계, host 일치를 검증하기 전까지 미구현 확장. `gh auth setup-git`와 SSH는 Git 전송으로 한정 |
 | 환경 가져오기 | 지정된 저장소·문서·Runbook·SSH 별칭·설정과 사용자가 고른 대화 자료를 후보 입력으로 삼음 | 각 형식의 파서와 확신도 기준. 비밀 원문을 모델 입력으로 보낼 수 있는 경로가 없는지 구현 검증 |
 | Windows 외 비밀 저장 | Ubuntu에서도 쓰고 싶다는 요구 | Linux에서 사용할 저장소와 잠금·백업·삭제 UX |
 | AI 클라이언트 | Codex·Claude·Gemini CLI와 데스크톱 앱에서 쉽게 쓰고 싶다는 요구 | 각 앱/버전의 실제 MCP 전송과 자동 설정 지원 여부 |

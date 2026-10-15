@@ -1437,7 +1437,7 @@ func TestGitHubPullRequestSuppressesTransportDeadlineError(t *testing.T) {
 	})}
 
 	result, err := fetchGitHubPullRequest(context.Background(), registered, token, 42, client)
-	if err == nil || err.Error() != "Could not reach registered GitHub Enterprise origin." || strings.Contains(err.Error(), token) || requests != 1 {
+	if err == nil || err.Error() != "Could not reach registered GitHub API." || strings.Contains(err.Error(), token) || requests != 1 {
 		t.Fatalf("result=%+v error=%v requests=%d; want one generic non-leaking transport error", result, err, requests)
 	}
 }

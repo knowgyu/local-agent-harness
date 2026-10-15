@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 const harborPageSize = 100
@@ -301,7 +300,7 @@ func (a *app) registeredHarborArtifacts(ctx context.Context, requestedName strin
 	}
 	observeFirstReadDefinition(ctx, target)
 	defer clear(secret)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchHarborArtifacts(ctx, target, string(secret), a.client)
 }

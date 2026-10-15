@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "local-agent-harness",
   "display_name": "Local Agent Harness",
-  "version": "0.1.0-rc.6",
+  "version": "0.1.0-rc.7",
   "description": "Local Windows MCP server for targets and operations saved by the user.",
   "long_description": "Runs Local Agent Harness as a local stdio MCP server on Windows. Available tools depend on the current Windows user's saved Local Agent Harness settings and action policies. Some tools contact configured external services, run saved local tasks, or perform saved operations. Review the saved scope and approval policy before use.",
   "author": {

@@ -394,7 +394,7 @@ func (a *app) registeredJenkinsJob(ctx context.Context, requestedName string) (j
 	}
 	observeFirstReadDefinition(ctx, t)
 	defer clear(token)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchJenkinsJob(ctx, t, string(token), a.client)
 }
@@ -426,7 +426,7 @@ func (a *app) runRegisteredJenkinsJob(ctx context.Context, requestedName string)
 		}
 		return a.runJenkinsJobAfterApproval(ctx, requestedName, targetID, triggerScope)
 	}
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return runJenkinsJob(ctx, t, string(token), a.client)
 }
@@ -440,7 +440,7 @@ func (a *app) runJenkinsJobAfterApproval(ctx context.Context, requestedName, tar
 	if target.ID != targetID || jenkinsTriggerApprovalScope(target) != triggerScope {
 		return jenkinsRunResult{}, errors.New("The Jenkins target changed after confirmation. Review it and try again.")
 	}
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	verifyTarget := func() error {
 		current, currentToken, err := a.loadJenkinsTarget(requestedName)
@@ -730,7 +730,7 @@ func (a *app) registeredJenkinsLog(ctx context.Context, requestedName string, bu
 	}
 	observeFirstReadDefinition(ctx, target)
 	defer clear(token)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	segment, err := fetchJenkinsLogSegment(ctx, target, buildNumber, startOffset, string(token), a.client)
 	if err != nil {
@@ -832,7 +832,7 @@ func (a *app) registeredJenkinsQueue(ctx context.Context, requestedName string, 
 	}
 	observeFirstReadDefinition(ctx, target)
 	defer clear(token)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	queue, err := fetchJenkinsQueue(ctx, target, queueID, string(token), a.client)
 	if err != nil {
@@ -967,9 +967,10 @@ func jenkinsQueueTaskURLMatches(target jenkinsTarget, raw string) bool {
 	if err != nil || taskURL.Scheme != "https" || !strings.EqualFold(taskURL.Host, expected.Host) {
 		return false
 	}
-	path := taskURL.EscapedPath()
-	expectedPath := expected.EscapedPath()
-	return taskURL.RawPath == "" && (path == expectedPath || path == expectedPath+"/")
+	if _, err := registrationURLPathSegments(taskURL); err != nil {
+		return false
+	}
+	return taskURL.Path == expected.Path || taskURL.Path == expected.Path+"/"
 }
 
 func validateJenkinsBaseURL(raw string) (string, error) {
@@ -1056,8 +1057,11 @@ func validJenkinsJobPath(jobPath string) bool {
 }
 
 func safeJenkinsSegment(part string) bool {
+	if part == "" || !utf8.ValidString(part) {
+		return false
+	}
 	for _, r := range part {
-		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '-' || r == '_' || r == '.' || r == '~') {
+		if !(unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsMark(r) || r == ' ' || r == '-' || r == '_' || r == '.' || r == '~' || r == '(' || r == ')' || r == '+') {
 			return false
 		}
 	}
@@ -1072,10 +1076,10 @@ func jenkinsJobURL(target jenkinsTarget, suffix ...string) (*url.URL, error) {
 	parts := strings.Split(target.JobPath, "/")
 	path := strings.TrimRight(base.Path, "/")
 	for _, part := range parts {
-		path += "/job/" + url.PathEscape(part)
+		path += "/job/" + part
 	}
 	for _, part := range suffix {
-		path += "/" + url.PathEscape(part)
+		path += "/" + part
 	}
 	base.Path = path
 	base.RawPath = ""

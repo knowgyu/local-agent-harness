@@ -177,7 +177,7 @@ func TestParseRegistrationURLRejectsUnsafeInputWithoutEchoingIt(t *testing.T) {
 		{name: "encoded backslash", service: registrationServiceJenkins, raw: "https://ci.invalid/job/Build%5cOther"},
 		{name: "encoded traversal", service: registrationServiceJenkins, raw: "https://ci.invalid/ctx/job/%2e%2e"},
 		{name: "double encoded traversal", service: registrationServiceJenkins, raw: "https://ci.invalid/ctx/job/%252e%252e"},
-		{name: "encoded space outside Jenkins target contract", service: registrationServiceJenkins, raw: "https://ci.invalid/job/Release%20Gate"},
+		{name: "encoded control", service: registrationServiceJenkins, raw: "https://ci.invalid/job/Release%0aGate"},
 		{name: "malformed escape", service: registrationServiceDashboard, raw: "https://dash.invalid/proxy/%zz"},
 		{name: "backslash", service: registrationServiceDashboard, raw: "https://dash.invalid/proxy\\admin"},
 		{name: "empty path segment", service: registrationServiceDashboard, raw: "https://dash.invalid/proxy//web"},

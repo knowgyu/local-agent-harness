@@ -536,7 +536,7 @@ func (a *app) registeredDashboardNamespaces(ctx context.Context, requestedName s
 	}
 	observeFirstReadDefinition(ctx, target)
 	defer clear(token)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchDashboardNamespaces(ctx, target, string(token), a.client)
 }
@@ -549,7 +549,7 @@ func (a *app) registeredDashboardDeploymentStatus(ctx context.Context, serviceBu
 	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
 
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchDashboardDeploymentStatus(ctx, binding, string(token), a.client)
 }
@@ -562,7 +562,7 @@ func (a *app) registeredDashboardDeploymentEvents(ctx context.Context, serviceBu
 	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
 
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchDashboardDeploymentEvents(ctx, binding, string(token), a.client)
 }
@@ -574,13 +574,13 @@ func (a *app) registeredDashboardDeploymentPods(ctx context.Context, serviceBund
 	}
 	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchDashboardDeploymentPods(ctx, binding, string(token), a.client)
 }
 
 func (a *app) registeredDashboardDeploymentDiagnosis(ctx context.Context, serviceBundleName, environmentName string) (dashboardDeploymentDiagnosisResult, error) {
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 
 	binding, token, err := a.loadDashboardServiceBinding(serviceBundleName, environmentName)
@@ -884,7 +884,7 @@ func (a *app) registeredDashboardDeploymentLogs(ctx context.Context, serviceBund
 	}
 	observeFirstReadDashboardBinding(ctx, binding)
 	defer clear(token)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchDashboardDeploymentLogs(ctx, binding, string(token), podName, containerName, a.client)
 }

@@ -31,14 +31,15 @@ import (
 )
 
 const (
-	legacyConfigVersion = 1
-	configVersion       = 9
-	maxConfigSize       = 1 << 20
-	maxFormSize         = 12 << 10
-	maxGitConfigSize    = 64 << 10
-	maxGitImportRequest = maxGitConfigSize + 8<<10
-	maxAPIBytes         = 1 << 20
-	maxSecretSize       = 4096
+	serviceRequestTimeout = 30 * time.Second
+	legacyConfigVersion   = 1
+	configVersion         = 9
+	maxConfigSize         = 1 << 20
+	maxFormSize           = 12 << 10
+	maxGitConfigSize      = 64 << 10
+	maxGitImportRequest   = maxGitConfigSize + 8<<10
+	maxAPIBytes           = 1 << 20
+	maxSecretSize         = 4096
 )
 
 const localUIReferrerPolicy = "same-origin"
@@ -525,7 +526,7 @@ func runUI() error {
 		Handler:           newLocalUIHandlerWithResidentObserver(a, newResidentEndpointObserver()),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
-		WriteTimeout:      15 * time.Second,
+		WriteTimeout:      serviceRequestTimeout + 5*time.Second,
 		IdleTimeout:       60 * time.Second,
 		MaxHeaderBytes:    16 << 10,
 	}
@@ -1308,7 +1309,7 @@ func (a *app) runConnectionTest(ctx context.Context, targetID string, checked an
 	if connectionTargetID(checked) != targetID {
 		return connectionTestAttempt{}
 	}
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	err := request(ctx)
 	completedAt := time.Now().UTC().Format(time.RFC3339Nano)
@@ -1849,7 +1850,7 @@ func (a *app) registeredRepository(ctx context.Context, requestedName string) (r
 	}
 	observeFirstReadDefinition(ctx, t)
 	defer clear(token)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchRepository(ctx, t, string(token), a.client)
 }
@@ -1864,7 +1865,7 @@ func (a *app) registeredGitHubPullRequest(ctx context.Context, requestedName str
 	}
 	observeFirstReadDefinition(ctx, t)
 	defer clear(token)
-	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, serviceRequestTimeout)
 	defer cancel()
 	return fetchGitHubPullRequest(ctx, t, string(token), number, a.client)
 }
@@ -1903,11 +1904,11 @@ func fetchGitHubPullRequest(ctx context.Context, t target, token string, number 
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return githubPullRequest{}, errors.New("GitHub pull request request timed out.")
 		}
-		return githubPullRequest{}, errors.New("Could not reach registered GitHub Enterprise origin.")
+		return githubPullRequest{}, errors.New("Could not reach registered GitHub API.")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 300 && resp.StatusCode < 400 {
-		return githubPullRequest{}, errors.New("GitHub redirected pull request request. Check enterprise origin and /api/v3 path.")
+		return githubPullRequest{}, errors.New("GitHub redirected pull request request. Check registered GitHub address and API route.")
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		switch resp.StatusCode {
@@ -2049,12 +2050,12 @@ func fetchRepository(ctx context.Context, t target, token string, client *http.C
 	if err != nil {
 		return repository{}, connectionTransportFailure(
 			err,
-			"Could not reach the registered GitHub Enterprise origin. Check the address, VPN, and TLS certificate.",
+			"Could not reach the registered GitHub API. Check the address, VPN, and TLS certificate.",
 		)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 300 && resp.StatusCode < 400 {
-		return repository{}, withConnectionDiagnostic(connectionFailureEndpoint, errors.New("GitHub redirected the request. Check the enterprise origin and /api/v3 path."))
+		return repository{}, withConnectionDiagnostic(connectionFailureEndpoint, errors.New("GitHub redirected the request. Check the registered GitHub address and API route."))
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		switch resp.StatusCode {
@@ -2086,12 +2087,16 @@ func fetchRepository(ctx context.Context, t target, token string, client *http.C
 	if raw.FullName == "" || raw.Name == "" || !validRepository(raw.FullName) || !strings.EqualFold(raw.FullName, t.Repository) {
 		return repository{}, errors.New("GitHub response did not contain a valid repository identity.")
 	}
+	webOrigin := t.Origin
+	if endpoint == "https://api.github.com/repos/"+t.Repository {
+		webOrigin = "https://github.com"
+	}
 	return repository{
 		Name:          cleanOutput(raw.Name, token, 100),
 		FullName:      cleanOutput(raw.FullName, token, 201),
 		Private:       raw.Private,
 		DefaultBranch: cleanOutput(raw.DefaultBranch, token, 255),
-		HTMLURL:       cleanOutput(t.Origin+"/"+t.Repository, token, 1024),
+		HTMLURL:       cleanOutput(webOrigin+"/"+t.Repository, token, 1024),
 		Description:   cleanOutput(raw.Description, token, 512),
 	}, nil
 }
@@ -2151,7 +2156,7 @@ func isPrivateKeyField(field string) bool {
 
 func newGitHubClient() *http.Client {
 	return &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: serviceRequestTimeout,
 		CheckRedirect: func(*http.Request, []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
@@ -2164,6 +2169,10 @@ func repositoryURL(t target) (string, error) {
 		return "", err
 	}
 	base.Path = "/api/v3/repos/" + t.Repository
+	if (strings.EqualFold(base.Hostname(), "github.com") || strings.EqualFold(base.Hostname(), "api.github.com")) && (base.Port() == "" || strings.TrimLeft(base.Port(), "0") == "443") {
+		base.Host = "api.github.com"
+		base.Path = "/repos/" + t.Repository
+	}
 	base.RawPath = ""
 	base.RawQuery = ""
 	base.Fragment = ""
