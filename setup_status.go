@@ -58,7 +58,7 @@ func registerSetupStatusMCPTool(server *mcp.Server, a *app) {
 		Name:         "setup_status",
 		Annotations:  &mcp.ToolAnnotations{ReadOnlyHint: true},
 		Title:        "Read local setup status",
-		Description:  "Read compact local setup status. Returns configuration state, revision, observed time, targets, and configured service bundles. Client details are omitted unless inspect_clients is true. By default it reads saved settings and stored receipt metadata only; it does not contact services, load credentials, or change state. A reported MCP read matches the current saved target definition; the calling client is not observed or attributed.",
+		Description:  "Read compact local setup status. Returns configuration state, revision, observed time, targets, and configured service bundles. Client details are omitted unless inspect_clients is true. By default it reads saved settings and retained receipt metadata. It may create or secure protected evidence-store directories on first use; it does not write settings or receipt data, contact services, or load credentials. A reported MCP read matches the current saved target definition; the calling client is not observed or attributed.",
 		InputSchema:  setupStatusInputSchema,
 		OutputSchema: setupStatusOutputSchema,
 	}, func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -106,7 +106,10 @@ func (a *app) setupStatus(ctx context.Context, request setupStatusRequest) setup
 		registrations: a.clientRegistration,
 		onboarding:    controller,
 	}
-	status, ok := handler.snapshot(ctx, readinessSnapshotOptions{inspectClients: request.InspectClients})
+	status, ok := handler.snapshot(ctx, readinessSnapshotOptions{
+		inspectClients:     request.InspectClients,
+		setupDraftRevision: true,
+	})
 	if !ok {
 		return setupStatusFromReadiness(readinessUnavailableStatus(), false)
 	}

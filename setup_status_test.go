@@ -245,9 +245,19 @@ func TestSetupStatusMCPMatchesHTTPAndIsReadOnlyByDefault(t *testing.T) {
 	if mcpStatus.SchemaVersion != 1 || mcpStatus.ClientAttribution != "not_observed" {
 		t.Fatalf("MCP attribution contract = %+v", mcpStatus)
 	}
-	if mcpStatus.ConfigurationState != httpStatus.State || mcpStatus.ConfigurationRev != httpStatus.ConfigurationRev ||
+	if mcpStatus.ConfigurationState != httpStatus.State ||
 		!setupStatusTargetsEqual(mcpStatus.Targets, httpStatus.Targets) || !readinessBundlesEqual(mcpStatus.ServiceBundles, httpStatus.ServiceBundles) {
-		t.Fatalf("HTTP and MCP snapshots differ: HTTP=%+v MCP=%+v", httpStatus, mcpStatus)
+		t.Fatalf("HTTP and MCP readiness fields differ: HTTP=%+v MCP=%+v", httpStatus, mcpStatus)
+	}
+	draftSnapshot, err := newSetupDraftConfigStore(configPath).Snapshot()
+	if err != nil {
+		t.Fatalf("read setup-draft config snapshot: %v", err)
+	}
+	if mcpStatus.ConfigurationRev != draftSnapshot.Revision {
+		t.Fatalf("MCP configuration revision = %q, setup-draft snapshot revision = %q", mcpStatus.ConfigurationRev, draftSnapshot.Revision)
+	}
+	if httpStatus.ConfigurationRev != readinessConfigurationRevision(cfg) {
+		t.Fatalf("HTTP readiness revision changed: got %q", httpStatus.ConfigurationRev)
 	}
 	if mcpStatus.ObservedAt.IsZero() || mcpStatus.ObservedAt.After(time.Now().Add(time.Second)) {
 		t.Fatalf("MCP observed_at is invalid: %s", mcpStatus.ObservedAt)

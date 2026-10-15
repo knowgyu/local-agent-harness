@@ -184,6 +184,7 @@ func (h *readinessStatusHandler) serveHTTP(w http.ResponseWriter, r *http.Reques
 type readinessSnapshotOptions struct {
 	inspectClients          bool
 	observeResidentEndpoint bool
+	setupDraftRevision      bool
 }
 
 func (h *readinessStatusHandler) snapshot(ctx context.Context, options readinessSnapshotOptions) (readinessStatusDTO, bool) {
@@ -195,6 +196,13 @@ func (h *readinessStatusHandler) snapshot(ctx context.Context, options readiness
 		return readinessUnavailableStatus(), false
 	}
 	response := readinessStatusFromConfig(cfg)
+	if options.setupDraftRevision {
+		revision, err := setupDraftConfigRevision(cfg)
+		if err != nil {
+			return readinessUnavailableStatus(), false
+		}
+		response.ConfigurationRev = revision
+	}
 	if options.observeResidentEndpoint {
 		response.ResidentEndpoint = h.observeResidentEndpoint(ctx)
 	}

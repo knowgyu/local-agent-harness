@@ -12,6 +12,6 @@
 | 요구사항·설계·보안 | [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SECURITY.md](SECURITY.md), [UX.md](UX.md) |
 | 버전별 설치·변경·검증 기록 | [releases/](releases/) |
 | 과거 조사·설계 검토·검증 근거 | [research/](research/) |
-| 온보딩 변경 감사·검토 | [2026-10-15 검토](reviews/2026-10-15-onboarding.md) |
+| 온보딩 변경 감사·검토 | [RC6 수정 검토](reviews/rc6-onboarding.md), [RC5 검토](reviews/2026-10-15-onboarding.md) |
 
 `research/`의 제안·프로토타입·과거 검증은 현재 지원 기능의 목록이 아닙니다. 현재 동작은 소스와 해당 릴리스의 검증 기록으로 확인하세요.
